@@ -152,7 +152,7 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
       </Link>
 
       <div className={userCardClass}>
-        <CurrentUserAvatar />
+        <CurrentUserAvatar imageUrl={user.avatar_url} name={user.username} />
         <div className={isMobile ? "" : "hidden sm:block"}>
           <p className="text-sm font-medium text-foreground">{user.username}</p>
           <p className="text-xs text-muted-foreground">
