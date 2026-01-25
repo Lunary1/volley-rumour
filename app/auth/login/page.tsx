@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react"
+import React from "react";
 
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,8 +13,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { login } from "@/app/actions/auth";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
   const [email, setEmail] = useState("");
@@ -26,25 +26,20 @@ export default function Page() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/protected`,
-        },
-      });
-      if (error) throw error;
-      router.push("/");
+      const result = await login(email, password);
+      if (result?.error) {
+        setError(result.error);
+        setIsLoading(false);
+      } else {
+        // Login successful, redirect to home
+        router.push("/");
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -55,7 +50,9 @@ export default function Page() {
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-foreground">Inloggen</CardTitle>
+              <CardTitle className="text-2xl text-foreground">
+                Inloggen
+              </CardTitle>
               <CardDescription>
                 Log in om geruchten te delen en te stemmen
               </CardDescription>

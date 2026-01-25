@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -40,8 +40,8 @@
 }
 
 @theme inline {
-  --font-sans: 'Inter', 'Inter Fallback', sans-serif;
-  --font-mono: 'Space Grotesk', 'Space Grotesk Fallback', monospace;
+  --font-sans: "Inter", "Inter Fallback", sans-serif;
+  --font-mono: "Space Grotesk", "Space Grotesk Fallback", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -86,5 +86,15 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

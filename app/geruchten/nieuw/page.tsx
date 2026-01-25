@@ -1,77 +1,89 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Flame, ArrowLeft, Loader2 } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Flame, ArrowLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export default function NewRumourPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const formData = new FormData(e.currentTarget)
-    const playerName = formData.get("playerName") as string
-    const fromClub = formData.get("fromClub") as string
-    const toClub = formData.get("toClub") as string
-    const category = formData.get("category") as string
-    const description = formData.get("description") as string
+    const formData = new FormData(e.currentTarget);
+    const playerName = formData.get("playerName") as string;
+    const fromClub = formData.get("fromClub") as string;
+    const toClub = formData.get("toClub") as string;
+    const category = formData.get("category") as string;
+    const description = formData.get("description") as string;
 
-    const supabase = createClient()
-    
+    const supabase = createClient();
+
     // Check if user is logged in
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
-      setError("Je moet ingelogd zijn om een gerucht te delen")
-      setLoading(false)
-      return
+      setError("Je moet ingelogd zijn om een gerucht te delen");
+      setLoading(false);
+      return;
     }
 
-    const { error: insertError } = await supabase
-      .from("rumours")
-      .insert({
-        player_name: playerName,
-        from_club: fromClub || null,
-        to_club: toClub,
-        category,
-        description: description || null,
-        author_id: user.id,
-      })
+    const { error: insertError } = await supabase.from("rumours").insert({
+      player_name: playerName,
+      from_club_name: fromClub || null,
+      to_club_name: toClub,
+      category,
+      description: description || null,
+      creator_id: user.id,
+    });
 
     if (insertError) {
-      setError(insertError.message)
-      setLoading(false)
-      return
+      setError(insertError.message);
+      setLoading(false);
+      return;
     }
 
-    router.push("/geruchten")
-    router.refresh()
+    router.push("/geruchten");
+    router.refresh();
   }
 
   return (
     <div className="min-h-screen py-8">
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-        <Link 
+        <Link
           href="/geruchten"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Terug naar geruchten
+          Terug naar Transfer Talk
         </Link>
 
         <Card className="bg-card border-border">
@@ -80,10 +92,11 @@ export default function NewRumourPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
                 <Flame className="h-5 w-5 text-primary-foreground" />
               </div>
-              <CardTitle className="text-2xl">Nieuw Gerucht</CardTitle>
+              <CardTitle className="text-2xl">Nieuwe Transfer Talk</CardTitle>
             </div>
             <CardDescription>
-              Deel een transfer gerucht met de community. Als je gerucht klopt, verdien je punten!
+              Deel een transfer mogelijkheid met de community. Als je tip klopt,
+              verdien je punten!
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -101,10 +114,16 @@ export default function NewRumourPage() {
                     <SelectValue placeholder="Selecteer een categorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="player_transfer">Speler Transfer</SelectItem>
-                    <SelectItem value="coach_transfer">Trainer Transfer</SelectItem>
-                    <SelectItem value="player_retirement">Speler Stopt</SelectItem>
-                    <SelectItem value="coach_retirement">Trainer Stopt</SelectItem>
+                    <SelectItem value="transfer">Transfer</SelectItem>
+                    <SelectItem value="trainer_transfer">
+                      Trainer Transfer
+                    </SelectItem>
+                    <SelectItem value="player_retirement">
+                      Speler Stopt
+                    </SelectItem>
+                    <SelectItem value="trainer_retirement">
+                      Trainer Stopt
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -140,7 +159,9 @@ export default function NewRumourPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Extra informatie (optioneel)</Label>
+                <Label htmlFor="description">
+                  Extra informatie (optioneel)
+                </Label>
                 <Textarea
                   id="description"
                   name="description"
@@ -151,12 +172,16 @@ export default function NewRumourPage() {
 
               <div className="flex gap-3 pt-4">
                 <Link href="/geruchten" className="flex-1">
-                  <Button type="button" variant="outline" className="w-full bg-transparent">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full bg-transparent"
+                  >
                     Annuleren
                   </Button>
                 </Link>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="flex-1 bg-primary text-primary-foreground"
                   disabled={loading}
                 >
@@ -169,5 +194,5 @@ export default function NewRumourPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

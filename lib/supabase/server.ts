@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Especially important if using Fluid compute: Don't put this client in a
@@ -30,5 +31,22 @@ export async function createClient() {
         },
       },
     },
+  );
+}
+
+/**
+ * Create an admin client that bypasses RLS policies using service role key
+ * Use sparingly and only for operations that require elevated permissions
+ */
+export function createAdminClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is not set in environment variables",
+    );
+  }
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceRoleKey,
   );
 }

@@ -1,37 +1,51 @@
-import { createClient } from "@/lib/supabase/server"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Trophy, Medal, Award, TrendingUp, Star } from "lucide-react"
+import { createClient } from "@/lib/supabase/server";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Medal, Award, TrendingUp, Star } from "lucide-react";
 
 async function getLeaderboard() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
     .select("*")
     .order("trust_score", { ascending: false })
-    .limit(50)
-  
-  return data || []
+    .limit(50);
+
+  return data || [];
 }
 
 function getTrustBadge(score: number) {
-  if (score >= 100) return { label: "Legende", color: "bg-yellow-500 text-yellow-950" }
-  if (score >= 50) return { label: "Expert", color: "bg-primary text-primary-foreground" }
-  if (score >= 20) return { label: "Betrouwbaar", color: "bg-blue-500 text-blue-950" }
-  if (score >= 5) return { label: "Actief", color: "bg-secondary text-secondary-foreground" }
-  return { label: "Nieuwkomer", color: "bg-muted text-muted-foreground" }
+  if (score >= 100)
+    return { label: "Legend", color: "bg-yellow-500 text-yellow-950" };
+  if (score >= 50)
+    return { label: "Expert", color: "bg-primary text-primary-foreground" };
+  if (score >= 20)
+    return { label: "Betrouwbaar", color: "bg-blue-500 text-blue-950" };
+  if (score >= 5)
+    return { label: "Actief", color: "bg-secondary text-secondary-foreground" };
+  return { label: "Nieuwkomer", color: "bg-muted text-muted-foreground" };
 }
 
 function getRankIcon(rank: number) {
-  if (rank === 1) return <Trophy className="w-6 h-6 text-yellow-500" />
-  if (rank === 2) return <Medal className="w-6 h-6 text-gray-400" />
-  if (rank === 3) return <Award className="w-6 h-6 text-amber-600" />
-  return <span className="w-6 h-6 flex items-center justify-center text-muted-foreground font-bold">{rank}</span>
+  if (rank === 1) return <Trophy className="w-6 h-6 text-yellow-500" />;
+  if (rank === 2) return <Medal className="w-6 h-6 text-gray-400" />;
+  if (rank === 3) return <Award className="w-6 h-6 text-amber-600" />;
+  return (
+    <span className="w-6 h-6 flex items-center justify-center text-muted-foreground font-bold">
+      {rank}
+    </span>
+  );
 }
 
 export default async function LeaderboardPage() {
-  const users = await getLeaderboard()
+  const users = await getLeaderboard();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -46,12 +60,14 @@ export default async function LeaderboardPage() {
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardDescription>Hoe werkt het?</CardDescription>
-            <CardTitle className="text-lg text-foreground">Trust Score Systeem</CardTitle>
+            <CardTitle className="text-lg text-foreground">
+              Trust Score Systeem
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
             <div className="flex items-start gap-2">
               <TrendingUp className="w-4 h-4 mt-0.5 text-primary" />
-              <span>Deel geruchten die waar blijken te zijn</span>
+              <span>Deel Transfer Talk die waar blijkt te zijn</span>
             </div>
             <div className="flex items-start gap-2">
               <Star className="w-4 h-4 mt-0.5 text-accent" />
@@ -67,7 +83,9 @@ export default async function LeaderboardPage() {
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardDescription>Badges</CardDescription>
-            <CardTitle className="text-lg text-foreground">Rang Niveaus</CardTitle>
+            <CardTitle className="text-lg text-foreground">
+              Rang Niveaus
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
@@ -75,7 +93,9 @@ export default async function LeaderboardPage() {
               <span className="text-sm text-muted-foreground">100+ punten</span>
             </div>
             <div className="flex items-center justify-between">
-              <Badge className="bg-primary text-primary-foreground">Expert</Badge>
+              <Badge className="bg-primary text-primary-foreground">
+                Expert
+              </Badge>
               <span className="text-sm text-muted-foreground">50+ punten</span>
             </div>
             <div className="flex items-center justify-between">
@@ -83,7 +103,9 @@ export default async function LeaderboardPage() {
               <span className="text-sm text-muted-foreground">20+ punten</span>
             </div>
             <div className="flex items-center justify-between">
-              <Badge className="bg-secondary text-secondary-foreground">Actief</Badge>
+              <Badge className="bg-secondary text-secondary-foreground">
+                Actief
+              </Badge>
               <span className="text-sm text-muted-foreground">5+ punten</span>
             </div>
           </CardContent>
@@ -101,7 +123,9 @@ export default async function LeaderboardPage() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Actieve bijdragers</span>
-              <span className="font-bold text-foreground">{users.filter(u => u.trust_score > 0).length}</span>
+              <span className="font-bold text-foreground">
+                {users.filter((u) => u.trust_score > 0).length}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -118,14 +142,16 @@ export default async function LeaderboardPage() {
           {users.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <p>Nog geen gebruikers in de ranking</p>
-              <p className="text-sm mt-2">Word de eerste door een gerucht te delen!</p>
+              <p className="text-sm mt-2">
+                Word de eerste door een gerucht te delen!
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
               {users.map((user, index) => {
-                const badge = getTrustBadge(user.trust_score || 0)
+                const badge = getTrustBadge(user.trust_score || 0);
                 return (
-                  <div 
+                  <div
                     key={user.id}
                     className={`flex items-center gap-4 p-4 rounded-lg ${
                       index < 3 ? "bg-secondary/50" : "bg-background"
@@ -136,7 +162,9 @@ export default async function LeaderboardPage() {
                     </div>
                     <Avatar>
                       <AvatarFallback className="bg-primary/20 text-primary">
-                        {(user.display_name || user.username || "U")[0].toUpperCase()}
+                        {(user.display_name ||
+                          user.username ||
+                          "U")[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
@@ -144,21 +172,25 @@ export default async function LeaderboardPage() {
                         {user.display_name || user.username || "Anoniem"}
                       </p>
                       {user.username && user.display_name && (
-                        <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          @{user.username}
+                        </p>
                       )}
                     </div>
                     <Badge className={badge.color}>{badge.label}</Badge>
                     <div className="text-right">
-                      <p className="font-bold text-foreground">{user.trust_score || 0}</p>
+                      <p className="font-bold text-foreground">
+                        {user.trust_score || 0}
+                      </p>
                       <p className="text-xs text-muted-foreground">punten</p>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

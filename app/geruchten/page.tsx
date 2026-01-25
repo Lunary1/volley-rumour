@@ -1,29 +1,52 @@
-import { createClient } from "@/lib/supabase/server"
-import { RumourCard } from "@/components/rumour-card"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Flame, Plus, Filter } from "lucide-react"
-import Link from "next/link"
+import { createClient } from "@/lib/supabase/server";
+import { RumourCard } from "@/components/rumour-card";
+import { voteOnRumour } from "@/app/actions/vote";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Flame, Plus } from "lucide-react";
+import Link from "next/link";
 
-async function getRumours() {
-  const supabase = await createClient()
-  const { data } = await supabase
+async function getRumours(status?: string) {
+  const supabase = await createClient();
+  let query = supabase
     .from("rumours")
-    .select(`
+    .select(
+      `
       *,
-      author:profiles(username, trust_score)
-    `)
-    .order("created_at", { ascending: false })
-  
-  return data || []
+      creator:creator_id(username, trust_score)
+    `,
+    )
+    .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data } = await query;
+  return data || [];
 }
 
-export default async function GeruchtenPage() {
-  const rumours = await getRumours()
+interface SearchParams {
+  status?: string;
+}
 
-  const pendingRumours = rumours.filter((r) => r.status === "pending")
-  const confirmedRumours = rumours.filter((r) => r.status === "confirmed")
-  const deniedRumours = rumours.filter((r) => r.status === "denied")
+export default async function GeruchtenPage(props: {
+  searchParams?: Promise<SearchParams>;
+}) {
+  const searchParams = await props.searchParams;
+  const status = searchParams?.status;
+
+  const allRumours = await getRumours();
+  const filteredRumours = status
+    ? allRumours.filter((r) => r.status === status)
+    : allRumours;
+
+  const pendingRumours = allRumours.filter((r) => r.status === "rumour");
+  const confirmedRumours = allRumours.filter((r) => r.status === "confirmed");
+  const deniedRumours = allRumours.filter((r) => r.status === "denied");
+
+  const displayRumours = filteredRumours;
+  const displayCount = displayRumours.length;
 
   return (
     <div className="min-h-screen py-8">
@@ -31,9 +54,10 @@ export default async function GeruchtenPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Geruchten</h1>
+            <h1 className="text-3xl font-bold mb-2">Transfer Talk</h1>
             <p className="text-muted-foreground">
-              Ontdek de nieuwste volleybal geruchten en stem of ze waar zijn
+              Ontdek de nieuwste volleybal transfers in de maak en stem of ze
+              waar zijn
             </p>
           </div>
           <Link href="/geruchten/nieuw">
@@ -46,40 +70,90 @@ export default async function GeruchtenPage() {
 
         {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
-          <Button variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30">
-            Alle ({rumours.length})
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-            <Flame className="mr-2 h-4 w-4 text-accent" />
-            Trending ({pendingRumours.length})
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-            Bevestigd ({confirmedRumours.length})
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-            Ontkracht ({deniedRumours.length})
-          </Button>
+          <Link href="/geruchten">
+            <Button
+              variant={!status ? "default" : "outline"}
+              className={!status ? "bg-primary text-primary-foreground" : ""}
+            >
+              Alle ({allRumours.length})
+            </Button>
+          </Link>
+          <Link href="/geruchten?status=rumour">
+            <Button
+              variant={status === "rumour" ? "default" : "outline"}
+              className={
+                status === "rumour" ? "bg-primary text-primary-foreground" : ""
+              }
+            >
+              <Flame className="mr-2 h-4 w-4 text-accent" />
+              Trending ({pendingRumours.length})
+            </Button>
+          </Link>
+          <Link href="/geruchten?status=confirmed">
+            <Button
+              variant={status === "confirmed" ? "default" : "outline"}
+              className={
+                status === "confirmed"
+                  ? "bg-primary text-primary-foreground"
+                  : ""
+              }
+            >
+              Bevestigd ({confirmedRumours.length})
+            </Button>
+          </Link>
+          <Link href="/geruchten?status=denied">
+            <Button
+              variant={status === "denied" ? "default" : "outline"}
+              className={
+                status === "denied" ? "bg-primary text-primary-foreground" : ""
+              }
+            >
+              Ontkracht ({deniedRumours.length})
+            </Button>
+          </Link>
         </div>
 
         {/* Rumours Grid */}
-        {rumours.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {rumours.map((rumour) => (
-              <RumourCard key={rumour.id} rumour={rumour as any} />
+        {displayRumours.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {displayRumours.map((rumour) => (
+              <RumourCard
+                key={rumour.id}
+                rumour={{
+                  id: rumour.id,
+                  player_name: rumour.player_name,
+                  from_club_name: rumour.from_club_name,
+                  to_club_name: rumour.to_club_name,
+                  category: rumour.category,
+                  description: rumour.description,
+                  votes_true: rumour.votes_true,
+                  votes_false: rumour.votes_false,
+                  created_at: rumour.created_at,
+                  status: rumour.status,
+                  creator: rumour.creator,
+                }}
+                onVote={voteOnRumour}
+              />
             ))}
           </div>
         ) : (
           <Card className="bg-card border-border">
             <CardContent className="py-16 text-center">
               <Flame className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">Nog geen geruchten</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                {status
+                  ? `Geen ${status === "confirmed" ? "bevestigde" : status === "denied" ? "ontkrachte" : "lopende"} geruchten`
+                  : "Nog geen geruchten"}
+              </h3>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Wees de eerste om een gerucht te delen! Heb je gehoord over een mogelijke transfer?
+                {status
+                  ? "Er zijn nog geen geruchten in deze categorie. Kom later terug!"
+                  : "Wees de eerste om een gerucht te delen! Heb je gehoord over een mogelijke transfer?"}
               </p>
               <Link href="/geruchten/nieuw">
                 <Button className="bg-primary text-primary-foreground">
                   <Plus className="mr-2 h-5 w-5" />
-                  Deel je eerste gerucht
+                  {status ? "Gerucht Delen" : "Deel je eerste gerucht"}
                 </Button>
               </Link>
             </CardContent>
@@ -87,5 +161,5 @@ export default async function GeruchtenPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
