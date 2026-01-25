@@ -87,9 +87,12 @@ export function TransferCard({ transfer }: TransferCardProps) {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar className="h-3.5 w-3.5" />
           <span>
-            {format(new Date(transfer.transfer_date), "d MMMM yyyy", {
-              locale: nl,
-            })}
+            {transfer.transfer_date &&
+            !isNaN(new Date(transfer.transfer_date).getTime())
+              ? format(new Date(transfer.transfer_date), "d MMMM yyyy", {
+                  locale: nl,
+                })
+              : "Datum onbekend"}
           </span>
         </div>
       </CardContent>
