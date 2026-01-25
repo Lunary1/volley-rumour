@@ -35,14 +35,16 @@ const transferTypeColors: Record<string, string> = {
 }
 
 export function TransferCard({ transfer }: TransferCardProps) {
-  const isRetirement = transfer.transfer_type.includes("retirement")
+  const isRetirement = transfer.transfer_type?.includes("retirement") ?? false
+  const typeColor = transferTypeColors[transfer.transfer_type] || "bg-muted text-muted-foreground border-muted"
+  const typeLabel = transferTypeLabels[transfer.transfer_type] || "Onbekend"
 
   return (
     <Card className="bg-card border-border hover:border-primary/50 transition-colors">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <Badge variant="outline" className={transferTypeColors[transfer.transfer_type]}>
-            {transferTypeLabels[transfer.transfer_type]}
+          <Badge variant="outline" className={typeColor}>
+            {typeLabel}
           </Badge>
           {transfer.is_official && (
             <Badge className="bg-primary text-primary-foreground">Officieel</Badge>

@@ -412,7 +412,7 @@ export async function blockUser(userId: string) {
     blocked_id: userId,
   });
 
-  if (error && !error.message.includes("duplicate")) {
+  if (error && !error.message?.includes("duplicate")) {
     return { error: error.message };
   }
 
