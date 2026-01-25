@@ -53,8 +53,10 @@ export function TransferCardInteractive({
   const [checkingConversation, setCheckingConversation] = useState(false);
   const isRetirement = transfer.transfer_type?.includes("retirement") ?? false;
   const isOwnTransfer = currentUserId === transfer.creator_id;
-  const typeColor = transferTypeColors[transfer.transfer_type] || "bg-muted text-muted-foreground border-muted"
-  const typeLabel = transferTypeLabels[transfer.transfer_type] || "Onbekend"
+  const typeColor =
+    transferTypeColors[transfer.transfer_type] ||
+    "bg-muted text-muted-foreground border-muted";
+  const typeLabel = transferTypeLabels[transfer.transfer_type] || "Onbekend";
 
   async function handleContactClick() {
     setCheckingConversation(true);
@@ -85,10 +87,7 @@ export function TransferCardInteractive({
       <Card className="bg-card border-border hover:border-primary/50 transition-colors">
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-3 mb-3">
-            <Badge
-              variant="outline"
-              className={typeColor}
-            >
+            <Badge variant="outline" className={typeColor}>
               {typeLabel}
             </Badge>
             {transfer.is_official && (
