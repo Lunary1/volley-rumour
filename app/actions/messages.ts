@@ -286,19 +286,24 @@ export async function getConversations() {
   });
 
   // Get last message for each conversation
-  const { data: lastMessages } = await supabase
-    .from("messages")
-    .select("conversation_id, content")
-    .in("conversation_id", conversationIds)
-    .order("created_at", { ascending: false })
-    .limit(1);
-
   const lastMessageMap = new Map();
-  lastMessages?.forEach((msg) => {
-    if (!lastMessageMap.has(msg.conversation_id)) {
-      lastMessageMap.set(msg.conversation_id, msg.content);
+
+  for (const conversationId of conversationIds) {
+    const { data: lastMessage } = await supabase
+      .from("messages")
+      .select("conversation_id, content, sender_id")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (lastMessage) {
+      lastMessageMap.set(conversationId, {
+        content: lastMessage.content,
+        sender_id: lastMessage.sender_id,
+      });
     }
-  });
+  }
 
   const enriched = conversations?.map((c) => {
     // Determine which user is the "other" user
@@ -318,10 +323,10 @@ export async function getConversations() {
         otherUser.id || (isInitiator ? c.recipient_id : c.initiator_id),
       other_user_name: otherUser.username || "Unknown User",
       other_user_avatar_url: otherUser.avatar_url,
-      last_message: lastMessageMap.get(c.id),
+      last_message: lastMessageMap.get(c.id)?.content,
       last_message_at: c.updated_at,
       unread_count: unreadMap.get(c.id) || 0,
-      last_message_is_from_me: false,
+      last_message_is_from_me: lastMessageMap.get(c.id)?.sender_id === user.id,
     };
   });
 

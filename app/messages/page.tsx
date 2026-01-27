@@ -123,12 +123,14 @@ export default function MessagesPage() {
                   <div className="flex-1 min-w-0">
                     {/* Ad Title */}
                     <h2 className="font-medium text-foreground truncate text-sm group-hover:text-primary transition-colors">
-                      {conv.ad_title}
+                      {conv.other_user_name}
                     </h2>
 
                     {/* Last message */}
                     <p className="text-xs text-muted-foreground truncate mt-1">
-                      {conv.last_message_is_from_me ? "Jij: " : ""}
+                      {conv.last_message_is_from_me
+                        ? "Jij: "
+                        : `${conv.other_user_name}: `}
                       {conv.last_message || "Geen berichten nog"}
                     </p>
                   </div>
@@ -139,7 +141,7 @@ export default function MessagesPage() {
                       {formatDistanceToNow(new Date(conv.last_message_at), {
                         addSuffix: false,
                         locale: nl,
-                      })}
+                      }) + " geleden"}
                     </p>
                   )}
                 </div>

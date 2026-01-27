@@ -7,13 +7,14 @@ import { ClassifiedsList } from "@/components/classifieds-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Flame,
   TrendingUp,
   Users,
   Trophy,
   ArrowRight,
   Plus,
+  Flame,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -108,24 +109,22 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neon-magenta/80 dark:bg-neon-magenta dark:glow-magenta shadow-lg">
-                <Flame className="h-7 w-7 text-white" />
-              </div>
-              <span className="text-sm font-medium text-neon-magenta dark:text-neon-magenta">
-                Community Driven
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                Community Driven Volleybal Transfer Nieuws
               </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-balance">
-              De Belgische Volleybal{" "}
-              <span className="bg-gradient-to-r from-neon-coral via-neon-magenta to-neon-cyan bg-clip-text text-transparent dark:from-neon-coral dark:via-neon-magenta dark:to-neon-cyan">
-                Transfer Hub
+              Het Centrum voor{" "}
+              <span className="bg-linear-to-r from-green-400 via-green-500 to-green-600 dark:from-green-300 dark:via-green-400 dark:to-green-500 bg-clip-text text-transparent">
+                Belgische Volleybal Transfers
               </span>
             </h1>
 
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-              Ontdek, deel en stem op volleybal transfers. Word onderdeel van de
-              community en verdien punten door betrouwbare informatie te delen.
+              Wees als eerste op de hoogte van transfers. Deel geruchten,
+              bevestig deals en bouw je reputatie op als betrouwbare bron binnen
+              de Belgische volleybalcommunity.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -141,10 +140,9 @@ export default async function HomePage() {
               <Link href="/geruchten">
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="bg-transparent border-neon-cyan/50 dark:border-neon-cyan/70 hover:bg-neon-cyan/10 dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.2)] text-neon-cyan dark:text-neon-cyan"
+                  className="bg-transparent border border-neon-cyan/50 text-neon-cyan dark:border-neon-cyan/70 dark:text-neon-cyan !hover:bg-neon-cyan/30 !dark:hover:bg-neon-cyan/30 !hover:border-neon-cyan !dark:hover:border-neon-cyan !dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.4)] transition-all duration-200"
                 >
-                  Bekijk Transfer Talk
+                  Laatste Transfer Talk
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -160,22 +158,22 @@ export default async function HomePage() {
             {[
               {
                 icon: Flame,
-                label: "Active Transfer Talk",
+                label: "Actieve Geruchten",
                 value: featuredRumours.length.toString(),
               },
               {
                 icon: TrendingUp,
-                label: "Transfers",
+                label: "Bevestigde Deals",
                 value: latestTransfers.length.toString(),
               },
               {
                 icon: Users,
-                label: "Zoekertjes",
+                label: "Speelersmarkt",
                 value: latestClassifieds.length.toString(),
               },
               {
                 icon: Trophy,
-                label: "Contributors",
+                label: "Vertrouwde Bronnen",
                 value: topContributors.length.toString(),
               },
             ].map((stat) => (
@@ -201,7 +199,7 @@ export default async function HomePage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl font-bold mb-1">
-                Trending Transfer Talk
+                Hot Topics - Nu Besproken
               </h2>
               <p className="text-muted-foreground">
                 De meest besproken transfers van dit moment
@@ -229,10 +227,10 @@ export default async function HomePage() {
               <CardContent className="py-12 text-center">
                 <Flame className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">
-                  Nog geen Transfer Talk
+                  Nog geen geruchten?
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Wees de eerste om een gerucht te delen!
+                  Jij kan het eerste gerucht delen
                 </p>
                 <Link href="/geruchten/nieuw">
                   <Button className="bg-primary text-primary-foreground">
@@ -253,9 +251,7 @@ export default async function HomePage() {
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h2 className="text-2xl font-bold mb-1">Laatste Transfers</h2>
-                  <p className="text-muted-foreground">
-                    Recent bevestigde transfers
-                  </p>
+                  <p className="text-muted-foreground">Dit seizoen bevestigd</p>
                 </div>
                 <Link href="/transfers">
                   <Button
@@ -363,12 +359,12 @@ export default async function HomePage() {
       <section className="py-20 border-t border-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4 text-balance">
-            Word onderdeel van de Belgische volleybal community
+            Doe mee. Verdien Vertrouwen. Groei je Reputatie.
           </h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            Registreer gratis en krijg toegang tot alle features. Deel Transfer
-            Talk, stem op transfers en bouw je reputatie op als betrouwbare
-            bron.
+            Sluit aan bij duizenden volleybal fans. Deel insider info, stem op
+            transfers, en verdien punten voor betrouwbare tips. Hoe meer je
+            deelt, hoe meer je reputatie groeit.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/auth/sign-up">

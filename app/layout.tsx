@@ -18,19 +18,14 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
+        url: "/favicon.svg",
         type: "image/svg+xml",
       },
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+      },
     ],
-    apple: "/apple-icon.png",
   },
 };
 
@@ -41,6 +36,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl">
+      <head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.svg" />
+      </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">{children}</main>

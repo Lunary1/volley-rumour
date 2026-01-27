@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, X, Flame, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import Image from "next/image";
 import { UserMenu } from "@/components/user-menu";
 
 interface NavItem {
@@ -50,19 +51,20 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-neon-cyan/20 dark:border-neon-cyan/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-gradient-to-r dark:from-background dark:via-background/90 dark:to-background"
+      className="sticky top-0 z-50 border-b border-green-500/20 dark:border-green-500/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-gradient-to-r dark:from-background dark:via-background/90 dark:to-background"
       suppressHydrationWarning
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Main Header */}
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neon-magenta/80 dark:bg-neon-magenta dark:glow-magenta shadow-lg">
-              <Flame className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-neon-coral to-neon-magenta dark:from-neon-coral dark:to-neon-magenta bg-clip-text text-transparent">
-              VolleyRumours
-            </span>
+            <Image
+              src="/logo-text.svg"
+              alt="VolleyRumours"
+              width={320}
+              height={48}
+              className="h-8 w-auto"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
@@ -74,8 +76,8 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
                     href={item.href || "#"}
                     className={`px-4 py-2 text-sm font-medium transition-all flex items-center gap-1 rounded-md ${
                       isActive
-                        ? "text-foreground dark:bg-neon-magenta/20 dark:border dark:border-neon-magenta/50 bg-muted"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:text-neon-magenta dark:hover:bg-neon-magenta/10"
+                        ? "text-foreground dark:bg-green-500/20 dark:border dark:border-green-500/50 bg-muted"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:text-green-400 dark:hover:bg-green-500/10"
                     }`}
                   >
                     {item.label}
@@ -86,7 +88,7 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
 
                   {/* Dropdown Menu */}
                   {item.submenu && (
-                    <div className="absolute left-0 mt-0 w-48 bg-background border border-neon-cyan/30 dark:border-neon-cyan/50 rounded-md shadow-lg dark:shadow-[0_0_20px_rgba(178,190,255,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="absolute left-0 mt-0 w-48 bg-background border border-green-500/30 dark:border-green-500/50 rounded-md shadow-lg dark:shadow-[0_0_20px_rgba(17,173,50,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       {item.submenu.map((sub) => (
                         <Link
                           key={sub.href}

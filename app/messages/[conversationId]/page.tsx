@@ -110,7 +110,7 @@ export default async function ConversationPage({
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-border bg-card flex-shrink-0">
+      <div className="border-b border-border bg-card shrink-0">
         <div className="px-4 py-3 max-w-2xl mx-auto w-full">
           <Link href="/messages" className="inline-block mb-3">
             <Button variant="ghost" size="sm">

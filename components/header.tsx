@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Menu, X, Flame } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { UserMenu } from "@/components/user-menu";
 import { getCurrentUser } from "@/app/actions/auth";
 import { HeaderClient } from "@/components/header-client";
@@ -10,8 +10,8 @@ const navItems = [
     label: "Transfers",
     submenu: [
       { href: "/geruchten", label: "Transfer Talk" },
-      { href: "/transfers", label: "Confirmed" },
-      { href: "/leaderboard", label: "Leaderboard" },
+      { href: "/transfers", label: "Bevestigde Transfers" },
+      { href: "/leaderboard", label: "Top Bijdragers" },
     ],
   },
   { href: "/zoekertjes", label: "Zoekertjes" },
