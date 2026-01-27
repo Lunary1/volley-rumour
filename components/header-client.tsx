@@ -51,7 +51,7 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-green-500/20 dark:border-green-500/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-gradient-to-r dark:from-background dark:via-background/90 dark:to-background"
+      className="sticky top-0 z-50 border-b border-green-500/20 dark:border-green-500/30 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 dark:bg-linear-to-r dark:from-background dark:via-background/90 dark:to-background"
       suppressHydrationWarning
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Header } from "@/components/header";
+import { HeaderSkeleton } from "@/components/header-skeleton";
 import { Footer } from "@/components/footer";
 import { ToasterProvider } from "@/components/toaster-provider";
 
@@ -41,7 +42,9 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.svg" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
-        <Header />
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
         <main className="flex-1">{children}</main>
         <Footer />
         <Analytics />

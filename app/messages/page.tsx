@@ -7,7 +7,10 @@ import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getConversations } from "@/app/actions/messages";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
 
 interface ConversationPreview {
   id: string;
@@ -25,6 +28,16 @@ interface ConversationPreview {
   unread_count: number;
   last_message_is_from_me: boolean;
 }
+
+// Helper to generate initials from name
+const getInitials = (name: string): string => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 export default function MessagesPage() {
   const router = useRouter();
@@ -55,101 +68,136 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background px-4 py-6">
-        <div className="max-w-2xl mx-auto h-screen flex flex-col">
-          <h1 className="text-2xl font-bold mb-6 text-foreground">Berichten</h1>
-          <div className="space-y-2 flex-1">
+      <main className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+          <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <Card key={i} className="p-4 h-16 bg-muted animate-pulse" />
+              <Card
+                key={i}
+                className="h-24 border-l-4 border-l-primary/20 bg-muted/50 animate-pulse"
+              />
             ))}
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background px-4 py-6">
-        <div className="max-w-2xl mx-auto h-screen flex flex-col">
-          <h1 className="text-2xl font-bold mb-6 text-foreground">Berichten</h1>
-          <Card className="p-6 border-destructive/50 bg-destructive/5">
-            <p className="text-destructive">{error}</p>
+      <main className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+          <Card className="border-l-4 border-l-destructive/50 p-6">
+            <p className="text-sm text-muted-foreground">{error}</p>
           </Card>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (conversations.length === 0) {
     return (
-      <div className="min-h-screen bg-background px-4 py-6">
-        <div className="max-w-2xl mx-auto h-screen flex flex-col">
-          <h1 className="text-2xl font-bold mb-6 text-foreground">Berichten</h1>
-          <Card className="p-12 text-center bg-card flex-1 flex items-center justify-center">
-            <div>
-              <p className="text-muted-foreground mb-4">
-                Je hebt nog geen berichten.
-              </p>
-              <Link
-                href="/transfers"
-                className="text-primary hover:text-primary/90 font-medium"
-              >
-                Naar Transfer Talk →
+      <main className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+          <Card className="border-l-4 border-l-border/30 p-12 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <MessageCircle className="h-12 w-12 text-muted-foreground/50" />
+              <div>
+                <p className="font-medium text-foreground mb-2">
+                  Geen gesprekken
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Je hebt nog geen actieve berichten. Zoek naar spelers, teams
+                  of geruchten om een gesprek te starten!
+                </p>
+              </div>
+              <Link href="/geruchten" className="mt-2">
+                <Button size="sm" variant="outline">
+                  Bekijk geruchten
+                </Button>
               </Link>
             </div>
           </Card>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-6">
-      <div className="max-w-2xl mx-auto h-screen flex flex-col">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Berichten</h1>
-        </div>
+    <main className="min-h-screen bg-background p-4 md:p-8">
+      <div className="mx-auto max-w-3xl">
+        <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+        <Card className="overflow-hidden">
+          <div className="divide-y divide-border/50">
+            {conversations.map((conversation) => (
+              <Link
+                key={conversation.id}
+                href={`/messages/${conversation.id}`}
+                className="block transition-colors duration-150 hover:bg-muted/60"
+              >
+                <div className="border-l-4 border-l-primary/30 p-4 transition-all duration-200 hover:border-l-primary/70">
+                  <div className="flex items-start gap-4">
+                    {/* Avatar */}
+                    <Avatar className="h-12 w-12 shrink-0">
+                      {conversation.other_user_avatar_url ? (
+                        <img
+                          src={conversation.other_user_avatar_url}
+                          alt={conversation.other_user_name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+                          {getInitials(conversation.other_user_name)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
 
-        <div className="space-y-2 flex-1 overflow-y-auto">
-          {conversations.map((conv) => (
-            <Link
-              key={conv.id}
-              href={`/messages/${conv.id}`}
-              className="block group"
-            >
-              <Card className="p-3 hover:bg-muted/50 transition-all cursor-pointer border-0 shadow-none hover:shadow-sm rounded-lg">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    {/* Ad Title */}
-                    <h2 className="font-medium text-foreground truncate text-sm group-hover:text-primary transition-colors">
-                      {conv.other_user_name}
-                    </h2>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h3
+                          className={`font-semibold text-sm ${
+                            conversation.unread_count > 0
+                              ? "text-foreground font-bold"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {conversation.other_user_name}
+                        </h3>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDistanceToNow(
+                            new Date(
+                              conversation.last_message_at || new Date(),
+                            ),
+                            { locale: nl, addSuffix: false },
+                          )}
+                        </span>
+                      </div>
 
-                    {/* Last message */}
-                    <p className="text-xs text-muted-foreground truncate mt-1">
-                      {conv.last_message_is_from_me
-                        ? "Jij: "
-                        : `${conv.other_user_name}: `}
-                      {conv.last_message || "Geen berichten nog"}
-                    </p>
+                      {/* Message preview */}
+                      <p
+                        className={`truncate text-sm mb-2 ${
+                          conversation.unread_count > 0
+                            ? "text-foreground font-medium"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {conversation.last_message_is_from_me ? (
+                          <span className="text-muted-foreground">Jij: </span>
+                        ) : null}
+                        {conversation.last_message || "Nog geen berichten"}
+                      </p>
+                    </div>
                   </div>
-
-                  {/* Timestamp */}
-                  {conv.last_message_at && (
-                    <p className="text-xs text-muted-foreground/60 whitespace-nowrap">
-                      {formatDistanceToNow(new Date(conv.last_message_at), {
-                        addSuffix: false,
-                        locale: nl,
-                      }) + " geleden"}
-                    </p>
-                  )}
                 </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        </Card>
       </div>
-    </div>
+    </main>
   );
 }

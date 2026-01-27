@@ -6,6 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
 
+// Cache transfer talk for 60 seconds - frequent updates
+export const revalidate = 60;
+
 async function getRumours(status?: string) {
   const supabase = await createClient();
   let query = supabase
@@ -36,16 +39,13 @@ export default async function GeruchtenPage(props: {
   const searchParams = await props.searchParams;
   const status = searchParams?.status;
 
-  const allRumours = await getRumours();
-  const filteredRumours = status
-    ? allRumours.filter((r) => r.status === status)
-    : allRumours;
+  // Fetch only the rumours we need based on status filter
+  const allRumours = await getRumours(status);
+  const pendingRumours = await getRumours("rumour");
+  const confirmedRumours = await getRumours("confirmed");
+  const deniedRumours = await getRumours("denied");
 
-  const pendingRumours = allRumours.filter((r) => r.status === "rumour");
-  const confirmedRumours = allRumours.filter((r) => r.status === "confirmed");
-  const deniedRumours = allRumours.filter((r) => r.status === "denied");
-
-  const displayRumours = filteredRumours;
+  const displayRumours = allRumours;
   const displayCount = displayRumours.length;
 
   return (

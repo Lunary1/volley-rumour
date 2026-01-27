@@ -47,10 +47,10 @@ interface ClassifiedsListProps {
 }
 
 const classifiedTypeLabels: Record<string, string> = {
-  player_seeks_team: "Speler zoekt club",
-  team_seeks_player: "Club zoekt speler",
-  trainer_seeks_team: "Trainer zoekt club",
-  team_seeks_trainer: "Club zoekt trainer",
+  player_seeks_team: "Speler zoekt team",
+  team_seeks_player: "Team zoekt speler",
+  trainer_seeks_team: "Trainer zoekt team",
+  team_seeks_trainer: "Team zoekt trainer",
 };
 
 const classifiedTypeColors: Record<string, string> = {
@@ -227,10 +227,10 @@ export function ClassifiedsList({
                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               >
                 <option value="">Alle typen</option>
-                <option value="player_seeks_team">Speler zoekt club</option>
-                <option value="team_seeks_player">Club zoekt speler</option>
-                <option value="trainer_seeks_team">Trainer zoekt club</option>
-                <option value="team_seeks_trainer">Club zoekt trainer</option>
+                <option value="player_seeks_team">Speler zoekt team</option>
+                <option value="team_seeks_player">Team zoekt speler</option>
+                <option value="trainer_seeks_team">Trainer zoekt team</option>
+                <option value="team_seeks_trainer">Team zoekt trainer</option>
               </select>
             </div>
 

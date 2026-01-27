@@ -30,10 +30,10 @@ interface ClassifiedCardInteractiveProps {
 }
 
 const classifiedTypeLabels: Record<string, string> = {
-  player_seeks_team: "Speler zoekt club",
-  team_seeks_player: "Club zoekt speler",
-  trainer_seeks_team: "Trainer zoekt club",
-  team_seeks_trainer: "Club zoekt trainer",
+  player_seeks_team: "Speler zoekt team",
+  team_seeks_player: "Team zoekt speler",
+  trainer_seeks_team: "Trainer zoekt team",
+  team_seeks_trainer: "Team zoekt trainer",
 };
 
 const classifiedTypeColors: Record<string, string> = {

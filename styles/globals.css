@@ -227,7 +227,7 @@
 }
 
 .gradient-text-neon {
-  @apply bg-gradient-to-r from-neon-coral via-neon-magenta to-neon-cyan bg-clip-text text-transparent dark:from-neon-coral dark:via-neon-magenta dark:to-neon-cyan font-bold;
+  @apply bg-linear-to-r from-neon-coral via-neon-magenta to-neon-cyan bg-clip-text text-transparent dark:from-neon-coral dark:via-neon-magenta dark:to-neon-cyan font-bold;
 }
 
 .featured-item-glow {

@@ -11,7 +11,7 @@ const navItems = [
     submenu: [
       { href: "/geruchten", label: "Transfer Talk" },
       { href: "/transfers", label: "Bevestigde Transfers" },
-      { href: "/leaderboard", label: "Top Bijdragers" },
+      { href: "/leaderboard", label: "Leaderboard" },
     ],
   },
   { href: "/zoekertjes", label: "Zoekertjes" },

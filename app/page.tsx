@@ -6,6 +6,9 @@ import { LeaderboardCard } from "@/components/leaderboard-card";
 import { ClassifiedsList } from "@/components/classifieds-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+
+// Cache homepage for 60 seconds - revalidates frequently due to new content
+export const revalidate = 60;
 import {
   TrendingUp,
   Users,
@@ -131,7 +134,7 @@ export default async function HomePage() {
               <Link href="/geruchten/nieuw">
                 <Button
                   size="lg"
-                  className="gradient-text-neon bg-gradient-to-b from-neon-magenta/40 to-neon-coral/40 hover:from-neon-magenta/50 hover:to-neon-coral/50 border border-neon-magenta/50 dark:border-neon-magenta/70 dark:shadow-[0_0_20px_rgba(216,180,254,0.2)] dark:hover:shadow-[0_0_30px_rgba(216,180,254,0.4)] text-white dark:text-white"
+                  className="gradient-text-neon bg-linear-to-b from-neon-magenta/40 to-neon-coral/40 hover:from-neon-magenta/50 hover:to-neon-coral/50 border border-neon-magenta/50 dark:border-neon-magenta/70 dark:shadow-[0_0_20px_rgba(216,180,254,0.2)] dark:hover:shadow-[0_0_30px_rgba(216,180,254,0.4)] text-white dark:text-white"
                 >
                   <Plus className="mr-2 h-5 w-5" />
                   Gerucht Delen
@@ -168,12 +171,12 @@ export default async function HomePage() {
               },
               {
                 icon: Users,
-                label: "Speelersmarkt",
+                label: "Spelersmarkt",
                 value: latestClassifieds.length.toString(),
               },
               {
                 icon: Trophy,
-                label: "Vertrouwde Bronnen",
+                label: "Gebruikers op Leaderboard",
                 value: topContributors.length.toString(),
               },
             ].map((stat) => (

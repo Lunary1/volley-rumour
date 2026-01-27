@@ -10,11 +10,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, TrendingUp, Star } from "lucide-react";
 
+// Cache leaderboard for 300 seconds (5 minutes) - changes less frequently than rumors/transfers
+export const revalidate = 300;
+
 async function getLeaderboard() {
   const supabase = await createClient();
+  // Select only needed columns to reduce payload size
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select("id, username, trust_score, avatar_url")
     .order("trust_score", { ascending: false })
     .limit(50);
 

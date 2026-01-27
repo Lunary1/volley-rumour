@@ -6,6 +6,9 @@ import Link from "next/link";
 import { ArrowRight, UserPlus, UserMinus, Users } from "lucide-react";
 import { getCurrentUser } from "@/app/actions/auth";
 
+// Cache transfers for 60 seconds - moderately frequent updates
+export const revalidate = 60;
+
 async function getTransfers(type?: string) {
   const supabase = await createClient();
   let query = supabase

@@ -224,7 +224,7 @@ export function ChatInterface({
                 className={`flex gap-2 ${isFromMe ? "justify-end" : "justify-start"}`}
               >
                 {!isFromMe && (
-                  <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+                  <Avatar className="h-8 w-8 shrink-0 mt-1">
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                       {initials}
                     </AvatarFallback>
@@ -237,7 +237,7 @@ export function ChatInterface({
                       : "bg-card border border-border text-foreground rounded-bl-none shadow-sm"
                   }`}
                 >
-                  <p className="break-words">{msg.content}</p>
+                  <p className="wrap-break-word">{msg.content}</p>
                   <p
                     className={`text-xs mt-1 ${
                       isFromMe
@@ -252,7 +252,7 @@ export function ChatInterface({
                   </p>
                 </div>
                 {isFromMe && (
-                  <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+                  <Avatar className="h-8 w-8 shrink-0 mt-1">
                     <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold">
                       {initials}
                     </AvatarFallback>
