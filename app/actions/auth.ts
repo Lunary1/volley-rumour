@@ -31,7 +31,7 @@ export async function login(email: string, password: string) {
 export async function getCurrentUser() {
   // Use request-level cache to avoid duplicate queries within same render
   const cacheKey = "current-user";
-  
+
   if (userCache.has(cacheKey)) {
     return userCache.get(cacheKey);
   }

@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Info } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -50,11 +50,20 @@ const GENDERS = [
   { value: "female", label: "Vrouw" },
 ];
 
+const RUMOUR_CATEGORIES = [
+  { value: "transfer", label: "Transfer Speler/Speelster" },
+  { value: "trainer_transfer", label: "Transfer Trainer" },
+  { value: "player_retirement", label: "Speler Stopt" },
+  { value: "trainer_retirement", label: "Trainer Stopt" },
+];
+
 export default function NewRumourPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [descriptionLength, setDescriptionLength] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   useEffect(() => {
     const checkUser = async () => {
@@ -87,6 +96,14 @@ export default function NewRumourPage() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+
+    // Validate category is selected
+    if (!selectedCategory) {
+      setError("Selecteer alstublieft een soort gerucht");
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
 
     const {
@@ -104,7 +121,7 @@ export default function NewRumourPage() {
       from_club_name: formData.get("currentTeam") as string,
       to_club_name: formData.get("newClub") as string,
       description: (formData.get("description") as string) || null,
-      category: "transfer",
+      category: selectedCategory,
       creator_id: authUser.id,
     };
 
@@ -158,12 +175,55 @@ export default function NewRumourPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Help Callout */}
+            <div className="mb-6 p-4 rounded-lg bg-neon-cyan/10 dark:bg-neon-cyan/5 border border-neon-cyan/30 dark:border-neon-cyan/20 flex gap-3">
+              <Info className="h-5 w-5 text-neon-cyan flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-muted-foreground">
+                <p className="font-medium text-foreground mb-1">
+                  💡 Hoe werkt het?
+                </p>
+                <p>
+                  Bevestigde transfers geven je <strong>+5 punten</strong>. Hoe
+                  meer je tip opvalt, hoe hoger je op de leaderboard!
+                </p>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-8">
               {error && (
                 <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20">
                   {error}
                 </div>
               )}
+
+              {/* Rumour Category Section */}
+              <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border dark:border-neon-cyan/10">
+                <div className="space-y-2">
+                  <Label htmlFor="category">
+                    Soort Gerucht <span className="text-neon-coral">*</span>
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Selecteer wat voor type gerucht dit is
+                  </p>
+                  <Select
+                    name="category"
+                    required
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
+                  >
+                    <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                      <SelectValue placeholder="Selecteer categorieën" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RUMOUR_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               {/* Player/Athlete Data Section */}
               <div className="space-y-4">
@@ -176,12 +236,17 @@ export default function NewRumourPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="playerLastName">
-                      Naam <span className="text-neon-coral">*</span>
+                      Achternaam <span className="text-neon-coral">*</span>
                     </Label>
+                    <p className="text-xs text-muted-foreground">
+                      De voornaam van de speler
+                    </p>
                     <Input
                       id="playerLastName"
                       name="playerLastName"
                       placeholder="Bijv. Janssen"
+                      minLength={2}
+                      maxLength={100}
                       required
                       className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
                     />
@@ -190,10 +255,15 @@ export default function NewRumourPage() {
                     <Label htmlFor="playerFirstName">
                       Voornaam <span className="text-neon-coral">*</span>
                     </Label>
+                    <p className="text-xs text-muted-foreground">
+                      De achternaam van de speler
+                    </p>
                     <Input
                       id="playerFirstName"
                       name="playerFirstName"
                       placeholder="Bijv. Jan"
+                      minLength={2}
+                      maxLength={100}
                       required
                       className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
                     />
@@ -205,6 +275,9 @@ export default function NewRumourPage() {
                     <Label htmlFor="gender">
                       Geslacht <span className="text-neon-coral">*</span>
                     </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Man of vrouw
+                    </p>
                     <Select name="gender" required>
                       <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
                         <SelectValue placeholder="Selecteer geslacht" />
@@ -220,8 +293,11 @@ export default function NewRumourPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="currentTeam">
-                      Huidig Team <span className="text-neon-coral">*</span>
+                      Huidige Club <span className="text-neon-coral">*</span>
                     </Label>
+                    <p className="text-xs text-muted-foreground">
+                      De club waar de speler momenteel speelt
+                    </p>
                     <Input
                       id="currentTeam"
                       name="currentTeam"
@@ -233,7 +309,13 @@ export default function NewRumourPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="currentDivision">Niveau (Huidig)</Label>
+                  <Label htmlFor="currentDivision">
+                    Huidig Niveau{" "}
+                    <span className="text-muted-foreground">(optioneel)</span>
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Het competitieniveau van de huidige club
+                  </p>
                   <Select name="currentDivision">
                     <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
                       <SelectValue placeholder="Selecteer niveau" />
@@ -260,8 +342,11 @@ export default function NewRumourPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="newClub">
-                      Clubnaam <span className="text-neon-coral">*</span>
+                      Doelclub <span className="text-neon-coral">*</span>
                     </Label>
+                    <p className="text-xs text-muted-foreground">
+                      De club waar de speler naartoe gaat
+                    </p>
                     <Input
                       id="newClub"
                       name="newClub"
@@ -272,8 +357,11 @@ export default function NewRumourPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="newDivision">
-                      Niveau <span className="text-neon-coral">*</span>
+                      Doelniveau <span className="text-neon-coral">*</span>
                     </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Het competitieniveau van de doelclub
+                    </p>
                     <Select name="newDivision" required>
                       <SelectTrigger className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
                         <SelectValue placeholder="Selecteer niveau" />
@@ -297,15 +385,29 @@ export default function NewRumourPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="description">
-                    Extra informatie (optioneel)
+                    Extra informatie
+                    <span className="text-muted-foreground"> (optioneel)</span>
                   </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Voeg aanvullende details toe die je tip sterker maken —
+                    bronnen, geruchten, etc. Minimum 10 tekens, maximum 2000.
+                  </p>
                   <Textarea
                     id="description"
                     name="description"
-                    placeholder="Deel meer details over dit gerucht..."
+                    placeholder="Deel meer details over dit gerucht. Voeg bronnen of context toe..."
                     rows={4}
+                    minLength={10}
+                    maxLength={2000}
+                    onChange={(e) =>
+                      setDescriptionLength(e.currentTarget.value.length)
+                    }
                     className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
                   />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span></span>
+                    <span>{descriptionLength} / 2000 tekens</span>
+                  </div>
                 </div>
               </div>
 
