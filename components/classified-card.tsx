@@ -35,11 +35,15 @@ const classifiedTypeColors: Record<string, string> = {
 };
 
 export function ClassifiedCard({ classified }: ClassifiedCardProps) {
-  const isFeatured = classified.featured_until && new Date(classified.featured_until) > new Date();
+  const isFeatured =
+    classified.featured_until &&
+    new Date(classified.featured_until) > new Date();
   return (
-    <Card className={`bg-card border-border dark:border-neon-magenta/30 hover:dark:border-neon-magenta/60 transition-all dark:hover:shadow-[0_0_20px_rgba(216,180,254,0.15)] ${
-      isFeatured ? "featured-item-glow" : ""
-    }`}>
+    <Card
+      className={`bg-card border-border dark:border-neon-magenta/30 hover:dark:border-neon-magenta/60 transition-all dark:hover:shadow-[0_0_20px_rgba(216,180,254,0.15)] ${
+        isFeatured ? "featured-item-glow" : ""
+      }`}
+    >
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <Badge

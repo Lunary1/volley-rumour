@@ -3,7 +3,11 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { createRumourSchema } from "@/lib/schemas";
-import { successResponse, errorResponse, extractErrorMessage } from "@/lib/response";
+import {
+  successResponse,
+  errorResponse,
+  extractErrorMessage,
+} from "@/lib/response";
 
 export async function createRumour(formData: FormData) {
   const supabase = await createClient();
@@ -24,14 +28,17 @@ export async function createRumour(formData: FormData) {
   });
 
   if (!validationResult.success) {
-    const errors = validationResult.error.errors.map((e) => e.message).join("; ");
+    const errors = validationResult.error.errors
+      .map((e) => e.message)
+      .join("; ");
     return errorResponse(errors);
   }
 
   const rumourData = {
     creator_id: user.id,
     player_name: (formData.get("player_name") as string).trim(),
-    from_club_name: ((formData.get("from_club") as string) || "").trim() || null,
+    from_club_name:
+      ((formData.get("from_club") as string) || "").trim() || null,
     to_club_name: (formData.get("to_club") as string).trim(),
     category: validationResult.data.category,
     description: (formData.get("description") as string).trim() || null,
@@ -40,7 +47,10 @@ export async function createRumour(formData: FormData) {
   const { error } = await supabase.from("rumours").insert(rumourData);
 
   if (error) {
-    const message = extractErrorMessage(error, "Er ging iets mis bij het aanmaken van het gerucht");
+    const message = extractErrorMessage(
+      error,
+      "Er ging iets mis bij het aanmaken van het gerucht",
+    );
     return errorResponse(message);
   }
 
@@ -97,7 +107,10 @@ export async function confirmRumour(rumourId: string) {
   });
 
   if (transferError) {
-    const message = extractErrorMessage(transferError, "Fout bij bevestiging van transfer");
+    const message = extractErrorMessage(
+      transferError,
+      "Fout bij bevestiging van transfer",
+    );
     return errorResponse(message);
   }
 

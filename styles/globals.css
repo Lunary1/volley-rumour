@@ -157,7 +157,8 @@
 }
 
 @keyframes glow-flicker {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     filter: drop-shadow(0 0 8px rgba(178, 190, 255, 0.6));
   }

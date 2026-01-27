@@ -3,7 +3,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sendMessageSchema } from "@/lib/schemas";
-import { successResponse, errorResponse, extractErrorMessage } from "@/lib/response";
+import {
+  successResponse,
+  errorResponse,
+  extractErrorMessage,
+} from "@/lib/response";
 
 export interface Conversation {
   id: string;
@@ -137,7 +141,10 @@ export async function createConversation(
       .single();
 
     if (error) {
-      const message = extractErrorMessage(error, "Fout bij aanmaken van conversatie");
+      const message = extractErrorMessage(
+        error,
+        "Fout bij aanmaken van conversatie",
+      );
       return errorResponse(message);
     }
 
@@ -186,7 +193,9 @@ export async function sendMessage(
   });
 
   if (!validationResult.success) {
-    const errors = validationResult.error.errors.map((e) => e.message).join("; ");
+    const errors = validationResult.error.errors
+      .map((e) => e.message)
+      .join("; ");
     return errorResponse(errors);
   }
 
