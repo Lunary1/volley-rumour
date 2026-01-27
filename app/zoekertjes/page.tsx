@@ -16,11 +16,15 @@ async function getClassifieds() {
       type,
       description,
       province,
+      position,
+      team_name,
+      contact_name,
+      division,
       created_at,
       user_id,
       is_featured,
       featured_until,
-      author:profiles!classifieds_user_id_fkey(id, username)
+      profiles(username)
     `,
     )
     .eq("is_active", true)

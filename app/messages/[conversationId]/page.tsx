@@ -35,11 +35,11 @@ export default async function ConversationPage({
 
   if (convError || !conversation) {
     return (
-      <div className="min-h-screen bg-background px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-background px-4 py-6 flex items-start">
+        <div className="w-full max-w-2xl mx-auto pt-4">
           <Link href="/messages">
-            <Button variant="ghost" className="mb-4">
-              ← Terug naar berichten
+            <Button variant="ghost" size="sm" className="mb-4">
+              ← Terug
             </Button>
           </Link>
           <Card className="p-6 border-destructive/50 bg-destructive/5">
@@ -81,11 +81,11 @@ export default async function ConversationPage({
 
   if (!otherUserData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-background px-4 py-6 flex items-start">
+        <div className="w-full max-w-2xl mx-auto pt-4">
           <Link href="/messages">
-            <Button variant="ghost" className="mb-4">
-              ← Terug naar berichten
+            <Button variant="ghost" size="sm" className="mb-4">
+              ← Terug
             </Button>
           </Link>
           <Card className="p-6 border-red-200 bg-red-50">
@@ -111,18 +111,18 @@ export default async function ConversationPage({
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-border bg-card flex-shrink-0">
-        <div className="px-4 py-4">
-          <Link href="/messages" className="inline-block mb-4">
+        <div className="px-4 py-3 max-w-2xl mx-auto w-full">
+          <Link href="/messages" className="inline-block mb-3">
             <Button variant="ghost" size="sm">
-              ← Terug naar berichten
+              ← Terug
             </Button>
           </Link>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground mb-1">
+              <h1 className="text-lg font-semibold text-foreground mb-1">
                 {adData?.title || "Gesprek"}
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Met {otherUserData?.username}
               </p>
             </div>
@@ -134,24 +134,28 @@ export default async function ConversationPage({
       <div className="flex-1 overflow-hidden flex flex-col">
         {isBlocked ? (
           <div className="flex-1 flex items-center justify-center p-4">
-            <Card className="p-6 border-destructive/50 bg-destructive/5 text-center">
+            <Card className="p-6 border-destructive/50 bg-destructive/5 text-center max-w-2xl">
               <p className="text-destructive mb-4">
                 Deze conversatie is geblokkeerd.
               </p>
               <Link href="/messages">
-                <Button variant="outline">Terug naar berichten</Button>
+                <Button variant="outline" size="sm">
+                  Terug naar berichten
+                </Button>
               </Link>
             </Card>
           </div>
         ) : (
-          <ChatInterface
-            conversationId={conversationId}
-            currentUserId={user.id}
-            otherUserName={otherUserData?.username || "Gebruiker"}
-            currentUserName={user.username}
-            otherUserAvatar={otherUserData?.avatar_url}
-            currentUserAvatar={user.avatar_url}
-          />
+          <div className="flex-1 overflow-hidden flex flex-col max-w-2xl mx-auto w-full">
+            <ChatInterface
+              conversationId={conversationId}
+              currentUserId={user.id}
+              otherUserName={otherUserData?.username || "Gebruiker"}
+              currentUserName={user.username}
+              otherUserAvatar={otherUserData?.avatar_url}
+              currentUserAvatar={user.avatar_url}
+            />
+          </div>
         )}
       </div>
     </div>

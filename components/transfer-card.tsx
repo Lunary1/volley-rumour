@@ -42,7 +42,7 @@ export function TransferCard({ transfer }: TransferCardProps) {
   const typeLabel = transferTypeLabels[transfer.transfer_type] || "Onbekend";
 
   return (
-    <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+    <Card className="bg-card border-border dark:border-neon-coral/30 hover:dark:border-neon-coral/60 transition-all dark:hover:shadow-[0_0_20px_rgba(255,127,80,0.15)]">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3 mb-3">
           <Badge variant="outline" className={typeColor}>
@@ -72,7 +72,7 @@ export function TransferCard({ transfer }: TransferCardProps) {
                   <span className="text-muted-foreground">
                     {transfer.from_club}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-primary flex-shrink-0" />
+                  <ArrowRight className="h-4 w-4 text-primary shrink-0" />
                 </>
               ) : (
                 <span className="text-muted-foreground italic">Nieuw</span>

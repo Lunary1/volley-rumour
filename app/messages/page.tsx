@@ -55,12 +55,12 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-foreground">Berichten</h1>
-          <div className="space-y-3">
+      <div className="min-h-screen bg-background px-4 py-6">
+        <div className="max-w-2xl mx-auto h-screen flex flex-col">
+          <h1 className="text-2xl font-bold mb-6 text-foreground">Berichten</h1>
+          <div className="space-y-2 flex-1">
             {[...Array(3)].map((_, i) => (
-              <Card key={i} className="p-4 h-20 bg-muted animate-pulse" />
+              <Card key={i} className="p-4 h-16 bg-muted animate-pulse" />
             ))}
           </div>
         </div>
@@ -70,9 +70,9 @@ export default function MessagesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-foreground">Berichten</h1>
+      <div className="min-h-screen bg-background px-4 py-6">
+        <div className="max-w-2xl mx-auto h-screen flex flex-col">
+          <h1 className="text-2xl font-bold mb-6 text-foreground">Berichten</h1>
           <Card className="p-6 border-destructive/50 bg-destructive/5">
             <p className="text-destructive">{error}</p>
           </Card>
@@ -83,19 +83,21 @@ export default function MessagesPage() {
 
   if (conversations.length === 0) {
     return (
-      <div className="min-h-screen bg-background px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-foreground">Berichten</h1>
-          <Card className="p-12 text-center bg-card">
-            <p className="text-muted-foreground mb-4">
-              Je hebt nog geen berichten.
-            </p>
-            <Link
-              href="/transfers"
-              className="text-primary hover:text-primary/90 font-medium"
-            >
-              Naar Transfer Talk →
-            </Link>
+      <div className="min-h-screen bg-background px-4 py-6">
+        <div className="max-w-2xl mx-auto h-screen flex flex-col">
+          <h1 className="text-2xl font-bold mb-6 text-foreground">Berichten</h1>
+          <Card className="p-12 text-center bg-card flex-1 flex items-center justify-center">
+            <div>
+              <p className="text-muted-foreground mb-4">
+                Je hebt nog geen berichten.
+              </p>
+              <Link
+                href="/transfers"
+                className="text-primary hover:text-primary/90 font-medium"
+              >
+                Naar Transfer Talk →
+              </Link>
+            </div>
           </Card>
         </div>
       </div>
@@ -103,48 +105,43 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Berichten</h1>
-          <p className="text-muted-foreground">Je actieve gesprekken</p>
+    <div className="min-h-screen bg-background px-4 py-6">
+      <div className="max-w-2xl mx-auto h-screen flex flex-col">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground">Berichten</h1>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 flex-1 overflow-y-auto">
           {conversations.map((conv) => (
             <Link
               key={conv.id}
               href={`/messages/${conv.id}`}
               className="block group"
             >
-              <Card className="p-4 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md">
-                <div className="flex items-start justify-between gap-4">
+              <Card className="p-3 hover:bg-muted/50 transition-all cursor-pointer border-0 shadow-none hover:shadow-sm rounded-lg">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     {/* Ad Title */}
-                    <h2 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                    <h2 className="font-medium text-foreground truncate text-sm group-hover:text-primary transition-colors">
                       {conv.ad_title}
                     </h2>
-                    {/* Initiator info */}
-                    <p className="text-xs text-muted-foreground mb-2 mt-1">
-                      Gestart door {conv.initiator_name}
-                    </p>
 
                     {/* Last message */}
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="text-xs text-muted-foreground truncate mt-1">
                       {conv.last_message_is_from_me ? "Jij: " : ""}
                       {conv.last_message || "Geen berichten nog"}
                     </p>
-
-                    {/* Timestamp */}
-                    {conv.last_message_at && (
-                      <p className="text-xs text-muted-foreground/70 mt-2">
-                        {formatDistanceToNow(new Date(conv.last_message_at), {
-                          addSuffix: true,
-                          locale: nl,
-                        })}
-                      </p>
-                    )}
                   </div>
+
+                  {/* Timestamp */}
+                  {conv.last_message_at && (
+                    <p className="text-xs text-muted-foreground/60 whitespace-nowrap">
+                      {formatDistanceToNow(new Date(conv.last_message_at), {
+                        addSuffix: false,
+                        locale: nl,
+                      })}
+                    </p>
+                  )}
                 </div>
               </Card>
             </Link>

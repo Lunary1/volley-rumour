@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/app/actions/auth";
 import { RumourCard } from "@/components/rumour-card";
 import { TransferCard } from "@/components/transfer-card";
 import { LeaderboardCard } from "@/components/leaderboard-card";
-import { ClassifiedCard } from "@/components/classified-card";
+import { ClassifiedsList } from "@/components/classifieds-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -60,8 +61,20 @@ async function getLatestClassifieds() {
     .from("classifieds")
     .select(
       `
-      *,
-      author:profiles(username)
+      id,
+      title,
+      type,
+      description,
+      province,
+      position,
+      team_name,
+      contact_name,
+      division,
+      created_at,
+      user_id,
+      is_featured,
+      featured_until,
+      profiles(username)
     `,
     )
     .eq("is_active", true)
@@ -72,34 +85,42 @@ async function getLatestClassifieds() {
 }
 
 export default async function HomePage() {
-  const [featuredRumours, latestTransfers, topContributors, latestClassifieds] =
-    await Promise.all([
-      getFeaturedRumours(),
-      getLatestTransfers(),
-      getTopContributors(),
-      getLatestClassifieds(),
-    ]);
+  const [
+    featuredRumours,
+    latestTransfers,
+    topContributors,
+    latestClassifieds,
+    user,
+  ] = await Promise.all([
+    getFeaturedRumours(),
+    getLatestTransfers(),
+    getTopContributors(),
+    getLatestClassifieds(),
+    getCurrentUser(),
+  ]);
 
   return (
     <div className="min-h-screen">
       <SpeedInsights />
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
+      {/* Hero Section with Cyberpunk Gradient */}
+      <section className="relative overflow-hidden border-b border-neon-cyan/30 gradient-cyber-hero">
+        <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_top,oklch(0.2_0.15_280)_0%,transparent_60%)]" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-                <Flame className="h-7 w-7 text-primary-foreground" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neon-magenta/80 dark:bg-neon-magenta dark:glow-magenta shadow-lg">
+                <Flame className="h-7 w-7 text-white" />
               </div>
-              <span className="text-sm font-medium text-primary">
+              <span className="text-sm font-medium text-neon-magenta dark:text-neon-magenta">
                 Community Driven
               </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-balance">
               De Belgische Volleybal{" "}
-              <span className="text-primary">Transfer Hub</span>
+              <span className="bg-gradient-to-r from-neon-coral via-neon-magenta to-neon-cyan bg-clip-text text-transparent dark:from-neon-coral dark:via-neon-magenta dark:to-neon-cyan">
+                Transfer Hub
+              </span>
             </h1>
 
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl leading-relaxed">
@@ -111,7 +132,7 @@ export default async function HomePage() {
               <Link href="/geruchten/nieuw">
                 <Button
                   size="lg"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="gradient-text-neon bg-gradient-to-b from-neon-magenta/40 to-neon-coral/40 hover:from-neon-magenta/50 hover:to-neon-coral/50 border border-neon-magenta/50 dark:border-neon-magenta/70 dark:shadow-[0_0_20px_rgba(216,180,254,0.2)] dark:hover:shadow-[0_0_30px_rgba(216,180,254,0.4)] text-white dark:text-white"
                 >
                   <Plus className="mr-2 h-5 w-5" />
                   Gerucht Delen
@@ -121,7 +142,7 @@ export default async function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="bg-transparent border-border hover:bg-muted"
+                  className="bg-transparent border-neon-cyan/50 dark:border-neon-cyan/70 hover:bg-neon-cyan/10 dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.2)] text-neon-cyan dark:text-neon-cyan"
                 >
                   Bekijk Transfer Talk
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -312,14 +333,10 @@ export default async function HomePage() {
           </div>
 
           {latestClassifieds.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {latestClassifieds.map((classified) => (
-                <ClassifiedCard
-                  key={classified.id}
-                  classified={classified as any}
-                />
-              ))}
-            </div>
+            <ClassifiedsList
+              classifieds={latestClassifieds as any}
+              currentUserId={user?.id}
+            />
           ) : (
             <Card className="bg-card border-border">
               <CardContent className="py-12 text-center">
@@ -354,7 +371,7 @@ export default async function HomePage() {
             bron.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/auth/register">
+            <Link href="/auth/sign-up">
               <Button
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90"

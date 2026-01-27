@@ -26,10 +26,69 @@ import {
 import { ArrowLeft, Send } from "lucide-react";
 import Link from "next/link";
 
+const POSITIONS = [
+  { value: "setter", label: "Setter" },
+  { value: "libero", label: "Libero" },
+  { value: "receptiehoek", label: "Receptie/hoek" },
+  { value: "middenaanvaller", label: "Middenaanvaller" },
+  { value: "opposite", label: "Opposite" },
+];
+
+const TRAINER_DIPLOMAS = [
+  { value: "initiator", label: "Initiator" },
+  { value: "instructeur", label: "Instructeur" },
+  { value: "trainer_c", label: "Trainer C" },
+  { value: "trainer_b", label: "Trainer B" },
+  { value: "trainer_a", label: "Trainer A" },
+];
+
+const DIVISIONS = [
+  { value: "liga_heren", label: "LIGA HEREN" },
+  { value: "liga_dames", label: "LIGA DAMES" },
+  { value: "nat1_heren", label: "Nationale 1 Heren" },
+  { value: "nat2_heren", label: "Nationale 2 Heren" },
+  { value: "nat3_heren", label: "Nationale 3 Heren" },
+  { value: "nat1_dames", label: "Nationale 1 Dames" },
+  { value: "nat2_dames", label: "Nationale 2 Dames" },
+  { value: "nat3_dames", label: "Nationale 3 Dames" },
+  { value: "promo1_heren", label: "PROMO 1 Heren" },
+  { value: "promo2_heren", label: "PROMO 2 Heren" },
+  { value: "promo3_heren", label: "PROMO 3 Heren" },
+  { value: "promo4_heren", label: "PROMO 4 Heren" },
+  { value: "promo1_dames", label: "PROMO 1 Dames" },
+  { value: "promo2_dames", label: "PROMO 2 Dames" },
+  { value: "promo3_dames", label: "PROMO 3 Dames" },
+  { value: "promo4_dames", label: "PROMO 4 Dames" },
+];
+
+const PROVINCES = [
+  { value: "antwerpen", label: "Antwerpen" },
+  { value: "limburg", label: "Limburg" },
+  { value: "oost_vlaanderen", label: "Oost-Vlaanderen" },
+  { value: "vlaams_brabant", label: "Vlaams-Brabant" },
+  { value: "west_vlaanderen", label: "West-Vlaanderen" },
+  { value: "henegouwen", label: "Henegouwen" },
+  { value: "waals_brabant", label: "Waals-Brabant" },
+  { value: "namen", label: "Namen" },
+  { value: "luik", label: "Luik" },
+  { value: "luxemburg", label: "Luxemburg" },
+  { value: "frankrijk", label: "Frankrijk" },
+  { value: "zwitserland", label: "Zwitserland" },
+  { value: "turkije", label: "Turkije" },
+  { value: "nederland", label: "Nederland" },
+];
+
 export default function NewClassifiedPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  const isTrainerType =
+    selectedType === "trainer_seeks_team" ||
+    selectedType === "team_seeks_trainer";
+  const positionOptions = isTrainerType ? TRAINER_DIPLOMAS : POSITIONS;
+  const fieldLabel = isTrainerType ? "Diploma" : "Positie";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -100,7 +159,11 @@ export default function NewClassifiedPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="type">Type zoekertje</Label>
-              <Select name="type" required>
+              <Select
+                name="type"
+                required
+                onValueChange={(value) => setSelectedType(value)}
+              >
                 <SelectTrigger className="bg-input border-border text-foreground">
                   <SelectValue placeholder="Selecteer type" />
                 </SelectTrigger>
@@ -157,16 +220,24 @@ export default function NewClassifiedPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="position">Positie (optioneel)</Label>
-                <Input
-                  id="position"
-                  name="position"
-                  placeholder="bv. Setter, Libero"
-                  className="bg-input border-border text-foreground"
-                />
+                <Label htmlFor="position">{fieldLabel} (optioneel)</Label>
+                <Select name="position">
+                  <SelectTrigger className="bg-input border-border text-foreground w-full">
+                    <SelectValue
+                      placeholder={`Selecteer ${fieldLabel.toLowerCase()}`}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {positionOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="team_name">Club/Team (optioneel)</Label>
+                <Label htmlFor="team_name">Huidige Club/Team</Label>
                 <Input
                   id="team_name"
                   name="team_name"
@@ -178,22 +249,34 @@ export default function NewClassifiedPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="province">Provincie (optioneel)</Label>
-                <Input
-                  id="province"
-                  name="province"
-                  placeholder="bv. Oost-Vlaanderen"
-                  className="bg-input border-border text-foreground"
-                />
+                <Label htmlFor="province">Provincie</Label>
+                <Select name="province">
+                  <SelectTrigger className="bg-input border-border text-foreground w-full">
+                    <SelectValue placeholder="Selecteer provincie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PROVINCES.map((province) => (
+                      <SelectItem key={province.value} value={province.value}>
+                        {province.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="division">Divisie (optioneel)</Label>
-                <Input
-                  id="division"
-                  name="division"
-                  placeholder="bv. Liga A, Nationale 1"
-                  className="bg-input border-border text-foreground"
-                />
+                <Label htmlFor="division">Divisie</Label>
+                <Select name="division">
+                  <SelectTrigger className="bg-input border-border text-foreground w-full">
+                    <SelectValue placeholder="Selecteer divisie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIVISIONS.map((division) => (
+                      <SelectItem key={division.value} value={division.value}>
+                        {division.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

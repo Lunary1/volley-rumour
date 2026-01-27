@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { createConversation } from "@/app/actions/messages";
 
 interface ContactModalProps {
@@ -25,7 +26,6 @@ export function ContactModal({
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleStartConversation(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +33,6 @@ export function ContactModal({
 
     try {
       setSending(true);
-      setError(null);
 
       const result = await createConversation(adId, adType, userId, message);
 
@@ -42,11 +41,11 @@ export function ContactModal({
         router.push(`/messages/${result.data.conversationId}`);
         onClose();
       } else {
-        setError(result.error || "Kon conversatie niet starten");
+        toast.error(result.error);
       }
     } catch (err) {
       console.error("Error:", err);
-      setError("Er is een fout opgetreden");
+      toast.error("Er is een fout opgetreden");
     } finally {
       setSending(false);
     }
@@ -62,12 +61,6 @@ export function ContactModal({
           <p className="text-sm text-muted-foreground mb-4">
             Stuur je eerste bericht om een conversatie te starten.
           </p>
-
-          {error && (
-            <div className="mb-4 p-3 bg-destructive/5 border border-destructive/50 rounded-md">
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
-          )}
 
           <form onSubmit={handleStartConversation} className="space-y-4">
             <div>

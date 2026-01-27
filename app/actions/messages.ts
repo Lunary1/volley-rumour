@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sendMessageSchema } from "@/lib/schemas";
+import { successResponse, errorResponse, extractErrorMessage } from "@/lib/response";
 
 export interface Conversation {
   id: string;
@@ -50,11 +52,11 @@ export async function getExistingConversation(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { success: false, error: "Must be logged in" };
+    return errorResponse("Je moet ingelogd zijn");
   }
 
   if (user.id === recipientId) {
-    return { success: false, error: "Cannot message yourself" };
+    return errorResponse("Je kan jezelf geen bericht sturen");
   }
 
   // Check if conversation exists - bidirectional
@@ -68,10 +70,10 @@ export async function getExistingConversation(
     .single();
 
   if (existing) {
-    return { success: true, data: { conversationId: existing.id } };
+    return successResponse({ conversationId: existing.id });
   }
 
-  return { success: false, data: null };
+  return errorResponse("Geen conversatie gevonden");
 }
 
 /**
@@ -89,11 +91,11 @@ export async function createConversation(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { success: false, error: "Must be logged in" };
+    return errorResponse("Je moet ingelogd zijn");
   }
 
   if (user.id === recipientId) {
-    return { success: false, error: "Cannot message yourself" };
+    return errorResponse("Je kan jezelf geen bericht sturen");
   }
 
   // Check if user is blocked
@@ -105,7 +107,7 @@ export async function createConversation(
     .single();
 
   if (isBlocked) {
-    return { success: false, error: "User has blocked you" };
+    return errorResponse("Deze gebruiker heeft je geblokkeerd");
   }
 
   // Try to get existing conversation - check both directions
@@ -135,7 +137,8 @@ export async function createConversation(
       .single();
 
     if (error) {
-      return { success: false, error: error.message };
+      const message = extractErrorMessage(error, "Fout bij aanmaken van conversatie");
+      return errorResponse(message);
     }
 
     conversationId = newConversation.id;
@@ -150,12 +153,13 @@ export async function createConversation(
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      const message = extractErrorMessage(error, "Fout bij sturen van bericht");
+      return errorResponse(message);
     }
   }
 
   revalidatePath("/messages");
-  return { success: true, data: { conversationId } };
+  return successResponse({ conversationId });
 }
 
 /**
@@ -172,11 +176,18 @@ export async function sendMessage(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { success: false, error: "Must be logged in" };
+    return errorResponse("Je moet ingelogd zijn");
   }
 
-  if (!content.trim() && !contactShared) {
-    return { success: false, error: "Message cannot be empty" };
+  // Validate input
+  const validationResult = sendMessageSchema.safeParse({
+    conversationId,
+    content,
+  });
+
+  if (!validationResult.success) {
+    const errors = validationResult.error.errors.map((e) => e.message).join("; ");
+    return errorResponse(errors);
   }
 
   // Verify user is part of this conversation
@@ -188,7 +199,7 @@ export async function sendMessage(
     .single();
 
   if (!conversation) {
-    return { success: false, error: "Unauthorized" };
+    return errorResponse("Je hebt geen toegang tot deze conversatie");
   }
 
   const { data: message, error } = await supabase
@@ -196,14 +207,15 @@ export async function sendMessage(
     .insert({
       conversation_id: conversationId,
       sender_id: user.id,
-      content: content.trim(),
+      content: validationResult.data.content,
       contact_shared: contactShared || null,
     })
     .select()
     .single();
 
   if (error) {
-    return { success: false, error: error.message };
+    const msg = extractErrorMessage(error, "Fout bij sturen van bericht");
+    return errorResponse(msg);
   }
 
   // Update conversation updated_at
@@ -214,7 +226,7 @@ export async function sendMessage(
 
   revalidatePath(`/messages/${conversationId}`);
   revalidatePath("/messages");
-  return { success: true, message };
+  return successResponse(message);
 }
 
 /**

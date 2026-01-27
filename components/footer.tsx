@@ -64,7 +64,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="/auth/register"
+                  href="/auth/sign-up"
                   className="hover:text-foreground transition-colors"
                 >
                   Registreren

@@ -157,9 +157,7 @@ export default async function LeaderboardPage() {
                       index < 3 ? "bg-secondary/50" : "bg-background"
                     }`}
                   >
-                    <div className="flex-shrink-0 w-8">
-                      {getRankIcon(index + 1)}
-                    </div>
+                    <div className="shrink-0 w-8">{getRankIcon(index + 1)}</div>
                     <Avatar>
                       <AvatarFallback className="bg-primary/20 text-primary">
                         {(user.display_name ||

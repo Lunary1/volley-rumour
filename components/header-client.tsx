@@ -30,10 +30,18 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
   const activeMainItem = useMemo(() => {
     for (const item of navItems) {
       if (item.submenu) {
-        if (item.submenu.some((sub) => pathname.startsWith(sub.href))) {
+        if (
+          item.submenu.some(
+            (sub) =>
+              pathname === sub.href || pathname.startsWith(sub.href + "/"),
+          )
+        ) {
           return item;
         }
-      } else if (item.href && pathname.startsWith(item.href)) {
+      } else if (
+        item.href &&
+        (pathname === item.href || pathname.startsWith(item.href + "/"))
+      ) {
         return item;
       }
     }
@@ -42,17 +50,17 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-50 border-b border-neon-cyan/20 dark:border-neon-cyan/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-gradient-to-r dark:from-background dark:via-background/90 dark:to-background"
       suppressHydrationWarning
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Main Header */}
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Flame className="h-6 w-6 text-primary-foreground" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neon-magenta/80 dark:bg-neon-magenta dark:glow-magenta shadow-lg">
+              <Flame className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight">
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-neon-coral to-neon-magenta dark:from-neon-coral dark:to-neon-magenta bg-clip-text text-transparent">
               VolleyRumours
             </span>
           </Link>
@@ -64,10 +72,10 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
                 <div key={item.label} className="relative group">
                   <Link
                     href={item.href || "#"}
-                    className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 rounded-md ${
+                    className={`px-4 py-2 text-sm font-medium transition-all flex items-center gap-1 rounded-md ${
                       isActive
-                        ? "text-foreground bg-muted"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        ? "text-foreground dark:bg-neon-magenta/20 dark:border dark:border-neon-magenta/50 bg-muted"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:text-neon-magenta dark:hover:bg-neon-magenta/10"
                     }`}
                   >
                     {item.label}
@@ -78,13 +86,14 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
 
                   {/* Dropdown Menu */}
                   {item.submenu && (
-                    <div className="absolute left-0 mt-0 w-48 bg-background border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="absolute left-0 mt-0 w-48 bg-background border border-neon-cyan/30 dark:border-neon-cyan/50 rounded-md shadow-lg dark:shadow-[0_0_20px_rgba(178,190,255,0.1)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       {item.submenu.map((sub) => (
                         <Link
                           key={sub.href}
                           href={sub.href}
                           className={`block px-4 py-2 text-sm transition-colors first:rounded-t-md last:rounded-b-md ${
-                            pathname.startsWith(sub.href)
+                            pathname === sub.href ||
+                            pathname.startsWith(sub.href + "/")
                               ? "bg-primary text-primary-foreground font-medium"
                               : "text-muted-foreground hover:text-foreground hover:bg-muted"
                           }`}
@@ -147,7 +156,12 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
                   ) : (
                     <Link
                       href={item.href || "#"}
-                      className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md block"
+                      className={`px-4 py-2 text-sm font-medium rounded-md block transition-colors ${
+                        pathname === item.href ||
+                        pathname.startsWith(item.href + "/")
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}

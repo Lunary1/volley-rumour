@@ -214,7 +214,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
   };
 
   return (
-    <Card className="bg-card border-border hover:border-primary/50 transition-colors h-full flex flex-col">
+    <Card className="bg-card border-border dark:border-neon-cyan/30 hover:dark:border-neon-cyan/60 transition-all h-full flex flex-col dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group">
       <CardContent className="p-5 flex flex-col h-full">
         {/* Top Section: Category & Status Badges + Time */}
         <div className="flex flex-wrap items-center gap-2 mb-4">

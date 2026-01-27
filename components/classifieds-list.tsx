@@ -20,6 +20,7 @@ import { nl } from "date-fns/locale";
 import { ContactModal } from "@/components/contact-modal";
 import { getExistingConversation } from "@/app/actions/messages";
 import { useRouter } from "next/navigation";
+import { getDivisionLabel, getProvinceLabel } from "@/lib/classifieds-utils";
 
 interface Classified {
   id: string;
@@ -27,13 +28,17 @@ interface Classified {
   type: string;
   description: string;
   province: string | null;
+  position: string | null;
+  team_name: string | null;
+  contact_name: string | null;
+  division: string | null;
   created_at: string;
   user_id: string;
   is_featured?: boolean;
   featured_until?: string | null;
-  author: {
+  profiles?: {
     username: string;
-  };
+  } | null;
 }
 
 interface ClassifiedsListProps {
@@ -89,7 +94,7 @@ export function ClassifiedsList({
       const matchesSearch =
         ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         ad.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ad.author.username.toLowerCase().includes(searchQuery.toLowerCase());
+        ad.profiles?.username.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesType = !selectedType || ad.type === selectedType;
       const matchesProvince =
@@ -337,103 +342,224 @@ export function ClassifiedsList({
             )}
           </div>
 
-          {/* Grid/Card View - Modern 2026 approach */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-max">
-            {filteredAndSorted.map((classified) => {
-              const isOwnClassified = currentUserId === classified.user_id;
-              const isFeatured = classified.is_featured;
-
-              return (
-                <Card
-                  key={classified.id}
-                  className={`overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group ${
-                    isFeatured ? "ring-2 ring-primary/40 bg-primary/5" : ""
-                  }`}
-                  onClick={() => {
-                    if (!isOwnClassified) {
-                      handleContactClick(classified);
-                    }
-                  }}
-                >
-                  <div className="p-4 space-y-3 h-full flex flex-col">
-                    {/* Header with type badge and featured star */}
-                    <div className="flex items-start justify-between gap-2">
-                      <Badge
-                        variant="outline"
-                        className={`${classifiedTypeColors[classified.type]} flex-shrink-0`}
+          {/* Featured/Promoted Section */}
+          {filteredAndSorted.filter((c) => c.is_featured).length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-xl font-bold text-foreground mb-6 tracking-tight">
+                Aanbevolen
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filteredAndSorted
+                  .filter((c) => c.is_featured)
+                  .slice(0, 2)
+                  .map((classified) => {
+                    const isOwnClassified =
+                      currentUserId === classified.user_id;
+                    return (
+                      <div
+                        key={classified.id}
+                        className="lg:col-span-2 lg:row-span-2"
                       >
-                        {classifiedTypeLabels[classified.type]}
-                      </Badge>
-                      {isFeatured && (
-                        <Star
-                          className="h-4 w-4 text-primary flex-shrink-0"
-                          fill="currentColor"
-                        />
-                      )}
-                    </div>
+                        <div
+                          className="group h-full rounded-2xl p-6 md:p-8 bg-card shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden relative border border-border flex flex-col"
+                          onClick={() => {
+                            if (!isOwnClassified) {
+                              handleContactClick(classified);
+                            }
+                          }}
+                        >
+                          {/* Subtle background accent using primary color */}
+                          <div className="absolute top-0 right-0 w-40 h-40 bg-primary rounded-full blur-3xl opacity-15 -z-10" />
 
-                    {/* Title */}
-                    <div>
-                      <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                        {classified.title}
-                      </h3>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-sm text-muted-foreground line-clamp-2 flex-grow">
-                      {classified.description}
-                    </p>
-
-                    {/* Metadata footer */}
-                    <div className="space-y-2 pt-2 border-t border-border/50">
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        {classified.province && (
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            <span>{classified.province}</span>
+                          {/* Featured badge */}
+                          <div className="mb-6 flex items-center gap-2">
+                            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary tracking-tight">
+                              ⭐ AANBEVOLEN
+                            </span>
                           </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {formatDistanceToNow(
-                              new Date(classified.created_at),
-                              {
-                                addSuffix: true,
-                                locale: nl,
-                              },
+
+                          {/* Main content */}
+                          <div className="space-y-4 flex-1">
+                            {/* Contact name + Position */}
+                            <div>
+                              <h3 className="text-2xl font-bold text-foreground tracking-tight leading-tight">
+                                {classified.contact_name || "Onbekend"}
+                              </h3>
+                              {classified.position && (
+                                <p className="text-base font-semibold text-primary mt-2">
+                                  {classified.position}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Team name */}
+                            {classified.team_name && (
+                              <p className="text-base font-medium text-foreground/80">
+                                {classified.team_name}
+                              </p>
                             )}
-                          </span>
+
+                            {/* Division + Province */}
+                            <div className="flex flex-wrap items-center gap-3 pt-2">
+                              {classified.division && (
+                                <span className="text-sm font-medium text-foreground/70">
+                                  {getDivisionLabel(classified.division)}
+                                </span>
+                              )}
+                              {classified.province && (
+                                <span className="text-sm font-medium text-foreground/60 flex items-center gap-1">
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  {getProvinceLabel(classified.province)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="flex flex-col gap-2 pt-6 border-t border-border">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(
+                                  new Date(classified.created_at),
+                                  {
+                                    addSuffix: true,
+                                    locale: nl,
+                                  },
+                                )}
+                              </p>
+                            </div>
+                            <p className="text-xs text-foreground/60">
+                              Geplaatst door{" "}
+                              <span className="font-medium text-foreground/80">
+                                {classified.profiles?.username || "Onbekend"}
+                              </span>
+                            </p>
+                          </div>
+
+                          {/* CTA Button */}
+                          {!isOwnClassified && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleContactClick(classified);
+                              }}
+                              disabled={checkingConversation}
+                              className="w-full mt-6 px-4 py-3 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-all duration-150 text-sm flex items-center justify-center gap-2 group-hover:shadow-md"
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                              Contact opnemen
+                            </button>
+                          )}
                         </div>
                       </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
 
-                      <p className="text-xs text-muted-foreground">
-                        Door{" "}
-                        <span className="font-medium text-foreground">
-                          {classified.author.username}
-                        </span>
-                      </p>
-                    </div>
+          {/* Standard Grid Section */}
+          <div>
+            <h2 className="text-xl font-bold text-foreground mb-6 tracking-tight">
+              Alle zoekertjes
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredAndSorted
+                .filter((c) => !c.is_featured)
+                .map((classified) => {
+                  const isOwnClassified = currentUserId === classified.user_id;
 
-                    {/* Action button */}
-                    {!isOwnClassified && (
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
+                  return (
+                    <div
+                      key={classified.id}
+                      className="group rounded-xl p-5 bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 cursor-pointer flex flex-col h-full"
+                      onClick={() => {
+                        if (!isOwnClassified) {
                           handleContactClick(classified);
-                        }}
-                        disabled={checkingConversation}
-                        size="sm"
-                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2"
-                      >
-                        <MessageSquare className="h-3.5 w-3.5 mr-2" />
-                        Contact opnemen
-                      </Button>
-                    )}
-                  </div>
-                </Card>
-              );
-            })}
+                        }
+                      }}
+                    >
+                      {/* Type badge */}
+                      <div className="mb-4">
+                        <Badge
+                          variant="outline"
+                          className={`${classifiedTypeColors[classified.type]} text-xs font-semibold`}
+                        >
+                          {classifiedTypeLabels[classified.type]}
+                        </Badge>
+                      </div>
+
+                      {/* Contact name + Position */}
+                      <div className="mb-3 flex-1">
+                        <h3 className="font-semibold text-foreground text-base leading-snug group-hover:text-primary transition-colors">
+                          {classified.contact_name || "Onbekend"}
+                        </h3>
+                        {classified.position && (
+                          <p className="text-sm text-primary font-medium mt-1">
+                            {classified.position}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Team name */}
+                      {classified.team_name && (
+                        <p className="text-sm font-medium text-foreground/80 mb-2 line-clamp-1">
+                          {classified.team_name}
+                        </p>
+                      )}
+
+                      {/* Division + Province */}
+                      <div className="flex flex-col gap-1 mb-4 text-xs text-foreground/60">
+                        {classified.division && (
+                          <span className="font-medium">
+                            {getDivisionLabel(classified.division)}
+                          </span>
+                        )}
+                        {classified.province && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {getProvinceLabel(classified.province)}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Date */}
+                      <div className="text-xs text-muted-foreground mb-3 border-t border-border pt-3 space-y-2">
+                        <p>
+                          {formatDistanceToNow(
+                            new Date(classified.created_at),
+                            {
+                              addSuffix: true,
+                              locale: nl,
+                            },
+                          )}
+                        </p>
+                        <p className="text-foreground/60">
+                          Door{" "}
+                          <span className="font-medium text-foreground/80">
+                            {classified.profiles?.username || "Onbekend"}
+                          </span>
+                        </p>
+                      </div>
+
+                      {/* CTA Button */}
+                      {!isOwnClassified && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContactClick(classified);
+                          }}
+                          disabled={checkingConversation}
+                          className="w-full px-3 py-2 rounded-lg font-semibold text-primary-foreground text-sm bg-primary hover:bg-primary/90 transition-all duration-150 flex items-center justify-center gap-2"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          Contact
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
           </div>
 
           {/* Bottom pagination */}
@@ -471,7 +597,7 @@ export function ClassifiedsList({
       {contactModal && selectedClassified && (
         <ContactModal
           userId={selectedClassified.user_id}
-          userName={selectedClassified.author.username}
+          userName={selectedClassified.profiles?.username || "deze gebruiker"}
           adId={selectedClassified.id}
           adType="classified"
           onClose={() => setContactModal(null)}

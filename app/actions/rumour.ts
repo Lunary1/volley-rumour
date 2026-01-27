@@ -2,6 +2,8 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { createRumourSchema } from "@/lib/schemas";
+import { successResponse, errorResponse, extractErrorMessage } from "@/lib/response";
 
 export async function createRumour(formData: FormData) {
   const supabase = await createClient();
@@ -11,27 +13,40 @@ export async function createRumour(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Je moet ingelogd zijn om een gerucht te plaatsen" };
+    return errorResponse("Je moet ingelogd zijn om een gerucht te plaatsen");
+  }
+
+  // Validate input
+  const validationResult = createRumourSchema.safeParse({
+    title: formData.get("player_name") as string,
+    description: formData.get("description") as string,
+    category: formData.get("category") as string,
+  });
+
+  if (!validationResult.success) {
+    const errors = validationResult.error.errors.map((e) => e.message).join("; ");
+    return errorResponse(errors);
   }
 
   const rumourData = {
     creator_id: user.id,
-    player_name: formData.get("player_name") as string,
-    from_club_name: (formData.get("from_club") as string) || null,
-    to_club_name: formData.get("to_club") as string,
-    category: formData.get("category") as string,
-    description: (formData.get("description") as string) || null,
+    player_name: (formData.get("player_name") as string).trim(),
+    from_club_name: ((formData.get("from_club") as string) || "").trim() || null,
+    to_club_name: (formData.get("to_club") as string).trim(),
+    category: validationResult.data.category,
+    description: (formData.get("description") as string).trim() || null,
   };
 
   const { error } = await supabase.from("rumours").insert(rumourData);
 
   if (error) {
-    return { error: "Er ging iets mis bij het aanmaken van het gerucht" };
+    const message = extractErrorMessage(error, "Er ging iets mis bij het aanmaken van het gerucht");
+    return errorResponse(message);
   }
 
   revalidatePath("/geruchten");
   revalidatePath("/");
-  return { success: true };
+  return successResponse(null);
 }
 
 export async function confirmRumour(rumourId: string) {
@@ -42,18 +57,18 @@ export async function confirmRumour(rumourId: string) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Je moet ingelogd zijn" };
+    return errorResponse("Je moet ingelogd zijn");
   }
 
   // Get the rumour
-  const { data: rumour } = await supabase
+  const { data: rumour, error: rumourError } = await supabase
     .from("rumours")
     .select("*")
     .eq("id", rumourId)
     .single();
 
-  if (!rumour) {
-    return { error: "Gerucht niet gevonden" };
+  if (rumourError || !rumour) {
+    return errorResponse("Gerucht niet gevonden");
   }
 
   // Create a transfer from the confirmed rumour using admin client to bypass RLS
@@ -61,9 +76,7 @@ export async function confirmRumour(rumourId: string) {
   try {
     adminClient = createAdminClient();
   } catch (err) {
-    console.error("[CONFIRM] Admin client error:", err);
-    // Fallback: try with regular authenticated client
-    adminClient = supabase;
+    return errorResponse("Administratorfout: kan gerucht niet bevestigen");
   }
 
   // Map rumour category to transfer category
@@ -84,34 +97,43 @@ export async function confirmRumour(rumourId: string) {
   });
 
   if (transferError) {
-    console.error("[CONFIRM] Transfer insert error:", transferError);
-    return { error: `Transfer error: ${transferError.message}` };
+    const message = extractErrorMessage(transferError, "Fout bij bevestiging van transfer");
+    return errorResponse(message);
   }
 
   // Update the rumour status
-  await supabase
+  const { error: updateError } = await supabase
     .from("rumours")
     .update({ status: "confirmed" })
     .eq("id", rumourId);
 
+  if (updateError) {
+    return errorResponse("Fout bij bijwerken van gerucht");
+  }
+
   // Award trust points to the creator
   if (rumour.creator_id) {
-    await supabase.rpc("increment_trust_score", {
+    const { error: rpcError } = await supabase.rpc("increment_trust_score", {
       profile_uuid: rumour.creator_id,
       points_to_add: 5,
     });
+
+    if (rpcError) {
+      // Log but don't fail the confirmation
+      console.error("[CONFIRM] Trust score error:", rpcError);
+    }
   }
 
   revalidatePath("/geruchten");
   revalidatePath("/transfers");
   revalidatePath("/");
-  return { success: true };
+  return successResponse(null);
 }
 
 export async function getFirstRumourToConfirm() {
   const supabase = await createClient();
 
-  const { data: rumour } = await supabase
+  const { data: rumour, error } = await supabase
     .from("rumours")
     .select("id, player_name, from_club_name, to_club_name")
     .eq("status", "rumour")
@@ -119,8 +141,8 @@ export async function getFirstRumourToConfirm() {
     .limit(1)
     .single();
 
-  if (!rumour) {
-    return { error: "Geen geruchten beschikbaar om te bevestigen" };
+  if (error || !rumour) {
+    return errorResponse("Geen geruchten beschikbaar om te bevestigen");
   }
 
   // Confirm it

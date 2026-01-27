@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
+import { toast } from "sonner";
 import { ContactModal } from "@/components/contact-modal";
 import { getExistingConversation } from "@/app/actions/messages";
+import { handleServerActionResponse } from "@/lib/client-utils";
 
 interface ClassifiedCardInteractiveProps {
   classified: {
@@ -68,6 +70,7 @@ export function ClassifiedCardInteractive({
       }
     } catch (err) {
       console.error("Error checking conversation:", err);
+      toast.error("Fout bij laden van conversatie");
       setShowContactModal(true);
     } finally {
       setCheckingConversation(false);

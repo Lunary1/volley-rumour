@@ -116,7 +116,7 @@ export function TransferCardInteractive({
                     <span className="text-muted-foreground">
                       {transfer.from_club}
                     </span>
-                    <ArrowRight className="h-4 w-4 text-primary flex-shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-primary shrink-0" />
                   </>
                 ) : (
                   <span className="text-muted-foreground italic">Nieuw</span>
