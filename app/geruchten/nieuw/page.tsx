@@ -177,7 +177,7 @@ export default function NewRumourPage() {
           <CardContent>
             {/* Help Callout */}
             <div className="mb-6 p-4 rounded-lg bg-neon-cyan/10 dark:bg-neon-cyan/5 border border-neon-cyan/30 dark:border-neon-cyan/20 flex gap-3">
-              <Info className="h-5 w-5 text-neon-cyan flex-shrink-0 mt-0.5" />
+              <Info className="h-5 w-5 text-neon-cyan shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium text-foreground mb-1">
                   💡 Hoe werkt het?
