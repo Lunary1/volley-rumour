@@ -121,7 +121,7 @@ export async function getProfileStats() {
   const { count: classifiedCount } = await supabase
     .from("classifieds")
     .select("id", { count: "exact" })
-    .eq("author_id", user.id);
+    .eq("user_id", user.id);
 
   return {
     profile,
@@ -131,5 +131,54 @@ export async function getProfileStats() {
       confirmedCount: confirmedCount || 0,
       classifiedCount: classifiedCount || 0,
     },
+  };
+}
+
+export type RecentRumour = {
+  id: string;
+  player_name: string;
+  status: string;
+  created_at: string;
+};
+
+export type RecentClassified = {
+  id: string;
+  title: string;
+  type: string;
+  created_at: string;
+};
+
+export async function getRecentActivity(): Promise<{
+  rumours: RecentRumour[];
+  classifieds: RecentClassified[];
+} | null> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const [rumoursRes, classifiedsRes] = await Promise.all([
+    supabase
+      .from("rumours")
+      .select("id, player_name, status, created_at")
+      .eq("creator_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("classifieds")
+      .select("id, title, type, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
+
+  return {
+    rumours: rumoursRes.data || [],
+    classifieds: classifiedsRes.data || [],
   };
 }
