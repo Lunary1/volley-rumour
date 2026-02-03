@@ -8,6 +8,8 @@ import {
   errorResponse,
   extractErrorMessage,
 } from "@/lib/response";
+import { awardTrustPoints } from "@/app/actions/gamification";
+import { TRUST_POINTS_RUMOUR_CONFIRMED } from "@/lib/gamification";
 
 export async function createRumour(formData: FormData) {
   const supabase = await createClient();
@@ -124,16 +126,15 @@ export async function confirmRumour(rumourId: string) {
     return errorResponse("Fout bij bijwerken van gerucht");
   }
 
-  // Award trust points to the creator
+  // Award trust points to the creator via gamification action
   if (rumour.creator_id) {
-    const { error: rpcError } = await supabase.rpc("increment_trust_score", {
-      profile_uuid: rumour.creator_id,
-      points_to_add: 5,
-    });
-
-    if (rpcError) {
+    const result = await awardTrustPoints(
+      rumour.creator_id,
+      TRUST_POINTS_RUMOUR_CONFIRMED,
+    );
+    if (!result.success) {
       // Log but don't fail the confirmation
-      console.error("[CONFIRM] Trust score error:", rpcError);
+      console.error("[CONFIRM] Trust score error:", result.error);
     }
   }
 

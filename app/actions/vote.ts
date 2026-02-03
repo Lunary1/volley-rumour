@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { awardTrustPoints } from "@/app/actions/gamification";
+import { TRUST_POINTS_UPVOTE } from "@/lib/gamification";
 
 export async function getRumourData(rumourId: string) {
   const supabase = await createClient();
@@ -144,22 +146,9 @@ export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
     return { error: "Fout bij bijwerken van stemmen" };
   }
 
-  // Award/deduct points to rumour creator (only for upvotes)
+  // Award trust points to rumour creator for first upvote only
   if (rumour.creator_id && voteType === "up" && !existingVote) {
-    // Get current trust score
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("trust_score")
-      .eq("id", rumour.creator_id)
-      .single();
-
-    if (profile) {
-      const newScore = (profile.trust_score || 0) + 1;
-      await supabase
-        .from("profiles")
-        .update({ trust_score: newScore })
-        .eq("id", rumour.creator_id);
-    }
+    await awardTrustPoints(rumour.creator_id, TRUST_POINTS_UPVOTE);
   }
 
   revalidatePath("/geruchten", "layout");
