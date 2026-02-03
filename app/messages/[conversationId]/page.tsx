@@ -88,8 +88,8 @@ export default async function ConversationPage({
               ← Terug
             </Button>
           </Link>
-          <Card className="p-6 border-red-200 bg-red-50">
-            <p className="text-red-800">Gebruiker niet gevonden</p>
+          <Card className="p-6 border-destructive/50 bg-destructive/5">
+            <p className="text-destructive">Gebruiker niet gevonden</p>
           </Card>
         </div>
       </div>
@@ -107,28 +107,43 @@ export default async function ConversationPage({
 
   const isBlocked = blockData && blockData.length > 0;
 
+  const adListHref =
+    conversation.ad_type === "transfer" ? "/transfers" : "/zoekertjes";
+  const adTypeLabel =
+    conversation.ad_type === "transfer" ? "Transfer" : "Zoekertje";
+
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="border-b border-border bg-card shrink-0">
-        <div className="px-4 py-3 max-w-2xl mx-auto w-full">
-          <Link href="/messages" className="inline-block mb-3">
-            <Button variant="ghost" size="sm">
-              ← Terug
-            </Button>
-          </Link>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <h1 className="text-lg font-semibold text-foreground mb-1">
-                {adData?.title || "Gesprek"}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Met {otherUserData?.username}
-              </p>
-            </div>
+    <div className="h-dvh sm:h-screen bg-background flex flex-col overflow-hidden">
+      {/* Context header: linked ad + conversation partner */}
+      <header className="border-b border-border bg-card shrink-0 pt-[env(safe-area-inset-top)]">
+        <div className="px-3 py-2 sm:px-4 sm:py-3 max-w-2xl mx-auto w-full">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <Link href="/messages" className="shrink-0 -ml-1">
+              <Button variant="ghost" size="sm" className="gap-1.5">
+                ← Terug
+              </Button>
+            </Link>
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              Berichten
+            </span>
           </div>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <Link
+              href={adListHref}
+              className="text-base sm:text-lg font-semibold text-foreground hover:text-primary hover:underline underline-offset-2 truncate max-w-[min(100%,20rem)]"
+              title={adData?.title || "Gesprek"}
+            >
+              {adData?.title || "Gesprek"}
+            </Link>
+            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground shrink-0">
+              {adTypeLabel}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Met <span className="font-medium text-foreground">{otherUserData?.username}</span>
+          </p>
         </div>
-      </div>
+      </header>
 
       {/* Chat container */}
       <div className="flex-1 overflow-hidden flex flex-col">

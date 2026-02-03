@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { sendMessage, getMessages } from "@/app/actions/messages";
 import { createClient } from "@/lib/supabase/client";
+import { Paperclip, Send, Check, CheckCheck } from "lucide-react";
 
 interface Message {
   id: string;
@@ -16,6 +16,7 @@ interface Message {
   created_at: string;
   sender_id: string;
   is_from_me: boolean;
+  is_read?: boolean;
   sender_username?: string;
 }
 
@@ -108,7 +109,6 @@ export function ChatInterface({
 
           console.log("[ChatInterface] Adding message to chat:", newMsg);
           setMessages((prev) => {
-            // Check if message already exists to avoid duplicates
             if (prev.some((m) => m.id === newMsg.id)) {
               console.log("[ChatInterface] Message already exists, skipping");
               return prev;
@@ -121,6 +121,7 @@ export function ChatInterface({
                 created_at: newMsg.created_at,
                 sender_id: newMsg.sender_id,
                 is_from_me: newMsg.sender_id === currentUserId,
+                is_read: newMsg.is_read ?? false,
               },
             ];
           });
@@ -149,12 +150,13 @@ export function ChatInterface({
       setSending(true);
 
       // Optimistic update - add message to UI immediately
-      const optimisticMessage = {
+      const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
         content: messageContent,
         created_at: new Date().toISOString(),
         sender_id: currentUserId,
         is_from_me: true,
+        is_read: false,
       };
 
       setMessages((prev) => [...prev, optimisticMessage]);
@@ -180,16 +182,18 @@ export function ChatInterface({
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full bg-background">
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex flex-col h-full bg-background min-h-0">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}
+              className={`flex gap-2 ${i % 2 === 0 ? "justify-start" : "justify-end"}`}
             >
               <div
-                className={`h-12 rounded-lg animate-pulse ${
-                  i % 2 === 0 ? "bg-muted w-2/3" : "bg-primary/20 w-2/3"
+                className={`h-14 w-48 sm:w-56 max-w-[85%] rounded-2xl animate-pulse ${
+                  i % 2 === 0
+                    ? "bg-muted rounded-bl-md"
+                    : "bg-primary/20 rounded-br-md"
                 }`}
               />
             </div>
@@ -200,88 +204,143 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Messages container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
+    <div className="flex flex-col h-full min-h-0 bg-background">
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 pb-2 scrollbar-hide">
         {messages.length === 0 ? (
-          <div className="text-center text-muted-foreground mt-8">
-            <p>Je hebt nog geen berichten uitgewisseld met {otherUserName}</p>
+          <div className="flex flex-col items-center justify-center min-h-48 text-center text-muted-foreground px-4">
+            <p className="text-sm">Je hebt nog geen berichten uitgewisseld met {otherUserName}.</p>
+            <p className="text-xs mt-1">Stuur een bericht om het gesprek te starten.</p>
           </div>
         ) : (
-          messages.map((msg) => {
-            const isFromMe = msg.is_from_me;
-            const senderName = isFromMe ? currentUserName : otherUserName;
-            const senderAvatar = isFromMe ? currentUserAvatar : otherUserAvatar;
-            const initials = (senderName || "U")
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase();
+          <div className="space-y-3">
+            {messages.map((msg) => {
+              const isFromMe = msg.is_from_me;
+              const senderName = isFromMe ? currentUserName : otherUserName;
+              const senderAvatar = isFromMe ? currentUserAvatar : otherUserAvatar;
+              const initials = (senderName || "U")
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2);
+              const exactTime = format(new Date(msg.created_at), "d MMM yyyy, HH:mm", { locale: nl });
+              const relativeTime = formatDistanceToNow(new Date(msg.created_at), {
+                addSuffix: true,
+                locale: nl,
+              });
 
-            return (
-              <div
-                key={msg.id}
-                className={`flex gap-2 ${isFromMe ? "justify-end" : "justify-start"}`}
-              >
-                {!isFromMe && (
-                  <Avatar className="h-8 w-8 shrink-0 mt-1">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+              return (
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-xl ${
-                    isFromMe
-                      ? "bg-primary text-primary-foreground rounded-br-none shadow-sm"
-                      : "bg-card border border-border text-foreground rounded-bl-none shadow-sm"
-                  }`}
+                  key={msg.id}
+                  className={`flex gap-2 ${isFromMe ? "justify-end" : "justify-start"}`}
                 >
-                  <p className="wrap-break-word">{msg.content}</p>
-                  <p
-                    className={`text-xs mt-1 ${
-                      isFromMe
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {formatDistanceToNow(new Date(msg.created_at), {
-                      addSuffix: true,
-                      locale: nl,
-                    })}
-                  </p>
+                  {!isFromMe && (
+                    <Avatar className="h-8 w-8 shrink-0 mt-1 ring-2 ring-background">
+                      {senderAvatar ? (
+                        <img
+                          src={senderAvatar}
+                          alt={senderName || ""}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                          {initials}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  )}
+                  <div className="flex flex-col items-end max-w-[85%] sm:max-w-[75%] lg:max-w-md">
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 shadow-sm ${
+                        isFromMe
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-card border border-border text-foreground rounded-bl-md"
+                      }`}
+                    >
+                      <p className="text-[15px] leading-snug wrap-break-word whitespace-pre-wrap">
+                        {msg.content}
+                      </p>
+                      <div
+                        className={`flex items-center gap-1.5 mt-1.5 justify-end ${
+                          isFromMe ? "text-primary-foreground/80" : "text-muted-foreground"
+                        }`}
+                      >
+                        <time
+                          dateTime={msg.created_at}
+                          title={exactTime}
+                          className="text-[11px] tabular-nums"
+                        >
+                          {relativeTime}
+                        </time>
+                        {isFromMe && (
+                          <span
+                            className="shrink-0"
+                            title={msg.is_read ? "Gelezen" : "Verzonden"}
+                            aria-label={msg.is_read ? "Gelezen" : "Verzonden"}
+                          >
+                            {msg.is_read ? (
+                              <CheckCheck className="size-3.5 text-primary-foreground/90" />
+                            ) : (
+                              <Check className="size-3.5 text-primary-foreground/70" />
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {isFromMe && (
+                    <Avatar className="h-8 w-8 shrink-0 mt-1 ring-2 ring-background order-last">
+                      {currentUserAvatar ? (
+                        <img
+                          src={currentUserAvatar}
+                          alt={currentUserName || ""}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold">
+                          {initials}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  )}
                 </div>
-                {isFromMe && (
-                  <Avatar className="h-8 w-8 shrink-0 mt-1">
-                    <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
-      <div className="border-t border-border bg-card p-4">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
+      {/* Input area: attachment placeholder + field + send */}
+      <div className="border-t border-border bg-card p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="shrink-0 size-10 rounded-xl text-muted-foreground hover:text-foreground"
+            aria-label="Bijlage toevoegen (binnenkort)"
+            title="Bijlage toevoegen (binnenkort)"
+          >
+            <Paperclip className="size-5" />
+          </Button>
           <Input
             type="text"
             placeholder="Type je bericht..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             disabled={sending}
-            className="flex-1 bg-background"
+            className="flex-1 min-h-10 rounded-xl bg-background border-border"
           />
           <Button
             type="submit"
             disabled={sending || !newMessage.trim()}
-            className="whitespace-nowrap"
+            size="icon"
+            className="shrink-0 size-10 rounded-xl"
+            aria-label={sending ? "Versturen..." : "Verstuur"}
           >
-            {sending ? "Versturen..." : "Verstuur"}
+            <Send className="size-5" />
           </Button>
         </form>
       </div>

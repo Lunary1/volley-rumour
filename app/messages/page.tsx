@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getConversations } from "@/app/actions/messages";
@@ -40,7 +38,6 @@ const getInitials = (name: string): string => {
 };
 
 export default function MessagesPage() {
-  const router = useRouter();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,9 +65,9 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-background p-4 md:p-8">
+      <main className="min-h-dvh bg-background p-4 md:p-8">
         <div className="mx-auto max-w-3xl">
-          <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+          <h1 className="mb-6 sm:mb-8 text-2xl sm:text-3xl font-bold text-foreground">Berichten</h1>
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
               <Card
@@ -86,9 +83,9 @@ export default function MessagesPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-background p-4 md:p-8">
+      <main className="min-h-dvh bg-background p-4 md:p-8">
         <div className="mx-auto max-w-3xl">
-          <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+          <h1 className="mb-6 sm:mb-8 text-2xl sm:text-3xl font-bold text-foreground">Berichten</h1>
           <Card className="border-l-4 border-l-destructive/50 p-6">
             <p className="text-sm text-muted-foreground">{error}</p>
           </Card>
@@ -99,9 +96,9 @@ export default function MessagesPage() {
 
   if (conversations.length === 0) {
     return (
-      <main className="min-h-screen bg-background p-4 md:p-8">
+      <main className="min-h-dvh bg-background p-4 md:p-8">
         <div className="mx-auto max-w-3xl">
-          <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+          <h1 className="mb-6 sm:mb-8 text-2xl sm:text-3xl font-bold text-foreground">Berichten</h1>
           <Card className="border-l-4 border-l-border/30 p-12 text-center">
             <div className="flex flex-col items-center gap-4">
               <MessageCircle className="h-12 w-12 text-muted-foreground/50" />
@@ -127,9 +124,9 @@ export default function MessagesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 md:p-8">
+    <main className="min-h-dvh bg-background p-4 md:p-8">
       <div className="mx-auto max-w-3xl">
-        <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
+        <h1 className="mb-6 sm:mb-8 text-2xl sm:text-3xl font-bold text-foreground">Berichten</h1>
         <Card className="overflow-hidden">
           <div className="divide-y divide-border/50">
             {conversations.map((conversation) => (
