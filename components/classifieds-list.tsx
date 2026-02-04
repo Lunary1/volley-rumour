@@ -25,6 +25,8 @@ import {
   getDivisionLabel,
   getProvinceLabel,
   PROVINCE_LABELS,
+  CLASSIFIED_TYPE_LABELS,
+  CLASSIFIED_TYPE_COLORS,
 } from "@/lib/classifieds-utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -53,26 +55,12 @@ interface ClassifiedsListProps {
   currentUserId?: string;
 }
 
-const classifiedTypeLabels: Record<string, string> = {
-  player_seeks_team: "Speler zoekt team",
-  team_seeks_player: "Team zoekt speler",
-  trainer_seeks_team: "Trainer zoekt team",
-  team_seeks_trainer: "Team zoekt trainer",
-};
-
-const classifiedTypeColors: Record<string, string> = {
-  player_seeks_team: "bg-primary/20 text-primary border-primary/30",
-  team_seeks_player: "bg-accent/20 text-accent border-accent/30",
-  trainer_seeks_team: "bg-chart-3/20 text-chart-3 border-chart-3/30",
-  team_seeks_trainer: "bg-chart-4/20 text-chart-4 border-chart-4/30",
-};
-
 const CATEGORY_OPTIONS = [
   { value: "", label: "Alle" },
-  { value: "player_seeks_team", label: "Speler zoekt team" },
-  { value: "team_seeks_player", label: "Team zoekt speler" },
-  { value: "trainer_seeks_team", label: "Trainer zoekt team" },
-  { value: "team_seeks_trainer", label: "Team zoekt trainer" },
+  { value: "player_seeks_team", label: CLASSIFIED_TYPE_LABELS.player_seeks_team },
+  { value: "team_seeks_player", label: CLASSIFIED_TYPE_LABELS.team_seeks_player },
+  { value: "trainer_seeks_team", label: CLASSIFIED_TYPE_LABELS.trainer_seeks_team },
+  { value: "team_seeks_trainer", label: CLASSIFIED_TYPE_LABELS.team_seeks_trainer },
 ] as const;
 
 const ITEMS_PER_PAGE = 12;
@@ -228,6 +216,7 @@ export function ClassifiedsList({
             Filters {hasActiveFilters && "✓"}
           </Button>
         </div>
+        {/* Follow-up: consider copy tweak for this label (e.g. "Filter op type:") */}
         <p className="text-xs text-muted-foreground">Populaire categorieën:</p>
         <div className="flex flex-wrap gap-2">
           {CATEGORY_OPTIONS.filter((o) => o.value).map(({ value, label }) => (
@@ -241,7 +230,7 @@ export function ClassifiedsList({
               }
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 selectedType === value
-                  ? classifiedTypeColors[value]
+                  ? CLASSIFIED_TYPE_COLORS[value]
                   : "bg-muted/80 text-muted-foreground hover:bg-muted"
               }`}
             >
@@ -387,7 +376,7 @@ export function ClassifiedsList({
             )}
           </div>
 
-          {/* Featured/Promoted Section */}
+          {/* Featured cards: contact-only (no link to detail) to keep CTA prominent. */}
           {filteredAndSorted.filter((c) => c.is_featured).length > 0 && (
             <div className="mb-12">
               <h2 className="text-xl font-bold text-foreground mb-6 tracking-tight">
@@ -533,9 +522,9 @@ export function ClassifiedsList({
                         <div className="mb-4">
                           <Badge
                             variant="outline"
-                            className={`${classifiedTypeColors[classified.type]} text-xs font-semibold`}
+                            className={`${CLASSIFIED_TYPE_COLORS[classified.type]} text-xs font-semibold`}
                           >
-                            {classifiedTypeLabels[classified.type]}
+                            {CLASSIFIED_TYPE_LABELS[classified.type]}
                           </Badge>
                         </div>
 

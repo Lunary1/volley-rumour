@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -9,15 +10,16 @@ import { getCurrentUser } from "@/app/actions/auth";
 import {
   getDivisionLabel,
   getProvinceLabel,
+  CLASSIFIED_TYPE_LABELS,
+  CLASSIFIED_TYPE_COLORS,
 } from "@/lib/classifieds-utils";
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
 
-const TYPE_LABELS: Record<string, string> = {
-  player_seeks_team: "Speler zoekt team",
-  team_seeks_player: "Team zoekt speler",
-  trainer_seeks_team: "Trainer zoekt team",
-  team_seeks_trainer: "Team zoekt trainer",
-};
+/** Profile fragment returned with classified (from Supabase relation). */
+export interface ClassifiedProfile {
+  username?: string | null;
+  trust_score?: number | null;
+}
 
 async function getClassified(id: string) {
   const supabase = await createClient();
@@ -39,15 +41,32 @@ async function getClassified(id: string) {
       is_featured,
       featured_until,
       profiles(username, trust_score)
-    `,
+    `
     )
     .eq("id", id)
     .eq("is_active", true)
     .single();
 
   if (error || !data) return null;
-  const profile = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
-  return { ...data, profiles: profile };
+  const profile: ClassifiedProfile | null = Array.isArray(data.profiles)
+    ? (data.profiles[0] as ClassifiedProfile) ?? null
+    : (data.profiles as ClassifiedProfile);
+  return { ...data, profiles: profile } as Omit<typeof data, "profiles"> & {
+    profiles: ClassifiedProfile | null;
+  };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const classified = await getClassified(id);
+  if (!classified) return { title: "Zoekertje" };
+  const title =
+    classified.contact_name || classified.title || "Zoekertje";
+  return { title: `${title} | Zoekertjes` };
 }
 
 export default async function ClassifiedDetailPage({
@@ -75,8 +94,13 @@ export default async function ClassifiedDetailPage({
       <article className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-primary/20 text-primary border border-primary/30">
-              {TYPE_LABELS[classified.type] ?? classified.type}
+            <span
+              className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${
+                CLASSIFIED_TYPE_COLORS[classified.type] ??
+                "bg-primary/20 text-primary border-primary/30"
+              }`}
+            >
+              {CLASSIFIED_TYPE_LABELS[classified.type] ?? classified.type}
             </span>
             <span className="text-sm text-muted-foreground">
               {formatDistanceToNow(new Date(classified.created_at), {
@@ -130,11 +154,11 @@ export default async function ClassifiedDetailPage({
               <Calendar className="h-4 w-4" />
               Geplaatst door{" "}
               <span className="font-medium text-foreground">
-                {(classified.profiles as { username?: string } | null)?.username ?? "Onbekend"}
+                {classified.profiles?.username ?? "Onbekend"}
               </span>
-              {(classified.profiles as { trust_score?: number } | null)?.trust_score != null && (
+              {classified.profiles?.trust_score != null && (
                 <span className="text-amber-600 dark:text-amber-400 font-medium">
-                  • Trust {(classified.profiles as { trust_score: number }).trust_score}
+                  • Trust {classified.profiles.trust_score}
                 </span>
               )}
             </p>
@@ -142,7 +166,7 @@ export default async function ClassifiedDetailPage({
               <ClassifiedDetailContact
                 classifiedId={classified.id}
                 userId={classified.user_id}
-                userName={(classified.profiles as { username?: string } | null)?.username ?? "deze gebruiker"}
+                userName={classified.profiles?.username ?? "deze gebruiker"}
               />
             )}
           </footer>
