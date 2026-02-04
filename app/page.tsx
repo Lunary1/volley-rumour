@@ -16,8 +16,10 @@ import {
   ArrowRight,
   Plus,
   Flame,
+  MessageCircle,
+  Search,
+  Medal,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -103,92 +105,186 @@ export default async function HomePage() {
     getCurrentUser(),
   ]);
 
+  // Normalise transfer date for TransferCard (DB may use confirmed_at or transfer_date)
+  const transfersForDisplay = latestTransfers.map((t: Record<string, unknown>) => ({
+    ...t,
+    transfer_date: t.transfer_date ?? t.confirmed_at ?? "",
+  }));
+
   return (
     <div className="min-h-screen">
       <SpeedInsights />
-      {/* Hero Section with Cyberpunk Gradient */}
-      <section className="relative overflow-hidden border-b border-neon-cyan/30 gradient-cyber-hero">
-        <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_top,oklch(0.2_0.15_280)_0%,transparent_60%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-          <div className="max-w-3xl">
-            <div className="flex items-center gap-2 mb-6">
-              <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                Community Driven Volleybal Transfer Nieuws
-              </span>
+
+      {/* Hero — community activity + value prop + leaderboard peek */}
+      <section className="relative overflow-hidden border-b border-border hero-sport">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
+            <div className="lg:col-span-8">
+              <p className="text-sm font-medium text-primary mb-3">
+                Community-driven · Belgische volleybal
+              </p>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-balance mb-4">
+                Het centrum voor{" "}
+                <span className="text-primary">transfer talk</span> en
+                volleybalnieuws
+              </h1>
+              <p className="text-muted-foreground text-lg max-w-xl mb-8 leading-relaxed">
+                Wees als eerste op de hoogte. Deel geruchten, bevestig deals en
+                bouw je reputatie op als betrouwbare bron.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/geruchten/nieuw">
+                  <Button size="lg" className="gap-2">
+                    <Plus className="h-5 w-5" />
+                    Gerucht delen
+                  </Button>
+                </Link>
+                <Link href="/geruchten">
+                  <Button size="lg" variant="outline" className="gap-2">
+                    Transfer Talk
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
             </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-balance">
-              Het Centrum voor{" "}
-              <span className="bg-linear-to-r from-green-400 via-green-500 to-green-600 dark:from-green-300 dark:via-green-400 dark:to-green-500 bg-clip-text text-transparent">
-                Belgische Volleybal Transfers
-              </span>
-            </h1>
-
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-              Wees als eerste op de hoogte van transfers. Deel geruchten,
-              bevestig deals en bouw je reputatie op als betrouwbare bron binnen
-              de Belgische volleybalcommunity.
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <Link href="/geruchten/nieuw">
-                <Button
-                  size="lg"
-                  className="gradient-text-neon bg-linear-to-b from-neon-magenta/40 to-neon-coral/40 hover:from-neon-magenta/50 hover:to-neon-coral/50 border border-neon-magenta/50 dark:border-neon-magenta/70 dark:shadow-[0_0_20px_rgba(216,180,254,0.2)] dark:hover:shadow-[0_0_30px_rgba(216,180,254,0.4)] text-white dark:text-white"
-                >
-                  <Plus className="mr-2 h-5 w-5" />
-                  Gerucht Delen
-                </Button>
-              </Link>
-              <Link href="/geruchten">
-                <Button
-                  size="lg"
-                  className="bg-transparent border border-neon-cyan/50 text-neon-cyan dark:border-neon-cyan/70 dark:text-neon-cyan !hover:bg-neon-cyan/30 !dark:hover:bg-neon-cyan/30 !hover:border-neon-cyan !dark:hover:border-neon-cyan !dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.4)] transition-all duration-200"
-                >
-                  Laatste Transfer Talk
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+            {/* Leaderboard peek + trust */}
+            <div className="lg:col-span-4">
+              {topContributors.length > 0 ? (
+                <Card className="bg-card/80 border-border backdrop-blur">
+                  <CardContent className="p-4 sm:p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Trophy className="h-5 w-5 text-primary" />
+                      <h2 className="font-semibold text-lg">Top bijdragers</h2>
+                    </div>
+                    <ul className="space-y-2">
+                      {topContributors.slice(0, 3).map((u, i) => (
+                        <li
+                          key={u.id}
+                          className="flex items-center justify-between gap-2 text-sm"
+                        >
+                          <span className="flex items-center gap-2 min-w-0">
+                            <span className="text-muted-foreground tabular-nums w-5">
+                              {i + 1}.
+                            </span>
+                            <span className="truncate font-medium">
+                              {u.username}
+                            </span>
+                          </span>
+                          <span className="flex items-center gap-1 shrink-0 text-primary font-semibold">
+                            <TrendingUp className="h-3.5 w-3.5" />
+                            {u.trust_score}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      href="/leaderboard"
+                      className="mt-3 flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                      Volledig leaderboard
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-card/80 border-border">
+                  <CardContent className="py-8 text-center">
+                    <Trophy className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Verdien punten en sta hier.
+                    </p>
+                    <Link href="/leaderboard">
+                      <Button variant="ghost" size="sm" className="mt-2">
+                        Leaderboard
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="border-b border-border bg-card/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Persona nav — clear paths for different user types */}
+      <section className="border-b border-border bg-muted/30 py-6 sm:py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p className="text-sm text-muted-foreground mb-4 text-center sm:text-left">
+            Wat wil jij doen?
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <Link
+              href="/geruchten"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50 hover:border-primary/30"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <MessageCircle className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-semibold block group-hover:text-primary transition-colors">
+                  Transfer Talk volgen
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  Geruchten lezen en stemmen
+                </span>
+              </div>
+              <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+            </Link>
+            <Link
+              href="/zoekertjes"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50 hover:border-primary/30"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <Search className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-semibold block group-hover:text-primary transition-colors">
+                  Team of speler zoeken
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  Zoekertjes bekijken of plaatsen
+                </span>
+              </div>
+              <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+            </Link>
+            <Link
+              href="/transfers"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50 hover:border-primary/30"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-semibold block group-hover:text-primary transition-colors">
+                  Bevestigde transfers
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  Officiële deals dit seizoen
+                </span>
+              </div>
+              <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats strip — community activity */}
+      <section className="border-b border-border py-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
             {[
-              {
-                icon: Flame,
-                label: "Actieve Geruchten",
-                value: featuredRumours.length.toString(),
-              },
-              {
-                icon: TrendingUp,
-                label: "Bevestigde Deals",
-                value: latestTransfers.length.toString(),
-              },
-              {
-                icon: Users,
-                label: "Spelersmarkt",
-                value: latestClassifieds.length.toString(),
-              },
-              {
-                icon: Trophy,
-                label: "Gebruikers op Leaderboard",
-                value: topContributors.length.toString(),
-              },
-            ].map((stat) => (
-              <div key={stat.label} className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <stat.icon className="h-5 w-5 text-primary" />
+              { icon: Flame, label: "Actieve geruchten", value: featuredRumours.length },
+              { icon: TrendingUp, label: "Bevestigde deals", value: latestTransfers.length },
+              { icon: Users, label: "Zoekertjes", value: latestClassifieds.length },
+              { icon: Medal, label: "Top contributors", value: topContributors.length },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {stat.label}
-                  </div>
+                  <div className="text-xl sm:text-2xl font-bold">{value}</div>
+                  <div className="text-xs text-muted-foreground">{label}</div>
                 </div>
               </div>
             ))}
@@ -196,31 +292,28 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Rumours Section */}
-      <section className="py-16">
+      {/* Featured rumours — prominent */}
+      <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-2xl font-bold mb-1">
-                Hot Topics - Nu Besproken
+              <h2 className="text-2xl font-bold tracking-tight">
+                Hot topics — nu besproken
               </h2>
-              <p className="text-muted-foreground">
-                De meest besproken transfers van dit moment
+              <p className="text-muted-foreground mt-1">
+                Meest besproken transfers van dit moment
               </p>
             </div>
-            <Link href="/geruchten">
-              <Button
-                variant="ghost"
-                className="text-primary hover:text-primary/80"
-              >
+            <Link href="/geruchten" className="shrink-0">
+              <Button variant="ghost" className="gap-2 text-primary hover:text-primary/90">
                 Bekijk alle
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
 
           {featuredRumours.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {featuredRumours.map((rumour) => (
                 <RumourCard key={rumour.id} rumour={rumour as any} />
               ))}
@@ -229,16 +322,12 @@ export default async function HomePage() {
             <Card className="bg-card border-border">
               <CardContent className="py-12 text-center">
                 <Flame className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">
-                  Nog geen geruchten?
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">Nog geen geruchten?</h3>
                 <p className="text-muted-foreground mb-4">
-                  Jij kan het eerste gerucht delen
+                  Jij kan het eerste gerucht delen.
                 </p>
                 <Link href="/geruchten/nieuw">
-                  <Button className="bg-primary text-primary-foreground">
-                    Gerucht Delen
-                  </Button>
+                  <Button>Gerucht delen</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -246,61 +335,57 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Latest Transfers & Leaderboard Section */}
-      <section className="py-16 bg-card/30 border-y border-border">
+      {/* Latest transfers + full leaderboard */}
+      <section className="py-12 sm:py-16 bg-muted/20 border-y border-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-1">Laatste Transfers</h2>
-                  <p className="text-muted-foreground">Dit seizoen bevestigd</p>
+                  <h2 className="text-2xl font-bold tracking-tight">
+                    Laatste transfers
+                  </h2>
+                  <p className="text-muted-foreground mt-1">
+                    Dit seizoen bevestigd
+                  </p>
                 </div>
-                <Link href="/transfers">
-                  <Button
-                    variant="ghost"
-                    className="text-primary hover:text-primary/80"
-                  >
+                <Link href="/transfers" className="shrink-0">
+                  <Button variant="ghost" className="gap-2 text-primary hover:text-primary/90">
                     Bekijk alle
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </div>
 
-              {latestTransfers.length > 0 ? (
+              {transfersForDisplay.length > 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {latestTransfers.map((transfer) => (
-                    <TransferCard key={transfer.id} transfer={transfer} />
+                  {transfersForDisplay.map((transfer) => (
+                    <TransferCard key={transfer.id} transfer={transfer as any} />
                   ))}
                 </div>
               ) : (
                 <Card className="bg-card border-border">
                   <CardContent className="py-12 text-center">
                     <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">
-                      Nog geen transfers
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Transfers worden hier getoond zodra ze bevestigd zijn.
+                    <h3 className="text-lg font-semibold mb-2">Nog geen transfers</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Transfers verschijnen hier zodra ze bevestigd zijn.
                     </p>
                   </CardContent>
                 </Card>
               )}
             </div>
 
-            <div>
+            <div className="lg:col-span-1">
               {topContributors.length > 0 ? (
-                <LeaderboardCard
-                  users={topContributors}
-                  title="Top Contributors"
-                />
+                <LeaderboardCard users={topContributors} title="Leaderboard" />
               ) : (
                 <Card className="bg-card border-border">
                   <CardContent className="py-12 text-center">
                     <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
                     <p className="text-muted-foreground text-sm">
-                      Registreer en verdien punten!
+                      Registreer en verdien punten.
                     </p>
                   </CardContent>
                 </Card>
@@ -310,23 +395,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Classifieds Section */}
-      <section className="py-16">
+      {/* Classifieds */}
+      <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-2xl font-bold mb-1">Zoekertjes</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-2xl font-bold tracking-tight">Zoekertjes</h2>
+              <p className="text-muted-foreground mt-1">
                 Spelers en teams op zoek naar elkaar
               </p>
             </div>
-            <Link href="/zoekertjes">
-              <Button
-                variant="ghost"
-                className="text-primary hover:text-primary/80"
-              >
+            <Link href="/zoekertjes" className="shrink-0">
+              <Button variant="ghost" className="gap-2 text-primary hover:text-primary/90">
                 Bekijk alle
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -340,17 +422,12 @@ export default async function HomePage() {
             <Card className="bg-card border-border">
               <CardContent className="py-12 text-center">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">
-                  Nog geen zoekertjes
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">Nog geen zoekertjes</h3>
                 <p className="text-muted-foreground mb-4">
-                  Plaats een zoekertje om je aan te bieden of een team te
-                  vinden.
+                  Plaats een zoekertje om je aan te bieden of een team te vinden.
                 </p>
                 <Link href="/zoekertjes/nieuw">
-                  <Button className="bg-primary text-primary-foreground">
-                    Zoekertje Plaatsen
-                  </Button>
+                  <Button>Zoekertje plaatsen</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -358,33 +435,23 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-balance">
-            Doe mee. Verdien Vertrouwen. Groei je Reputatie.
+      {/* CTA */}
+      <section className="py-16 sm:py-20 border-t border-border">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-balance mb-4">
+            Doe mee. Verdien vertrouwen. Groei je reputatie.
           </h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            Sluit aan bij duizenden volleybal fans. Deel insider info, stem op
-            transfers, en verdien punten voor betrouwbare tips. Hoe meer je
-            deelt, hoe meer je reputatie groeit.
+          <p className="text-muted-foreground mb-8 leading-relaxed">
+            Sluit aan bij de volleybalcommunity. Deel insider info, stem op
+            transfers en verdien punten voor betrouwbare tips.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-3">
             <Link href="/auth/sign-up">
-              <Button
-                size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Gratis Registreren
-              </Button>
+              <Button size="lg">Gratis registreren</Button>
             </Link>
             <Link href="/over-ons">
-              <Button
-                size="lg"
-                variant="outline"
-                className="bg-transparent border-border hover:bg-muted"
-              >
-                Meer Info
+              <Button size="lg" variant="outline">
+                Meer info
               </Button>
             </Link>
           </div>
