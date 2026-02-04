@@ -164,16 +164,14 @@ export default async function LeaderboardPage() {
                     <div className="shrink-0 w-8">{getRankIcon(index + 1)}</div>
                     <Avatar>
                       <AvatarFallback className="bg-primary/20 text-primary">
-                        {(user.display_name ||
-                          user.username ||
-                          "U")[0].toUpperCase()}
+                        {(user.username || "U")[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">
-                        {user.display_name || user.username || "Anoniem"}
+                        {user.username || "Anoniem"}
                       </p>
-                      {user.username && user.display_name && (
+                      {user.username && (
                         <p className="text-sm text-muted-foreground truncate">
                           @{user.username}
                         </p>
