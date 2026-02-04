@@ -57,10 +57,22 @@ interface ClassifiedsListProps {
 
 const CATEGORY_OPTIONS = [
   { value: "", label: "Alle" },
-  { value: "player_seeks_team", label: CLASSIFIED_TYPE_LABELS.player_seeks_team },
-  { value: "team_seeks_player", label: CLASSIFIED_TYPE_LABELS.team_seeks_player },
-  { value: "trainer_seeks_team", label: CLASSIFIED_TYPE_LABELS.trainer_seeks_team },
-  { value: "team_seeks_trainer", label: CLASSIFIED_TYPE_LABELS.team_seeks_trainer },
+  {
+    value: "player_seeks_team",
+    label: CLASSIFIED_TYPE_LABELS.player_seeks_team,
+  },
+  {
+    value: "team_seeks_player",
+    label: CLASSIFIED_TYPE_LABELS.team_seeks_player,
+  },
+  {
+    value: "trainer_seeks_team",
+    label: CLASSIFIED_TYPE_LABELS.trainer_seeks_team,
+  },
+  {
+    value: "team_seeks_trainer",
+    label: CLASSIFIED_TYPE_LABELS.team_seeks_trainer,
+  },
 ] as const;
 
 const ITEMS_PER_PAGE = 12;
@@ -124,7 +136,7 @@ export function ClassifiedsList({
     const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedResults = allSorted.slice(
       startIdx,
-      startIdx + ITEMS_PER_PAGE,
+      startIdx + ITEMS_PER_PAGE
     );
 
     return {
@@ -146,7 +158,7 @@ export function ClassifiedsList({
     try {
       const result = await getExistingConversation(
         classified.id,
-        classified.user_id,
+        classified.user_id
       );
 
       if (result.success && result.data?.conversationId) {
@@ -179,7 +191,9 @@ export function ClassifiedsList({
       {/* Category filter tabs */}
       <Tabs
         value={selectedType ?? ""}
-        onValueChange={(v) => handleFilterChange(() => setSelectedType(v || null))}
+        onValueChange={(v) =>
+          handleFilterChange(() => setSelectedType(v || null))
+        }
       >
         <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/60 p-1.5">
           {CATEGORY_OPTIONS.map(({ value, label }) => (
@@ -252,7 +266,7 @@ export function ClassifiedsList({
                 value={selectedProvince || ""}
                 onChange={(e) =>
                   handleFilterChange(() =>
-                    setSelectedProvince(e.target.value || null),
+                    setSelectedProvince(e.target.value || null)
                   )
                 }
                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
@@ -458,7 +472,7 @@ export function ClassifiedsList({
                                   {
                                     addSuffix: true,
                                     locale: nl,
-                                  },
+                                  }
                                 )}
                               </p>
                             </div>
@@ -522,7 +536,9 @@ export function ClassifiedsList({
                         <div className="mb-4">
                           <Badge
                             variant="outline"
-                            className={`${CLASSIFIED_TYPE_COLORS[classified.type]} text-xs font-semibold`}
+                            className={`${
+                              CLASSIFIED_TYPE_COLORS[classified.type]
+                            } text-xs font-semibold`}
                           >
                             {CLASSIFIED_TYPE_LABELS[classified.type]}
                           </Badge>
@@ -570,7 +586,7 @@ export function ClassifiedsList({
                               {
                                 addSuffix: true,
                                 locale: nl,
-                              },
+                              }
                             )}
                           </p>
                           <p className="text-foreground/60 flex items-center gap-2 flex-wrap">

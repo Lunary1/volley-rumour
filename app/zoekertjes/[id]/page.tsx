@@ -64,8 +64,7 @@ export async function generateMetadata({
   const { id } = await params;
   const classified = await getClassified(id);
   if (!classified) return { title: "Zoekertje" };
-  const title =
-    classified.contact_name || classified.title || "Zoekertje";
+  const title = classified.contact_name || classified.title || "Zoekertje";
   return { title: `${title} | Zoekertjes` };
 }
 
