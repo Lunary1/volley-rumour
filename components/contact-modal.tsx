@@ -36,12 +36,13 @@ export function ContactModal({
 
       const result = await createConversation(adId, adType, userId, message);
 
-      if (result.success && result.data) {
-        // Navigate to the new conversation
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      if (result.data) {
         router.push(`/messages/${result.data.conversationId}`);
         onClose();
-      } else {
-        toast.error(result.error);
       }
     } catch (err) {
       console.error("Error:", err);

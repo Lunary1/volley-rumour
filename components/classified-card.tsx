@@ -17,6 +17,7 @@ interface ClassifiedCardProps {
     author: {
       username: string;
     };
+    featured_until?: string | null;
   };
 }
 

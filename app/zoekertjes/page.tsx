@@ -24,7 +24,7 @@ async function getClassifieds() {
       user_id,
       is_featured,
       featured_until,
-      profiles(username)
+      profiles(username, trust_score)
     `,
     )
     .eq("is_active", true)
@@ -34,7 +34,11 @@ async function getClassifieds() {
     console.error("Error fetching classifieds:", error);
   }
 
-  return data || [];
+  const rows = data ?? [];
+  return rows.map((row: (typeof rows)[0]) => ({
+    ...row,
+    profiles: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles,
+  }));
 }
 
 export default async function ZoekertjesPage() {

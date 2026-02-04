@@ -20,7 +20,13 @@ import { nl } from "date-fns/locale";
 import { ContactModal } from "@/components/contact-modal";
 import { getExistingConversation } from "@/app/actions/messages";
 import { useRouter } from "next/navigation";
-import { getDivisionLabel, getProvinceLabel } from "@/lib/classifieds-utils";
+import Link from "next/link";
+import {
+  getDivisionLabel,
+  getProvinceLabel,
+  PROVINCE_LABELS,
+} from "@/lib/classifieds-utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Classified {
   id: string;
@@ -38,6 +44,7 @@ interface Classified {
   featured_until?: string | null;
   profiles?: {
     username: string;
+    trust_score?: number | null;
   } | null;
 }
 
@@ -60,18 +67,13 @@ const classifiedTypeColors: Record<string, string> = {
   team_seeks_trainer: "bg-chart-4/20 text-chart-4 border-chart-4/30",
 };
 
-const provinces = [
-  "Antwerpen",
-  "Brussel",
-  "Henegouwen",
-  "Limburg",
-  "Luik",
-  "Luxemburg",
-  "Namen",
-  "Oost-Vlaanderen",
-  "Waals-Brabant",
-  "West-Vlaanderen",
-];
+const CATEGORY_OPTIONS = [
+  { value: "", label: "Alle" },
+  { value: "player_seeks_team", label: "Speler zoekt team" },
+  { value: "team_seeks_player", label: "Team zoekt speler" },
+  { value: "trainer_seeks_team", label: "Trainer zoekt team" },
+  { value: "team_seeks_trainer", label: "Team zoekt trainer" },
+] as const;
 
 const ITEMS_PER_PAGE = 12;
 
@@ -186,55 +188,73 @@ export function ClassifiedsList({
 
   return (
     <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="flex gap-2">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Zoek op titel, beschrijving of auteur..."
-            value={searchQuery}
-            onChange={(e) =>
-              handleFilterChange(() => setSearchQuery(e.target.value))
-            }
-            className="pl-10 bg-background"
-          />
+      {/* Category filter tabs */}
+      <Tabs
+        value={selectedType ?? ""}
+        onValueChange={(v) => handleFilterChange(() => setSelectedType(v || null))}
+      >
+        <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/60 p-1.5">
+          {CATEGORY_OPTIONS.map(({ value, label }) => (
+            <TabsTrigger
+              key={value || "all"}
+              value={value}
+              className="flex-1 min-w-0 sm:flex-none data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {/* Search bar + suggestions */}
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Zoek op titel, beschrijving of auteur..."
+              value={searchQuery}
+              onChange={(e) =>
+                handleFilterChange(() => setSearchQuery(e.target.value))
+              }
+              className="pl-10 bg-background"
+            />
+          </div>
+          <Button
+            variant={hasActiveFilters ? "default" : "outline"}
+            onClick={() => setShowFilters(!showFilters)}
+            className="px-4 shrink-0"
+          >
+            Filters {hasActiveFilters && "✓"}
+          </Button>
         </div>
-        <Button
-          variant={hasActiveFilters ? "default" : "outline"}
-          onClick={() => setShowFilters(!showFilters)}
-          className="px-4"
-        >
-          Filters {hasActiveFilters && "✓"}
-        </Button>
+        <p className="text-xs text-muted-foreground">Populaire categorieën:</p>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORY_OPTIONS.filter((o) => o.value).map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                handleFilterChange(() => {
+                  setSelectedType(selectedType === value ? null : value);
+                })
+              }
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                selectedType === value
+                  ? classifiedTypeColors[value]
+                  : "bg-muted/80 text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Filters Panel */}
+      {/* Filters panel (province, sort) */}
       {showFilters && (
         <div className="bg-card p-4 rounded-lg border border-border space-y-4 animate-in fade-in slide-in-from-top-2">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Type Filter */}
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Type
-              </label>
-              <select
-                value={selectedType || ""}
-                onChange={(e) =>
-                  handleFilterChange(() =>
-                    setSelectedType(e.target.value || null),
-                  )
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              >
-                <option value="">Alle typen</option>
-                <option value="player_seeks_team">Speler zoekt team</option>
-                <option value="team_seeks_player">Team zoekt speler</option>
-                <option value="trainer_seeks_team">Trainer zoekt team</option>
-                <option value="team_seeks_trainer">Team zoekt trainer</option>
-              </select>
-            </div>
-
-            {/* Province Filter */}
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">
                 Provincie
@@ -249,15 +269,13 @@ export function ClassifiedsList({
                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               >
                 <option value="">Alle provincies</option>
-                {provinces.map((prov) => (
-                  <option key={prov} value={prov}>
-                    {prov}
+                {Object.entries(PROVINCE_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
                   </option>
                 ))}
               </select>
             </div>
-
-            {/* Sort */}
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">
                 Sorteren
@@ -275,7 +293,6 @@ export function ClassifiedsList({
               </select>
             </div>
           </div>
-
           {hasActiveFilters && (
             <Button
               variant="outline"
@@ -298,12 +315,40 @@ export function ClassifiedsList({
 
       {/* Results */}
       {totalResults === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-muted-foreground">
-            {classifieds.length === 0
-              ? "Nog geen zoekertjes geplaatst"
-              : "Geen zoekertjes gevonden met deze filters"}
-          </p>
+        <Card className="overflow-hidden border-border">
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <Search className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {classifieds.length === 0
+                ? "Nog geen zoekertjes"
+                : "Geen zoekertjes gevonden"}
+            </h3>
+            <p className="text-muted-foreground max-w-sm mb-6">
+              {classifieds.length === 0
+                ? "Wees de eerste om een zoekertje te plaatsen en vind spelers, trainers of teams."
+                : "Probeer andere filters of zoektermen."}
+            </p>
+            {classifieds.length === 0 && (
+              <Button asChild>
+                <Link href="/zoekertjes/nieuw">Plaats zoekertje</Link>
+              </Button>
+            )}
+            {classifieds.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedType(null);
+                  setSelectedProvince(null);
+                  setCurrentPage(1);
+                }}
+              >
+                Filters wissen
+              </Button>
+            )}
+          </div>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -348,7 +393,7 @@ export function ClassifiedsList({
               <h2 className="text-xl font-bold text-foreground mb-6 tracking-tight">
                 Aanbevolen
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredAndSorted
                   .filter((c) => c.is_featured)
                   .slice(0, 2)
@@ -428,11 +473,17 @@ export function ClassifiedsList({
                                 )}
                               </p>
                             </div>
-                            <p className="text-xs text-foreground/60">
+                            <p className="text-xs text-foreground/60 flex items-center gap-2 flex-wrap">
                               Geplaatst door{" "}
                               <span className="font-medium text-foreground/80">
                                 {classified.profiles?.username || "Onbekend"}
                               </span>
+                              {classified.profiles?.trust_score != null && (
+                                <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
+                                  <Star className="h-3 w-3 fill-current" />
+                                  {classified.profiles.trust_score}
+                                </span>
+                              )}
                             </p>
                           </div>
 
@@ -463,100 +514,107 @@ export function ClassifiedsList({
             <h2 className="text-xl font-bold text-foreground mb-6 tracking-tight">
               Alle zoekertjes
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredAndSorted
                 .filter((c) => !c.is_featured)
                 .map((classified) => {
                   const isOwnClassified = currentUserId === classified.user_id;
 
                   return (
-                    <div
+                    <article
                       key={classified.id}
-                      className="group rounded-xl p-5 bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 cursor-pointer flex flex-col h-full"
-                      onClick={() => {
-                        if (!isOwnClassified) {
-                          handleContactClick(classified);
-                        }
-                      }}
+                      className="group rounded-xl p-5 bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col h-full"
                     >
-                      {/* Type badge */}
-                      <div className="mb-4">
-                        <Badge
-                          variant="outline"
-                          className={`${classifiedTypeColors[classified.type]} text-xs font-semibold`}
-                        >
-                          {classifiedTypeLabels[classified.type]}
-                        </Badge>
-                      </div>
+                      <Link
+                        href={`/zoekertjes/${classified.id}`}
+                        className="flex flex-col flex-1 min-h-0"
+                      >
+                        {/* Type badge */}
+                        <div className="mb-4">
+                          <Badge
+                            variant="outline"
+                            className={`${classifiedTypeColors[classified.type]} text-xs font-semibold`}
+                          >
+                            {classifiedTypeLabels[classified.type]}
+                          </Badge>
+                        </div>
 
-                      {/* Contact name + Position */}
-                      <div className="mb-3 flex-1">
-                        <h3 className="font-semibold text-foreground text-base leading-snug group-hover:text-primary transition-colors">
-                          {classified.contact_name || "Onbekend"}
-                        </h3>
-                        {classified.position && (
-                          <p className="text-sm text-primary font-medium mt-1">
-                            {classified.position}
+                        {/* Contact name + Position */}
+                        <div className="mb-3 flex-1">
+                          <h3 className="font-semibold text-foreground text-base leading-snug group-hover:text-primary transition-colors">
+                            {classified.contact_name || "Onbekend"}
+                          </h3>
+                          {classified.position && (
+                            <p className="text-sm text-primary font-medium mt-1">
+                              {classified.position}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Team name */}
+                        {classified.team_name && (
+                          <p className="text-sm font-medium text-foreground/80 mb-2 line-clamp-1">
+                            {classified.team_name}
                           </p>
                         )}
-                      </div>
 
-                      {/* Team name */}
-                      {classified.team_name && (
-                        <p className="text-sm font-medium text-foreground/80 mb-2 line-clamp-1">
-                          {classified.team_name}
-                        </p>
-                      )}
-
-                      {/* Division + Province */}
-                      <div className="flex flex-col gap-1 mb-4 text-xs text-foreground/60">
-                        {classified.division && (
-                          <span className="font-medium">
-                            {getDivisionLabel(classified.division)}
-                          </span>
-                        )}
-                        {classified.province && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {getProvinceLabel(classified.province)}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Date */}
-                      <div className="text-xs text-muted-foreground mb-3 border-t border-border pt-3 space-y-2">
-                        <p>
-                          {formatDistanceToNow(
-                            new Date(classified.created_at),
-                            {
-                              addSuffix: true,
-                              locale: nl,
-                            },
+                        {/* Division + Province */}
+                        <div className="flex flex-col gap-1 mb-4 text-xs text-foreground/60">
+                          {classified.division && (
+                            <span className="font-medium">
+                              {getDivisionLabel(classified.division)}
+                            </span>
                           )}
-                        </p>
-                        <p className="text-foreground/60">
-                          Door{" "}
-                          <span className="font-medium text-foreground/80">
-                            {classified.profiles?.username || "Onbekend"}
-                          </span>
-                        </p>
-                      </div>
+                          {classified.province && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {getProvinceLabel(classified.province)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Date + author + trust */}
+                        <div className="text-xs text-muted-foreground mb-3 border-t border-border pt-3 space-y-2">
+                          <p>
+                            {formatDistanceToNow(
+                              new Date(classified.created_at),
+                              {
+                                addSuffix: true,
+                                locale: nl,
+                              },
+                            )}
+                          </p>
+                          <p className="text-foreground/60 flex items-center gap-2 flex-wrap">
+                            Door{" "}
+                            <span className="font-medium text-foreground/80">
+                              {classified.profiles?.username || "Onbekend"}
+                            </span>
+                            {classified.profiles?.trust_score != null && (
+                              <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
+                                <Star className="h-3 w-3 fill-current" />
+                                {classified.profiles.trust_score}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </Link>
 
                       {/* CTA Button */}
                       {!isOwnClassified && (
                         <button
+                          type="button"
                           onClick={(e) => {
-                            e.stopPropagation();
+                            e.preventDefault();
                             handleContactClick(classified);
                           }}
                           disabled={checkingConversation}
-                          className="w-full px-3 py-2 rounded-lg font-semibold text-primary-foreground text-sm bg-primary hover:bg-primary/90 transition-all duration-150 flex items-center justify-center gap-2"
+                          className="w-full px-3 py-2 rounded-lg font-semibold text-primary-foreground text-sm bg-primary hover:bg-primary/90 transition-all duration-150 flex items-center justify-center gap-2 mt-auto"
                         >
                           <MessageSquare className="h-3.5 w-3.5" />
                           Contact
                         </button>
                       )}
-                    </div>
+                    </article>
                   );
                 })}
             </div>
