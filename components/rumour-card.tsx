@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,11 +10,13 @@ import {
   TrendingUp,
   User,
   ArrowRight,
+  MessageSquare,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { getUserVoteOnRumour } from "@/app/actions/vote";
 import { createClient } from "@/lib/supabase/client";
+import { RumourDetailModal } from "@/components/rumour-detail-modal";
 
 interface RumourCardProps {
   rumour: {
@@ -51,16 +53,17 @@ const categoryColors: Record<string, string> = {
   trainer_retirement: "bg-muted text-muted-foreground border-muted",
 };
 
+// Status: pending (rumour), confirmed, debunked (denied)
 const statusLabels: Record<string, string> = {
-  rumour: "Gerucht",
+  rumour: "Lopend",
   confirmed: "Bevestigd ✓",
   denied: "Ontkracht ✗",
 };
 
 const statusColors: Record<string, string> = {
-  rumour: "bg-yellow-500/20 text-yellow-700 border-yellow-200",
-  confirmed: "bg-green-500/20 text-green-700 border-green-200",
-  denied: "bg-red-500/20 text-red-700 border-red-200",
+  rumour: "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
+  confirmed: "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
+  denied: "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
 };
 
 export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
@@ -71,6 +74,9 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const votesRef = useRef({ up: rumour.votes_true, down: rumour.votes_false });
+  votesRef.current = { up: localUpvotes, down: localDownvotes };
 
   // Fetch persistent user vote on mount
   useEffect(() => {
@@ -101,9 +107,10 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
           },
           (payload) => {
             if (payload.new) {
-              // Update local state with new vote counts from the database
-              setLocalUpvotes(payload.new.votes_true ?? localUpvotes);
-              setLocalDownvotes(payload.new.votes_false ?? localDownvotes);
+              const up = payload.new.votes_true ?? votesRef.current.up;
+              const down = payload.new.votes_false ?? votesRef.current.down;
+              setLocalUpvotes(up);
+              setLocalDownvotes(down);
             }
           },
         )
@@ -117,7 +124,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
         channel.unsubscribe();
       }
     };
-  }, [rumour.id, localUpvotes, localDownvotes]);
+  }, [rumour.id]);
 
   const handleVote = async (voteType: "up" | "down") => {
     if (localUserVote === voteType || isVoting) return;
@@ -143,36 +150,22 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
     setLocalUserVote(voteType);
 
     try {
-      // Call server action to vote
       if (onVote) {
-        console.log(
-          `[VOTE] Voting on rumour ${rumour.id} with type ${voteType}`,
-        );
         const result = await onVote(rumour.id, voteType);
-        console.log(`[VOTE] Server response:`, result);
 
         if (result?.error) {
-          console.error(`[VOTE] Error from server:`, result.error);
-          // Revert on error
           setLocalUpvotes(previousUpvotes);
           setLocalDownvotes(previousDownvotes);
           setLocalUserVote(previousUserVote);
         } else if (result?.success) {
-          console.log(`[VOTE] Vote successful, refetching data...`);
-          // Refetch the rumour data using client-side Supabase to bypass cache
           const supabase = await createClient();
-          const { data, error } = await supabase
+          const { data } = await supabase
             .from("rumours")
             .select("votes_true, votes_false")
             .eq("id", rumour.id)
             .single();
 
-          console.log(`[VOTE] Refetch result:`, { data, error });
-
           if (data) {
-            console.log(
-              `[VOTE] Updating local state with DB values: up=${data.votes_true}, down=${data.votes_false}`,
-            );
             setLocalUpvotes(data.votes_true);
             setLocalDownvotes(data.votes_false);
           }
@@ -213,8 +206,18 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
     return "bg-blue-600";
   };
 
+  // Color-code card border by confidence (karma) and creator trust
+  const getCardBorderClass = () => {
+    if (karma < 35) return "border-l-4 border-l-red-500 dark:border-l-red-400";
+    if (karma < 50) return "border-l-4 border-l-orange-500 dark:border-l-orange-400";
+    if (karma === 50) return "border-l-4 border-l-muted-foreground/50";
+    if (karma < 65) return "border-l-4 border-l-blue-400 dark:border-l-blue-300";
+    return "border-l-4 border-l-blue-600 dark:border-l-blue-400";
+  };
+
   return (
-    <Card className="bg-card border-border dark:border-neon-cyan/30 hover:dark:border-neon-cyan/60 transition-all h-full flex flex-col dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group">
+    <>
+      <Card className={`bg-card border-border dark:border-neon-cyan/30 hover:dark:border-neon-cyan/60 transition-all h-full flex flex-col dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group ${getCardBorderClass()}`}>
       <CardContent className="p-5 flex flex-col h-full">
         {/* Top Section: Category & Status Badges + Time */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -315,18 +318,49 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
           </Button>
         </div>
 
-        {/* Footer: Creator Info */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
+        {/* Footer: Creator + Trust + Discussion */}
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
           <div className="flex items-center gap-1.5">
             <User className="h-3.5 w-3.5" />
             <span className="font-medium">{rumour.creator.username}</span>
           </div>
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5">
             <TrendingUp className="h-3.5 w-3.5 text-primary" />
             <span className="font-semibold">{rumour.creator.trust_score}</span>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto gap-1.5 text-primary hover:text-primary/90"
+            onClick={() => setDetailOpen(true)}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            Bekijk meer
+          </Button>
         </div>
       </CardContent>
     </Card>
+
+      <RumourDetailModal
+        rumour={{
+          id: rumour.id,
+          player_name: rumour.player_name,
+          from_club_name: rumour.from_club_name,
+          to_club_name: rumour.to_club_name,
+          category: rumour.category,
+          description: rumour.description,
+          created_at: rumour.created_at,
+          status: rumour.status,
+          creator: rumour.creator,
+        }}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        votes={{ up: localUpvotes, down: localDownvotes }}
+        userVote={localUserVote}
+        onVote={(_id, voteType) => handleVote(voteType)}
+        isLoading={isLoading}
+        isVoting={isVoting}
+      />
+    </>
   );
 }

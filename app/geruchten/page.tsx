@@ -113,9 +113,9 @@ export default async function GeruchtenPage(props: {
           </Link>
         </div>
 
-        {/* Rumours Grid */}
+        {/* Rumours Grid - 1 col mobile, 2–3 desktop */}
         {displayRumours.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             {displayRumours.map((rumour) => (
               <RumourCard
                 key={rumour.id}
