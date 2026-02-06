@@ -247,8 +247,7 @@ export default function NewRumourPage() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="lastName">
-                          Achternaam{" "}
-                          <span className="text-neon-coral">*</span>
+                          Achternaam <span className="text-neon-coral">*</span>
                         </Label>
                         <p className="text-xs text-muted-foreground">
                           {isPlayerCategory(selectedCategory)
@@ -291,8 +290,7 @@ export default function NewRumourPage() {
                       {showGender && (
                         <div className="space-y-2 animate-in fade-in-0 duration-200">
                           <Label htmlFor="gender">
-                            Geslacht{" "}
-                            <span className="text-neon-coral">*</span>
+                            Geslacht <span className="text-neon-coral">*</span>
                           </Label>
                           <p className="text-xs text-muted-foreground">
                             Man of vrouw
@@ -376,8 +374,7 @@ export default function NewRumourPage() {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="destinationClub">
-                            Doelclub{" "}
-                            <span className="text-neon-coral">*</span>
+                            Doelclub <span className="text-neon-coral">*</span>
                           </Label>
                           <p className="text-xs text-muted-foreground">
                             {isPlayerCategory(selectedCategory)
