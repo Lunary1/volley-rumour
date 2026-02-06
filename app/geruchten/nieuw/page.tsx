@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { createRumour } from "@/app/actions/rumour";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,7 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Loader2, Info } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 const DIVISIONS = [
@@ -57,13 +56,31 @@ const RUMOUR_CATEGORIES = [
   { value: "trainer_retirement", label: "Trainer Stopt" },
 ];
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function isPlayerCategory(cat: string) {
+  return cat === "transfer" || cat === "player_retirement";
+}
+function isTransferCategory(cat: string) {
+  return cat === "transfer" || cat === "trainer_transfer";
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
 export default function NewRumourPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<Record<string, unknown> | null>(null);
   const [descriptionLength, setDescriptionLength] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+
+  // Derived booleans for conditional rendering
+  const showGender = isPlayerCategory(selectedCategory);
+  const showDestination = isTransferCategory(selectedCategory);
+  const sectionLabel = isPlayerCategory(selectedCategory)
+    ? "Gegevens Speler/Speelster"
+    : "Gegevens Trainer";
 
   useEffect(() => {
     const checkUser = async () => {
@@ -77,7 +94,6 @@ export default function NewRumourPage() {
         return;
       }
 
-      // Fetch user profile to get email
       const { data: profile } = await supabase
         .from("profiles")
         .select("email, username")
@@ -86,58 +102,35 @@ export default function NewRumourPage() {
 
       setUser({ ...authUser, ...profile });
     };
-
     checkUser();
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
-
-    // Validate category is selected
     if (!selectedCategory) {
       setError("Selecteer alstublieft een soort gerucht");
-      setLoading(false);
       return;
     }
 
-    const supabase = createClient();
+    const formData = new FormData(e.currentTarget);
+    formData.set("category", selectedCategory);
 
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
+    startTransition(async () => {
+      const result = await createRumour(formData);
 
-    if (!authUser) {
-      setError("Je moet ingelogd zijn om een gerucht te delen");
-      setLoading(false);
-      return;
-    }
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
 
-    const rumourData = {
-      player_name: `${formData.get("playerFirstName")} ${formData.get("playerLastName")}`,
-      from_club_name: formData.get("currentTeam") as string,
-      to_club_name: formData.get("newClub") as string,
-      description: (formData.get("description") as string) || null,
-      category: selectedCategory,
-      creator_id: authUser.id,
-    };
-
-    const { error: insertError } = await supabase
-      .from("rumours")
-      .insert(rumourData);
-
-    if (insertError) {
-      setError(insertError.message);
-      setLoading(false);
-      return;
-    }
-
-    router.push("/geruchten");
-    router.refresh();
+      router.push("/geruchten");
+      router.refresh();
+    });
   }
+
+  // ── Loading state ──────────────────────────────────────────────────────────
 
   if (!user) {
     return (
@@ -150,6 +143,8 @@ export default function NewRumourPage() {
       </div>
     );
   }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen py-8">
@@ -166,12 +161,12 @@ export default function NewRumourPage() {
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
               <CardTitle className="text-2xl gradient-text-neon">
-                Nieuwe Transfer
+                Nieuw Gerucht
               </CardTitle>
             </div>
             <CardDescription>
-              Deel een transfer mogelijkheid met de community. Als je tip klopt,
-              verdien je punten!
+              Deel een transfer of stopzetting met de community. Als je tip
+              klopt, verdien je punten!
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -196,7 +191,7 @@ export default function NewRumourPage() {
                 </div>
               )}
 
-              {/* Rumour Category Section */}
+              {/* ── Step 1: Category selector ─────────────────────────────── */}
               <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border dark:border-neon-cyan/10">
                 <div className="space-y-2">
                   <Label htmlFor="category">
@@ -209,10 +204,13 @@ export default function NewRumourPage() {
                     name="category"
                     required
                     value={selectedCategory}
-                    onValueChange={setSelectedCategory}
+                    onValueChange={(v) => {
+                      setSelectedCategory(v);
+                      setError(null);
+                    }}
                   >
                     <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
-                      <SelectValue placeholder="Selecteer categorieën" />
+                      <SelectValue placeholder="Selecteer type gerucht" />
                     </SelectTrigger>
                     <SelectContent>
                       {RUMOUR_CATEGORIES.map((cat) => (
@@ -225,212 +223,258 @@ export default function NewRumourPage() {
                 </div>
               </div>
 
-              {/* Player/Athlete Data Section */}
-              <div className="space-y-4">
-                <div className="pb-3 border-b border-neon-cyan/20 dark:border-neon-cyan/30">
-                  <h3 className="text-lg font-semibold text-neon-cyan dark:text-neon-cyan flex items-center gap-2">
-                    <span className="text-xl"></span> Gegevens Speler/Speelster
-                  </h3>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="playerLastName">
-                      Achternaam <span className="text-neon-coral">*</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      De voornaam van de speler
-                    </p>
-                    <Input
-                      id="playerLastName"
-                      name="playerLastName"
-                      placeholder="Bijv. Janssen"
-                      minLength={2}
-                      maxLength={100}
-                      required
-                      className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="playerFirstName">
-                      Voornaam <span className="text-neon-coral">*</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      De achternaam van de speler
-                    </p>
-                    <Input
-                      id="playerFirstName"
-                      name="playerFirstName"
-                      placeholder="Bijv. Jan"
-                      minLength={2}
-                      maxLength={100}
-                      required
-                      className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="gender">
-                      Geslacht <span className="text-neon-coral">*</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Man of vrouw
-                    </p>
-                    <Select name="gender" required>
-                      <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
-                        <SelectValue placeholder="Selecteer geslacht" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {GENDERS.map((gender) => (
-                          <SelectItem key={gender.value} value={gender.value}>
-                            {gender.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="currentTeam">
-                      Huidige Club <span className="text-neon-coral">*</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      De club waar de speler momenteel speelt
-                    </p>
-                    <Input
-                      id="currentTeam"
-                      name="currentTeam"
-                      placeholder="Bijv. Knack Roeselare"
-                      required
-                      className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="currentDivision">
-                    Huidig Niveau{" "}
-                    <span className="text-muted-foreground">(optioneel)</span>
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Het competitieniveau van de huidige club
+              {/* ── Prompt when no category selected ──────────────────────── */}
+              {!selectedCategory && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-sm">
+                    👆 Selecteer eerst een type gerucht om de rest van het
+                    formulier te zien.
                   </p>
-                  <Select name="currentDivision">
-                    <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
-                      <SelectValue placeholder="Selecteer niveau" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DIVISIONS.map((division) => (
-                        <SelectItem key={division.value} value={division.value}>
-                          {division.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
-              </div>
+              )}
 
-              {/* New Club Data Section */}
-              <div className="space-y-4">
-                <div className="pb-3 border-b border-neon-coral/20 dark:border-neon-coral/30">
-                  <h3 className="text-lg font-semibold text-neon-coral dark:text-neon-coral flex items-center gap-2">
-                    <span className="text-xl"></span> Gegevens Nieuwe Club
-                  </h3>
-                </div>
+              {/* ── Step 2: Fields shown once a category is selected ───── */}
+              {selectedCategory && (
+                <div className="space-y-8 animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                  {/* ── Person data section ────────────────────────────── */}
+                  <div className="space-y-4">
+                    <div className="pb-3 border-b border-neon-cyan/20 dark:border-neon-cyan/30">
+                      <h3 className="text-lg font-semibold text-neon-cyan dark:text-neon-cyan flex items-center gap-2">
+                        <span className="text-xl"></span> {sectionLabel}
+                      </h3>
+                    </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="newClub">
-                      Doelclub <span className="text-neon-coral">*</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      De club waar de speler naartoe gaat
-                    </p>
-                    <Input
-                      id="newClub"
-                      name="newClub"
-                      placeholder="Bijv. Caruur Gent Volley"
-                      required
-                      className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
-                    />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">
+                          Achternaam <span className="text-neon-coral">*</span>
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {isPlayerCategory(selectedCategory)
+                            ? "De achternaam van de speler"
+                            : "De achternaam van de trainer"}
+                        </p>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          placeholder="Bijv. Janssen"
+                          minLength={2}
+                          maxLength={100}
+                          required
+                          className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">
+                          Voornaam <span className="text-neon-coral">*</span>
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {isPlayerCategory(selectedCategory)
+                            ? "De voornaam van de speler"
+                            : "De voornaam van de trainer"}
+                        </p>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          placeholder="Bijv. Jan"
+                          minLength={2}
+                          maxLength={100}
+                          required
+                          className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {/* Gender — only for player categories */}
+                      {showGender && (
+                        <div className="space-y-2 animate-in fade-in-0 duration-200">
+                          <Label htmlFor="gender">
+                            Geslacht <span className="text-neon-coral">*</span>
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Man of vrouw
+                          </p>
+                          <Select name="gender" required>
+                            <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                              <SelectValue placeholder="Selecteer geslacht" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {GENDERS.map((gender) => (
+                                <SelectItem
+                                  key={gender.value}
+                                  value={gender.value}
+                                >
+                                  {gender.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {/* Current club */}
+                      <div className="space-y-2">
+                        <Label htmlFor="currentClub">
+                          Huidige Club{" "}
+                          <span className="text-neon-coral">*</span>
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {isPlayerCategory(selectedCategory)
+                            ? "De club waar de speler momenteel speelt"
+                            : "De club waar de trainer momenteel werkt"}
+                        </p>
+                        <Input
+                          id="currentClub"
+                          name="currentClub"
+                          placeholder="Bijv. Knack Roeselare"
+                          required
+                          className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="currentDivision">
+                        Huidig Niveau{" "}
+                        <span className="text-muted-foreground">
+                          (optioneel)
+                        </span>
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Het competitieniveau van de huidige club
+                      </p>
+                      <Select name="currentDivision">
+                        <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                          <SelectValue placeholder="Selecteer niveau" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DIVISIONS.map((division) => (
+                            <SelectItem
+                              key={division.value}
+                              value={division.value}
+                            >
+                              {division.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newDivision">
-                      Doelniveau <span className="text-neon-coral">*</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Het competitieniveau van de doelclub
-                    </p>
-                    <Select name="newDivision" required>
-                      <SelectTrigger className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
-                        <SelectValue placeholder="Selecteer niveau" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DIVISIONS.map((division) => (
-                          <SelectItem
-                            key={division.value}
-                            value={division.value}
-                          >
-                            {division.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
+                  {/* ── Destination club section — transfer types only ── */}
+                  {showDestination && (
+                    <div className="space-y-4 animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                      <div className="pb-3 border-b border-neon-coral/20 dark:border-neon-coral/30">
+                        <h3 className="text-lg font-semibold text-neon-coral dark:text-neon-coral flex items-center gap-2">
+                          <span className="text-xl"></span> Gegevens Nieuwe Club
+                        </h3>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="destinationClub">
+                            Doelclub <span className="text-neon-coral">*</span>
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            {isPlayerCategory(selectedCategory)
+                              ? "De club waar de speler naartoe gaat"
+                              : "De club waar de trainer naartoe gaat"}
+                          </p>
+                          <Input
+                            id="destinationClub"
+                            name="destinationClub"
+                            placeholder="Bijv. Caruur Gent Volley"
+                            required
+                            className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="destinationDivision">
+                            Doelniveau{" "}
+                            <span className="text-muted-foreground">
+                              (optioneel)
+                            </span>
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Het competitieniveau van de doelclub
+                          </p>
+                          <Select name="destinationDivision">
+                            <SelectTrigger className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                              <SelectValue placeholder="Selecteer niveau" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DIVISIONS.map((division) => (
+                                <SelectItem
+                                  key={division.value}
+                                  value={division.value}
+                                >
+                                  {division.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Description (always shown) ────────────────────── */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="description">
+                        Extra informatie
+                        <span className="text-muted-foreground">
+                          {" "}
+                          (optioneel)
+                        </span>
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Voeg aanvullende details toe die je tip sterker maken —
+                        bronnen, geruchten, etc. Maximum 2000 tekens.
+                      </p>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        placeholder="Deel meer details over dit gerucht. Voeg bronnen of context toe..."
+                        rows={4}
+                        maxLength={2000}
+                        onChange={(e) =>
+                          setDescriptionLength(e.currentTarget.value.length)
+                        }
+                        className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span></span>
+                        <span>{descriptionLength} / 2000 tekens</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Form actions ──────────────────────────────────── */}
+                  <div className="flex gap-3 pt-6 border-t border-border dark:border-neon-cyan/10">
+                    <Link href="/geruchten" className="flex-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full bg-transparent border-neon-cyan/50 dark:border-neon-cyan/70 hover:bg-neon-cyan/10 dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.2)] text-neon-cyan dark:text-neon-cyan"
+                      >
+                        Annuleren
+                      </Button>
+                    </Link>
+                    <Button
+                      type="submit"
+                      className="flex-1 gradient-text-neon bg-linear-to-b from-neon-magenta/40 to-neon-coral/40 hover:from-neon-magenta/50 hover:to-neon-coral/50 border border-neon-magenta/50 dark:border-neon-magenta/70 dark:shadow-[0_0_20px_rgba(216,180,254,0.2)] dark:hover:shadow-[0_0_30px_rgba(216,180,254,0.4)] text-white dark:text-white"
+                      disabled={isPending}
+                    >
+                      {isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Gerucht Delen
+                    </Button>
                   </div>
                 </div>
-              </div>
-
-              {/* Additional Info */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="description">
-                    Extra informatie
-                    <span className="text-muted-foreground"> (optioneel)</span>
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Voeg aanvullende details toe die je tip sterker maken —
-                    bronnen, geruchten, etc. Minimum 10 tekens, maximum 2000.
-                  </p>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    placeholder="Deel meer details over dit gerucht. Voeg bronnen of context toe..."
-                    rows={4}
-                    minLength={10}
-                    maxLength={2000}
-                    onChange={(e) =>
-                      setDescriptionLength(e.currentTarget.value.length)
-                    }
-                    className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span></span>
-                    <span>{descriptionLength} / 2000 tekens</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Form Actions */}
-              <div className="flex gap-3 pt-6 border-t border-border dark:border-neon-cyan/10">
-                <Link href="/geruchten" className="flex-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full bg-transparent border-neon-cyan/50 dark:border-neon-cyan/70 hover:bg-neon-cyan/10 dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.2)] text-neon-cyan dark:text-neon-cyan"
-                  >
-                    Annuleren
-                  </Button>
-                </Link>
-                <Button
-                  type="submit"
-                  className="flex-1 gradient-text-neon bg-linear-to-b from-neon-magenta/40 to-neon-coral/40 hover:from-neon-magenta/50 hover:to-neon-coral/50 border border-neon-magenta/50 dark:border-neon-magenta/70 dark:shadow-[0_0_20px_rgba(216,180,254,0.2)] dark:hover:shadow-[0_0_30px_rgba(216,180,254,0.4)] text-white dark:text-white"
-                  disabled={loading}
-                >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Gerucht Delen
-                </Button>
-              </div>
+              )}
             </form>
           </CardContent>
         </Card>

@@ -18,7 +18,6 @@ Workflow:
 1. Checkout or create branch always from main: feature/<JIRA-KEY>-<slug>
 2. Implement the feature
 3. Run required checks:
-   - lint
    - typecheck
    - test
    - build
