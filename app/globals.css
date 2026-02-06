@@ -97,4 +97,13 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  /* Homepage hero — modern sport aesthetic */
+  .hero-sport {
+    background: linear-gradient(
+      160deg,
+      var(--background) 0%,
+      oklch(0.18 0.03 145) 40%,
+      oklch(0.16 0.04 145) 100%
+    );
+  }
 }
