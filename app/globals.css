@@ -44,8 +44,8 @@
   --sidebar-ring: oklch(0.45 0.16 160);
   /* Neon colors — muted in light mode */
   --neon-cyan: oklch(0.55 0.12 260);
-  --neon-magenta: oklch(0.50 0.12 330);
-  --neon-coral: oklch(0.60 0.12 45);
+  --neon-magenta: oklch(0.5 0.12 330);
+  --neon-coral: oklch(0.6 0.12 45);
   --neon-silver: oklch(0.75 0.04 260);
 }
 
@@ -251,7 +251,12 @@
 
   .gradient-neon-accent {
     @apply relative;
-    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background: linear-gradient(
+      90deg,
+      var(--primary),
+      var(--accent),
+      var(--primary)
+    );
   }
   .dark .gradient-neon-accent {
     background: linear-gradient(
