@@ -51,9 +51,12 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  rumour: "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
-  confirmed: "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
-  denied: "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
+  rumour:
+    "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
+  confirmed:
+    "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
+  denied:
+    "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
 };
 
 interface RumourDetailModalProps {
@@ -78,8 +81,7 @@ export function RumourDetailModal({
   isVoting = false,
 }: RumourDetailModalProps) {
   const total = votes.up + votes.down;
-  const karma =
-    total > 0 ? Math.round((votes.up / total) * 100) : 50;
+  const karma = total > 0 ? Math.round((votes.up / total) * 100) : 50;
 
   const getKarmaColor = (k: number) => {
     if (k < 35) return "text-red-600 dark:text-red-400";
@@ -107,7 +109,10 @@ export function RumourDetailModal({
       <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg w-[calc(100vw-2rem)] sm:w-full">
         <DialogHeader>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className={categoryColors[rumour.category]}>
+            <Badge
+              variant="outline"
+              className={categoryColors[rumour.category]}
+            >
               {categoryLabels[rumour.category]}
             </Badge>
             <Badge variant="outline" className={statusColors[rumour.status]}>
@@ -120,14 +125,18 @@ export function RumourDetailModal({
               })}
             </span>
           </div>
-          <DialogTitle className="text-xl pt-2">{rumour.player_name}</DialogTitle>
+          <DialogTitle className="text-xl pt-2">
+            {rumour.player_name}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm">
             {rumour.from_club_name && (
               <>
-                <span className="text-muted-foreground">{rumour.from_club_name}</span>
+                <span className="text-muted-foreground">
+                  {rumour.from_club_name}
+                </span>
                 <ArrowRight className="h-4 w-4 text-primary shrink-0" />
               </>
             )}
@@ -193,7 +202,9 @@ export function RumourDetailModal({
             </div>
             <div className="flex items-center gap-1.5">
               <TrendingUp className="h-4 w-4 text-primary" />
-              <span className="font-semibold">Trust {rumour.creator.trust_score}</span>
+              <span className="font-semibold">
+                Trust {rumour.creator.trust_score}
+              </span>
             </div>
           </div>
         </div>
