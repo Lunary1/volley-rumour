@@ -109,7 +109,7 @@ export default async function HomePage() {
   const transfersForDisplay = latestTransfers.map((t: Record<string, unknown>) => ({
     ...t,
     transfer_date: t.transfer_date ?? t.confirmed_at ?? "",
-  }));
+  })) as Array<Record<string, unknown> & { id: string; transfer_date: string }>;
 
   return (
     <div className="min-h-screen">
