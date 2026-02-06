@@ -2,7 +2,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { createRumourSchema } from "@/lib/schemas";
+import { createRumourSchema, isTransferCategory } from "@/lib/schemas";
 import {
   successResponse,
   errorResponse,
@@ -22,9 +22,16 @@ export async function createRumour(formData: FormData) {
 
   // Validate input
   const validationResult = createRumourSchema.safeParse({
-    title: formData.get("player_name") as string,
-    description: formData.get("description") as string,
     category: formData.get("category") as string,
+    lastName: formData.get("lastName") as string,
+    firstName: formData.get("firstName") as string,
+    gender: (formData.get("gender") as string) || undefined,
+    currentClub: formData.get("currentClub") as string,
+    currentDivision: (formData.get("currentDivision") as string) || undefined,
+    destinationClub: (formData.get("destinationClub") as string) || undefined,
+    destinationDivision:
+      (formData.get("destinationDivision") as string) || undefined,
+    description: (formData.get("description") as string) || undefined,
   });
 
   if (!validationResult.success) {
@@ -34,14 +41,18 @@ export async function createRumour(formData: FormData) {
     return errorResponse(errors);
   }
 
+  const d = validationResult.data;
+  const playerName = `${d.firstName} ${d.lastName}`.trim();
+
   const rumourData = {
     creator_id: user.id,
-    player_name: (formData.get("player_name") as string).trim(),
-    from_club_name:
-      ((formData.get("from_club") as string) || "").trim() || null,
-    to_club_name: (formData.get("to_club") as string).trim(),
-    category: validationResult.data.category,
-    description: (formData.get("description") as string).trim() || null,
+    player_name: playerName,
+    from_club_name: d.currentClub,
+    to_club_name: isTransferCategory(d.category)
+      ? (d.destinationClub ?? null)
+      : null,
+    category: d.category,
+    description: d.description?.trim() || null,
   };
 
   const { error } = await supabase.from("rumours").insert(rumourData);
