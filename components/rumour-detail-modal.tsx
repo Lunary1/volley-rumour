@@ -85,7 +85,7 @@ export function RumourDetailModal({
     if (k < 35) return "text-red-600 dark:text-red-400";
     if (k < 50) return "text-orange-500 dark:text-orange-400";
     if (k === 50) return "text-gray-500 dark:text-gray-400";
-    if (k < 65) return "text-blue-400 dark:text-blue-300";
+    if (k < 65) return "text-blue-500 dark:text-blue-300";
     return "text-blue-600 dark:text-blue-400";
   };
 
@@ -93,7 +93,7 @@ export function RumourDetailModal({
     if (k < 35) return "bg-red-600";
     if (k < 50) return "bg-orange-500";
     if (k === 50) return "bg-gray-500";
-    if (k < 65) return "bg-blue-400";
+    if (k < 65) return "bg-blue-500";
     return "bg-blue-600";
   };
 

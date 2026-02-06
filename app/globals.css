@@ -3,7 +3,57 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ================================================================
+   LIGHT THEME (default)
+   Sporty, trustworthy, informational — inspired by volleyball sites.
+   All text combos target WCAG AA (≥ 4.5:1 body, ≥ 3:1 large/muted).
+   ================================================================ */
 :root {
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0.005 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.005 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0.005 250);
+  --primary: oklch(0.45 0.16 160);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.005 250);
+  --secondary-foreground: oklch(0.25 0.01 250);
+  --muted: oklch(0.955 0.005 250);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.94 0.02 160);
+  --accent-foreground: oklch(0.25 0.05 160);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.905 0.005 250);
+  --input: oklch(0.905 0.005 250);
+  --ring: oklch(0.45 0.16 160);
+  --chart-1: oklch(0.45 0.16 160);
+  --chart-2: oklch(0.6 0.15 50);
+  --chart-3: oklch(0.5 0.12 250);
+  --chart-4: oklch(0.65 0.15 80);
+  --chart-5: oklch(0.55 0.22 25);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.975 0.005 250);
+  --sidebar-foreground: oklch(0.145 0.005 250);
+  --sidebar-primary: oklch(0.45 0.16 160);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.955 0.005 250);
+  --sidebar-accent-foreground: oklch(0.25 0.01 250);
+  --sidebar-border: oklch(0.905 0.005 250);
+  --sidebar-ring: oklch(0.45 0.16 160);
+  /* Neon colors — muted in light mode */
+  --neon-cyan: oklch(0.55 0.12 260);
+  --neon-magenta: oklch(0.5 0.12 330);
+  --neon-coral: oklch(0.6 0.12 45);
+  --neon-silver: oklch(0.75 0.04 260);
+}
+
+/* ================================================================
+   DARK THEME (opt-in via toggle)
+   Previous default palette — preserved for dark-mode users.
+   ================================================================ */
+.dark {
   --background: oklch(0.13 0.02 250);
   --foreground: oklch(0.97 0 0);
   --card: oklch(0.18 0.02 250);
@@ -28,7 +78,6 @@
   --chart-3: oklch(0.6 0.15 200);
   --chart-4: oklch(0.7 0.15 80);
   --chart-5: oklch(0.55 0.22 25);
-  --radius: 0.5rem;
   --sidebar: oklch(0.15 0.02 250);
   --sidebar-foreground: oklch(0.97 0 0);
   --sidebar-primary: oklch(0.65 0.2 145);
@@ -37,6 +86,11 @@
   --sidebar-accent-foreground: oklch(0.97 0 0);
   --sidebar-border: oklch(0.28 0.02 250);
   --sidebar-ring: oklch(0.65 0.2 145);
+  /* Neon colors — vibrant in dark mode */
+  --neon-cyan: oklch(0.7 0.28 260);
+  --neon-magenta: oklch(0.65 0.32 330);
+  --neon-coral: oklch(0.7 0.27 45);
+  --neon-silver: oklch(0.92 0.08 260);
 }
 
 @theme inline {
@@ -78,6 +132,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-magenta: var(--neon-magenta);
+  --color-neon-coral: var(--neon-coral);
+  --color-neon-silver: var(--neon-silver);
 }
 
 @layer base {
@@ -97,13 +155,125 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  /* Homepage hero — modern sport aesthetic */
+
+  /* Homepage hero — light mode: warm sporty gradient */
   .hero-sport {
+    background: linear-gradient(
+      160deg,
+      var(--background) 0%,
+      oklch(0.96 0.02 160) 40%,
+      oklch(0.94 0.03 160) 100%
+    );
+  }
+
+  /* Homepage hero — dark mode: deep green tint */
+  .dark .hero-sport {
     background: linear-gradient(
       160deg,
       var(--background) 0%,
       oklch(0.18 0.03 145) 40%,
       oklch(0.16 0.04 145) 100%
     );
+  }
+
+  /* ── Neon / glow effects — dark mode only ──────────────────── */
+  .neon-pulse {
+    animation: none;
+  }
+  .dark .neon-pulse {
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+
+  .glow-cyan,
+  .glow-magenta,
+  .glow-coral {
+    /* no glow in light mode */
+  }
+  .dark .glow-cyan {
+    @apply shadow-lg transition-shadow hover:shadow-cyan-500/50;
+  }
+  .dark .glow-magenta {
+    @apply shadow-lg transition-shadow hover:shadow-pink-500/50;
+  }
+  .dark .glow-coral {
+    @apply shadow-lg transition-shadow hover:shadow-orange-500/50;
+  }
+
+  .border-glow-cyan {
+    @apply border border-primary/30;
+  }
+  .dark .border-glow-cyan {
+    @apply border-neon-cyan/70 shadow-[0_0_15px_rgba(120,140,255,0.3)];
+  }
+
+  .border-glow-magenta {
+    @apply border border-primary/30;
+  }
+  .dark .border-glow-magenta {
+    @apply border-neon-magenta/70 shadow-[0_0_15px_rgba(200,100,255,0.3)];
+  }
+
+  .gradient-text-neon {
+    @apply font-bold text-primary;
+  }
+  .dark .gradient-text-neon {
+    @apply bg-linear-to-r from-neon-coral via-neon-magenta to-neon-cyan bg-clip-text text-transparent;
+  }
+
+  .featured-item-glow {
+    @apply border-primary/20 transition-shadow;
+  }
+  .dark .featured-item-glow {
+    @apply shadow-[0_0_20px_rgba(178,190,255,0.3)] border-neon-cyan/60;
+  }
+  .dark .featured-item-glow:hover {
+    @apply shadow-[0_0_30px_rgba(178,190,255,0.5)];
+  }
+
+  .gradient-cyber-hero {
+    @apply relative overflow-hidden;
+    background: linear-gradient(
+      135deg,
+      var(--background) 0%,
+      oklch(0.96 0.02 160) 50%,
+      var(--background) 100%
+    );
+  }
+  .dark .gradient-cyber-hero {
+    background: linear-gradient(
+      135deg,
+      oklch(0.1 0 0) 0%,
+      oklch(0.16 0.15 300) 25%,
+      oklch(0.15 0.12 260) 50%,
+      oklch(0.1 0 0) 100%
+    );
+  }
+
+  .gradient-neon-accent {
+    @apply relative;
+    background: linear-gradient(
+      90deg,
+      var(--primary),
+      var(--accent),
+      var(--primary)
+    );
+  }
+  .dark .gradient-neon-accent {
+    background: linear-gradient(
+      90deg,
+      var(--neon-coral),
+      var(--neon-magenta),
+      var(--neon-cyan)
+    );
+  }
+}
+
+@keyframes neon-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(120, 140, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(120, 140, 255, 0.8);
   }
 }

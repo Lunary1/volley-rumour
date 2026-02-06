@@ -61,9 +61,12 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  rumour: "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
-  confirmed: "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
-  denied: "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
+  rumour:
+    "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
+  confirmed:
+    "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
+  denied:
+    "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
 };
 
 export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
@@ -186,7 +189,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
     if (karmaValue < 35) return "text-red-600"; // Evil
     if (karmaValue < 50) return "text-orange-500"; // Slightly evil
     if (karmaValue === 50) return "text-gray-500"; // Neutral
-    if (karmaValue < 65) return "text-blue-400"; // Slightly good
+    if (karmaValue < 65) return "text-blue-500"; // Slightly good
     return "text-blue-600"; // Good
   };
 
@@ -202,144 +205,153 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
     if (karmaValue < 35) return "bg-red-600";
     if (karmaValue < 50) return "bg-orange-500";
     if (karmaValue === 50) return "bg-gray-500";
-    if (karmaValue < 65) return "bg-blue-400";
+    if (karmaValue < 65) return "bg-blue-500";
     return "bg-blue-600";
   };
 
   // Color-code card border by confidence (karma) and creator trust
   const getCardBorderClass = () => {
     if (karma < 35) return "border-l-4 border-l-red-500 dark:border-l-red-400";
-    if (karma < 50) return "border-l-4 border-l-orange-500 dark:border-l-orange-400";
+    if (karma < 50)
+      return "border-l-4 border-l-orange-500 dark:border-l-orange-400";
     if (karma === 50) return "border-l-4 border-l-muted-foreground/50";
-    if (karma < 65) return "border-l-4 border-l-blue-400 dark:border-l-blue-300";
+    if (karma < 65)
+      return "border-l-4 border-l-blue-400 dark:border-l-blue-300";
     return "border-l-4 border-l-blue-600 dark:border-l-blue-400";
   };
 
   return (
     <>
-      <Card className={`bg-card border-border dark:border-neon-cyan/30 hover:dark:border-neon-cyan/60 transition-all h-full flex flex-col dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group ${getCardBorderClass()}`}>
-      <CardContent className="p-5 flex flex-col h-full">
-        {/* Top Section: Category & Status Badges + Time */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <Badge variant="outline" className={categoryColors[rumour.category]}>
-            {categoryLabels[rumour.category]}
-          </Badge>
-          <Badge variant="outline" className={statusColors[rumour.status]}>
-            {statusLabels[rumour.status]}
-          </Badge>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {formatDistanceToNow(new Date(rumour.created_at), {
-              addSuffix: true,
-              locale: nl,
-            })}
-          </span>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1">
-          {/* Player & Club Transfer */}
-          <h3 className="text-lg font-semibold mb-2">{rumour.player_name}</h3>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            {rumour.from_club_name && (
-              <>
-                <span className="text-xs">{rumour.from_club_name}</span>
-                <ArrowRight className="h-3.5 w-3.5 text-primary" />
-              </>
-            )}
-            <span className="text-foreground font-medium text-sm">
-              {rumour.to_club_name}
+      <Card
+        className={`bg-card border-border hover:border-primary/40 transition-all h-full flex flex-col hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group ${getCardBorderClass()}`}
+      >
+        <CardContent className="p-5 flex flex-col h-full">
+          {/* Top Section: Category & Status Badges + Time */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Badge
+              variant="outline"
+              className={categoryColors[rumour.category]}
+            >
+              {categoryLabels[rumour.category]}
+            </Badge>
+            <Badge variant="outline" className={statusColors[rumour.status]}>
+              {statusLabels[rumour.status]}
+            </Badge>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {formatDistanceToNow(new Date(rumour.created_at), {
+                addSuffix: true,
+                locale: nl,
+              })}
             </span>
           </div>
 
-          {/* Description */}
-          {rumour.description && (
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-              {rumour.description}
-            </p>
-          )}
-        </div>
-
-        {/* Karma Meter - Centered and Prominent */}
-        <div className="flex flex-col items-center gap-3 my-4 py-4 border-y border-border">
-          {/* Karma Bar */}
-          <div className="w-24 h-4 bg-gray-300 rounded-full overflow-hidden border border-gray-400 shadow-sm">
-            <div
-              className={`h-full transition-all duration-300 ${getKarmaBarColor(
-                karma,
-              )}`}
-              style={{ width: `${karma}%` }}
-            />
-          </div>
-          {/* Karma Percentage */}
-          <div className="flex flex-col items-center">
-            <div className={`text-3xl font-bold ${getKarmaColor(karma)}`}>
-              {karma}%
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Player & Club Transfer */}
+            <h3 className="text-lg font-semibold mb-2">{rumour.player_name}</h3>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+              {rumour.from_club_name && (
+                <>
+                  <span className="text-xs">{rumour.from_club_name}</span>
+                  <ArrowRight className="h-3.5 w-3.5 text-primary" />
+                </>
+              )}
+              <span className="text-foreground font-medium text-sm">
+                {rumour.to_club_name}
+              </span>
             </div>
-            <div className={`text-xs font-semibold ${getKarmaColor(karma)}`}>
-              {getKarmaLabel(karma)}
+
+            {/* Description */}
+            {rumour.description && (
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                {rumour.description}
+              </p>
+            )}
+          </div>
+
+          {/* Karma Meter - Centered and Prominent */}
+          <div className="flex flex-col items-center gap-3 my-4 py-4 border-y border-border">
+            {/* Karma Bar */}
+            <div className="w-24 h-4 bg-muted rounded-full overflow-hidden border border-border shadow-sm">
+              <div
+                className={`h-full transition-all duration-300 ${getKarmaBarColor(
+                  karma,
+                )}`}
+                style={{ width: `${karma}%` }}
+              />
+            </div>
+            {/* Karma Percentage */}
+            <div className="flex flex-col items-center">
+              <div className={`text-3xl font-bold ${getKarmaColor(karma)}`}>
+                {karma}%
+              </div>
+              <div className={`text-xs font-semibold ${getKarmaColor(karma)}`}>
+                {getKarmaLabel(karma)}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Voting Section */}
-        <div className="flex items-center justify-center gap-4 mb-4 py-3 border-y border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleVote("up")}
-            disabled={isLoading || isVoting}
-            className={`gap-2 ${
-              localUserVote === "up"
-                ? "text-blue-600 bg-blue-600/10 hover:bg-blue-600/20"
-                : "text-muted-foreground hover:text-blue-600"
-            }`}
-          >
-            <ThumbsUp className="h-5 w-5" />
-            <span className="font-semibold">{localUpvotes}</span>
-          </Button>
-          <div className="text-muted-foreground text-sm font-medium">
-            {localUpvotes + localDownvotes > 0
-              ? `${localUpvotes + localDownvotes} total votes`
-              : "Wees eerst"}
+          {/* Voting Section */}
+          <div className="flex items-center justify-center gap-4 mb-4 py-3 border-y border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleVote("up")}
+              disabled={isLoading || isVoting}
+              className={`gap-2 ${
+                localUserVote === "up"
+                  ? "text-blue-600 bg-blue-600/10 hover:bg-blue-600/20"
+                  : "text-muted-foreground hover:text-blue-600"
+              }`}
+            >
+              <ThumbsUp className="h-5 w-5" />
+              <span className="font-semibold">{localUpvotes}</span>
+            </Button>
+            <div className="text-muted-foreground text-sm font-medium">
+              {localUpvotes + localDownvotes > 0
+                ? `${localUpvotes + localDownvotes} total votes`
+                : "Wees eerst"}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleVote("down")}
+              disabled={isLoading || isVoting}
+              className={`gap-2 ${
+                localUserVote === "down"
+                  ? "text-red-600 bg-red-600/10 hover:bg-red-600/20"
+                  : "text-muted-foreground hover:text-red-600"
+              }`}
+            >
+              <ThumbsDown className="h-5 w-5" />
+              <span className="font-semibold">{localDownvotes}</span>
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleVote("down")}
-            disabled={isLoading || isVoting}
-            className={`gap-2 ${
-              localUserVote === "down"
-                ? "text-red-600 bg-red-600/10 hover:bg-red-600/20"
-                : "text-muted-foreground hover:text-red-600"
-            }`}
-          >
-            <ThumbsDown className="h-5 w-5" />
-            <span className="font-semibold">{localDownvotes}</span>
-          </Button>
-        </div>
 
-        {/* Footer: Creator + Trust + Discussion */}
-        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
-          <div className="flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5" />
-            <span className="font-medium">{rumour.creator.username}</span>
+          {/* Footer: Creator + Trust + Discussion */}
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
+            <div className="flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5" />
+              <span className="font-medium">{rumour.creator.username}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              <span className="font-semibold">
+                {rumour.creator.trust_score}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto gap-1.5 text-primary hover:text-primary/90"
+              onClick={() => setDetailOpen(true)}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              Bekijk meer
+            </Button>
           </div>
-          <div className="flex items-center gap-1.5">
-            <TrendingUp className="h-3.5 w-3.5 text-primary" />
-            <span className="font-semibold">{rumour.creator.trust_score}</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-auto gap-1.5 text-primary hover:text-primary/90"
-            onClick={() => setDetailOpen(true)}
-          >
-            <MessageSquare className="h-3.5 w-3.5" />
-            Bekijk meer
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
 
       <RumourDetailModal
         rumour={{
