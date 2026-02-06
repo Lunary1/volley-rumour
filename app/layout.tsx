@@ -7,6 +7,7 @@ import { Header } from "@/components/header";
 import { HeaderSkeleton } from "@/components/header-skeleton";
 import { Footer } from "@/components/footer";
 import { ToasterProvider } from "@/components/toaster-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const _inter = Inter({ subsets: ["latin"] });
 const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
@@ -36,19 +37,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="nl">
+    <html lang="nl" suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.svg" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
-        <Suspense fallback={<HeaderSkeleton />}>
-          <Header />
-        </Suspense>
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <Analytics />
-        <ToasterProvider />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Suspense fallback={<HeaderSkeleton />}>
+            <Header />
+          </Suspense>
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <Analytics />
+          <ToasterProvider />
+        </ThemeProvider>
       </body>
     </html>
   );

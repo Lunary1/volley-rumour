@@ -229,7 +229,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="voornaam">
-                      Voornaam <span className="text-neon-coral">*</span>
+                      Voornaam <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="voornaam"
@@ -241,7 +241,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="naam">
-                      Naam <span className="text-neon-coral">*</span>
+                      Naam <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="naam"
@@ -256,7 +256,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="geslacht">
-                      Geslacht <span className="text-neon-coral">*</span>
+                      Geslacht <span className="text-destructive">*</span>
                     </Label>
                     <Select name="geslacht" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -273,7 +273,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="position">
-                      Positie <span className="text-neon-coral">*</span>
+                      Positie <span className="text-destructive">*</span>
                     </Label>
                     <Select name="position" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -293,7 +293,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="clubnaam">
-                      Clubnaam <span className="text-neon-coral">*</span>
+                      Clubnaam <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="clubnaam"
@@ -305,7 +305,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="division">
-                      Niveau <span className="text-neon-coral">*</span>
+                      Niveau <span className="text-destructive">*</span>
                     </Label>
                     <Select name="division" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -327,7 +327,7 @@ export default function NewClassifiedPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="province">
-                    Provincie <span className="text-neon-coral">*</span>
+                    Provincie <span className="text-destructive">*</span>
                   </Label>
                   <Select name="province" required>
                     <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -364,7 +364,7 @@ export default function NewClassifiedPage() {
               <>
                 <div className="space-y-2">
                   <Label htmlFor="team_name">
-                    Teamnaam/Club <span className="text-neon-coral">*</span>
+                    Teamnaam/Club <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="team_name"
@@ -378,7 +378,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="province">
-                      Provincie <span className="text-neon-coral">*</span>
+                      Provincie <span className="text-destructive">*</span>
                     </Label>
                     <Select name="province" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -398,7 +398,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="division">
-                      Niveau <span className="text-neon-coral">*</span>
+                      Niveau <span className="text-destructive">*</span>
                     </Label>
                     <Select name="division" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -420,7 +420,7 @@ export default function NewClassifiedPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="geslacht">
-                    Dames/Heren <span className="text-neon-coral">*</span>
+                    Dames/Heren <span className="text-destructive">*</span>
                   </Label>
                   <Select name="geslacht" required>
                     <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -438,7 +438,7 @@ export default function NewClassifiedPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="position">
-                    Positie <span className="text-neon-coral">*</span>
+                    Positie <span className="text-destructive">*</span>
                   </Label>
                   <Select name="position" required>
                     <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -476,7 +476,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="voornaam">
-                      Voornaam <span className="text-neon-coral">*</span>
+                      Voornaam <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="voornaam"
@@ -488,7 +488,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="naam">
-                      Naam <span className="text-neon-coral">*</span>
+                      Naam <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="naam"
@@ -503,7 +503,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="geslacht">
-                      Geslacht <span className="text-neon-coral">*</span>
+                      Geslacht <span className="text-destructive">*</span>
                     </Label>
                     <Select name="geslacht" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -520,7 +520,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="diploma">
-                      Diploma <span className="text-neon-coral">*</span>
+                      Diploma <span className="text-destructive">*</span>
                     </Label>
                     <Select name="diploma" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -552,7 +552,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="division">
-                      Niveau <span className="text-neon-coral">*</span>
+                      Niveau <span className="text-destructive">*</span>
                     </Label>
                     <Select name="division" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -572,7 +572,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="province">
-                      Provincie <span className="text-neon-coral">*</span>
+                      Provincie <span className="text-destructive">*</span>
                     </Label>
                     <Select name="province" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -613,7 +613,7 @@ export default function NewClassifiedPage() {
               <>
                 <div className="space-y-2">
                   <Label htmlFor="team_name">
-                    Teamnaam/Club <span className="text-neon-coral">*</span>
+                    Teamnaam/Club <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="team_name"
@@ -627,7 +627,7 @@ export default function NewClassifiedPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="province">
-                      Provincie <span className="text-neon-coral">*</span>
+                      Provincie <span className="text-destructive">*</span>
                     </Label>
                     <Select name="province" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -647,7 +647,7 @@ export default function NewClassifiedPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="division">
-                      Niveau <span className="text-neon-coral">*</span>
+                      Niveau <span className="text-destructive">*</span>
                     </Label>
                     <Select name="division" required>
                       <SelectTrigger className="bg-input border-border text-foreground w-full">
@@ -669,7 +669,7 @@ export default function NewClassifiedPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="geslacht">
-                    Dames/Heren <span className="text-neon-coral">*</span>
+                    Dames/Heren <span className="text-destructive">*</span>
                   </Label>
                   <Select name="geslacht" required>
                     <SelectTrigger className="bg-input border-border text-foreground w-full">

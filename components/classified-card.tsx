@@ -41,7 +41,7 @@ export function ClassifiedCard({ classified }: ClassifiedCardProps) {
     new Date(classified.featured_until) > new Date();
   return (
     <Card
-      className={`bg-card border-border dark:border-neon-magenta/30 hover:dark:border-neon-magenta/60 transition-all dark:hover:shadow-[0_0_20px_rgba(216,180,254,0.15)] ${
+      className={`bg-card border-border hover:border-primary/40 transition-all hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(216,180,254,0.15)] ${
         isFeatured ? "featured-item-glow" : ""
       }`}
     >

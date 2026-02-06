@@ -137,7 +137,7 @@ export default function NewRumourPage() {
       <div className="min-h-screen py-8">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-neon-cyan" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         </div>
       </div>
@@ -151,13 +151,13 @@ export default function NewRumourPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <Link
           href="/geruchten"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-neon-cyan dark:hover:text-neon-cyan transition-colors mb-6"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Terug naar Transfer Talk
         </Link>
 
-        <Card className="bg-card border-border dark:border-neon-magenta/30">
+        <Card className="bg-card border-border">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
               <CardTitle className="text-2xl gradient-text-neon">
@@ -171,8 +171,8 @@ export default function NewRumourPage() {
           </CardHeader>
           <CardContent>
             {/* Help Callout */}
-            <div className="mb-6 p-4 rounded-lg bg-neon-cyan/10 dark:bg-neon-cyan/5 border border-neon-cyan/30 dark:border-neon-cyan/20 flex gap-3">
-              <Info className="h-5 w-5 text-neon-cyan shrink-0 mt-0.5" />
+            <div className="mb-6 p-4 rounded-lg bg-primary/10 border border-primary/30 flex gap-3">
+              <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium text-foreground mb-1">
                   💡 Hoe werkt het?
@@ -192,10 +192,10 @@ export default function NewRumourPage() {
               )}
 
               {/* ── Step 1: Category selector ─────────────────────────────── */}
-              <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border dark:border-neon-cyan/10">
+              <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border">
                 <div className="space-y-2">
                   <Label htmlFor="category">
-                    Soort Gerucht <span className="text-neon-coral">*</span>
+                    Soort Gerucht <span className="text-destructive">*</span>
                   </Label>
                   <p className="text-xs text-muted-foreground">
                     Selecteer wat voor type gerucht dit is
@@ -209,7 +209,7 @@ export default function NewRumourPage() {
                       setError(null);
                     }}
                   >
-                    <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecteer type gerucht" />
                     </SelectTrigger>
                     <SelectContent>
@@ -238,8 +238,8 @@ export default function NewRumourPage() {
                 <div className="space-y-8 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                   {/* ── Person data section ────────────────────────────── */}
                   <div className="space-y-4">
-                    <div className="pb-3 border-b border-neon-cyan/20 dark:border-neon-cyan/30">
-                      <h3 className="text-lg font-semibold text-neon-cyan dark:text-neon-cyan flex items-center gap-2">
+                    <div className="pb-3 border-b border-primary/20">
+                      <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
                         <span className="text-xl"></span> {sectionLabel}
                       </h3>
                     </div>
@@ -247,7 +247,7 @@ export default function NewRumourPage() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="lastName">
-                          Achternaam <span className="text-neon-coral">*</span>
+                          Achternaam <span className="text-destructive">*</span>
                         </Label>
                         <p className="text-xs text-muted-foreground">
                           {isPlayerCategory(selectedCategory)
@@ -261,12 +261,11 @@ export default function NewRumourPage() {
                           minLength={2}
                           maxLength={100}
                           required
-                          className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="firstName">
-                          Voornaam <span className="text-neon-coral">*</span>
+                          Voornaam <span className="text-destructive">*</span>
                         </Label>
                         <p className="text-xs text-muted-foreground">
                           {isPlayerCategory(selectedCategory)
@@ -280,7 +279,6 @@ export default function NewRumourPage() {
                           minLength={2}
                           maxLength={100}
                           required
-                          className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
                         />
                       </div>
                     </div>
@@ -290,13 +288,13 @@ export default function NewRumourPage() {
                       {showGender && (
                         <div className="space-y-2 animate-in fade-in-0 duration-200">
                           <Label htmlFor="gender">
-                            Geslacht <span className="text-neon-coral">*</span>
+                            Geslacht <span className="text-destructive">*</span>
                           </Label>
                           <p className="text-xs text-muted-foreground">
                             Man of vrouw
                           </p>
                           <Select name="gender" required>
-                            <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Selecteer geslacht" />
                             </SelectTrigger>
                             <SelectContent>
@@ -317,7 +315,7 @@ export default function NewRumourPage() {
                       <div className="space-y-2">
                         <Label htmlFor="currentClub">
                           Huidige Club{" "}
-                          <span className="text-neon-coral">*</span>
+                          <span className="text-destructive">*</span>
                         </Label>
                         <p className="text-xs text-muted-foreground">
                           {isPlayerCategory(selectedCategory)
@@ -329,7 +327,6 @@ export default function NewRumourPage() {
                           name="currentClub"
                           placeholder="Bijv. Knack Roeselare"
                           required
-                          className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
                         />
                       </div>
                     </div>
@@ -345,7 +342,7 @@ export default function NewRumourPage() {
                         Het competitieniveau van de huidige club
                       </p>
                       <Select name="currentDivision">
-                        <SelectTrigger className="w-full dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecteer niveau" />
                         </SelectTrigger>
                         <SelectContent>
@@ -365,8 +362,8 @@ export default function NewRumourPage() {
                   {/* ── Destination club section — transfer types only ── */}
                   {showDestination && (
                     <div className="space-y-4 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                      <div className="pb-3 border-b border-neon-coral/20 dark:border-neon-coral/30">
-                        <h3 className="text-lg font-semibold text-neon-coral dark:text-neon-coral flex items-center gap-2">
+                      <div className="pb-3 border-b border-accent/40">
+                        <h3 className="text-lg font-semibold text-accent-foreground flex items-center gap-2">
                           <span className="text-xl"></span> Gegevens Nieuwe Club
                         </h3>
                       </div>
@@ -374,7 +371,7 @@ export default function NewRumourPage() {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="destinationClub">
-                            Doelclub <span className="text-neon-coral">*</span>
+                            Doelclub <span className="text-destructive">*</span>
                           </Label>
                           <p className="text-xs text-muted-foreground">
                             {isPlayerCategory(selectedCategory)
@@ -386,7 +383,6 @@ export default function NewRumourPage() {
                             name="destinationClub"
                             placeholder="Bijv. Caruur Gent Volley"
                             required
-                            className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
                           />
                         </div>
                         <div className="space-y-2">
@@ -400,7 +396,7 @@ export default function NewRumourPage() {
                             Het competitieniveau van de doelclub
                           </p>
                           <Select name="destinationDivision">
-                            <SelectTrigger className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70">
+                            <SelectTrigger>
                               <SelectValue placeholder="Selecteer niveau" />
                             </SelectTrigger>
                             <SelectContent>
@@ -442,7 +438,7 @@ export default function NewRumourPage() {
                         onChange={(e) =>
                           setDescriptionLength(e.currentTarget.value.length)
                         }
-                        className="dark:bg-input/30 dark:border-neon-cyan/30 dark:focus:border-neon-cyan/70"
+                        className="dark:bg-input/30"
                       />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span></span>
@@ -452,19 +448,19 @@ export default function NewRumourPage() {
                   </div>
 
                   {/* ── Form actions ──────────────────────────────────── */}
-                  <div className="flex gap-3 pt-6 border-t border-border dark:border-neon-cyan/10">
+                  <div className="flex gap-3 pt-6 border-t border-border">
                     <Link href="/geruchten" className="flex-1">
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full bg-transparent border-neon-cyan/50 dark:border-neon-cyan/70 hover:bg-neon-cyan/10 dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.2)] text-neon-cyan dark:text-neon-cyan"
+                        className="w-full"
                       >
                         Annuleren
                       </Button>
                     </Link>
                     <Button
                       type="submit"
-                      className="flex-1 gradient-text-neon bg-linear-to-b from-neon-magenta/40 to-neon-coral/40 hover:from-neon-magenta/50 hover:to-neon-coral/50 border border-neon-magenta/50 dark:border-neon-magenta/70 dark:shadow-[0_0_20px_rgba(216,180,254,0.2)] dark:hover:shadow-[0_0_30px_rgba(216,180,254,0.4)] text-white dark:text-white"
+                      className="flex-1"
                       disabled={isPending}
                     >
                       {isPending && (
