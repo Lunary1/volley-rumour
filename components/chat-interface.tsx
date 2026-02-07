@@ -132,7 +132,8 @@ export function ChatInterface({
               // replace the optimistic temp message instead of appending
               if (newMsg.sender_id === currentUserId) {
                 const tempIndex = prev.findIndex(
-                  (m) => m.id.startsWith("temp-") && m.content === newMsg.content,
+                  (m) =>
+                    m.id.startsWith("temp-") && m.content === newMsg.content,
                 );
                 if (tempIndex !== -1) {
                   const updated = [...prev];
@@ -317,7 +318,6 @@ export function ChatInterface({
                   className={`flex items-end gap-2 ${isFromMe ? "justify-end" : "justify-start"} ${
                     showAvatar ? "mb-2" : "mb-0.5"
                   }`}
-
                 >
                   {/* Other user avatar */}
                   {!isFromMe && (
