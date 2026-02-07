@@ -138,8 +138,7 @@ export function ChatInterface({
                 m.id === updatedMsg.id
                   ? {
                       ...m,
-                      is_read:
-                        (updatedMsg.is_read as boolean) ?? m.is_read,
+                      is_read: (updatedMsg.is_read as boolean) ?? m.is_read,
                       read_at:
                         (updatedMsg.read_at as string | null) ?? m.read_at,
                     }

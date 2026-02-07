@@ -175,9 +175,7 @@ export default async function ConversationPage({
                   href={adLink}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors truncate flex items-center gap-1"
                 >
-                  <span className="truncate">
-                    {adData?.title || "Gesprek"}
-                  </span>
+                  <span className="truncate">{adData?.title || "Gesprek"}</span>
                   <ExternalLink className="h-3 w-3 shrink-0" />
                 </Link>
               </div>
