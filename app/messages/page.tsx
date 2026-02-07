@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -41,30 +41,46 @@ const getInitials = (name: string): string => {
 
 export default function MessagesPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadConversations() {
-      try {
-        setLoading(true);
-        const result = await getConversations();
-        if (result.success && result.data) {
-          setConversations(result.data);
-        } else {
-          setError(result.error || "Failed to load conversations");
-        }
-      } catch (err) {
-        setError("An unexpected error occurred");
-        console.error(err);
-      } finally {
-        setLoading(false);
+  const loadConversations = useCallback(async (showLoader = false) => {
+    try {
+      if (showLoader) setLoading(true);
+      const result = await getConversations();
+      if (result.success && result.data) {
+        setConversations(result.data);
+      } else {
+        setError(result.error || "Failed to load conversations");
       }
+    } catch (err) {
+      setError("An unexpected error occurred");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    loadConversations();
   }, []);
+
+  // Initial load
+  useEffect(() => {
+    loadConversations(true);
+  }, [loadConversations]);
+
+  // Re-fetch on window focus (handles browser back, tab switching)
+  useEffect(() => {
+    const handleFocus = () => loadConversations();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [loadConversations]);
+
+  // Re-fetch when navigating back to this page via client-side navigation
+  useEffect(() => {
+    if (pathname === "/messages") {
+      loadConversations();
+    }
+  }, [pathname, loadConversations]);
 
   if (loading) {
     return (

@@ -44,6 +44,7 @@ export function ChatInterface({
   const [sending, setSending] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load initial messages
@@ -65,9 +66,12 @@ export function ChatInterface({
     loadMessages();
   }, [conversationId]);
 
-  // Auto-scroll to newest message
+  // Auto-scroll to newest message (container-scoped, not page-level)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [messages]);
 
   // Mark messages as read when conversation is opened / new messages arrive
@@ -257,7 +261,7 @@ export function ChatInterface({
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-hide">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-hide">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
