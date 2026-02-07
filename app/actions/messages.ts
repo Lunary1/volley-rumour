@@ -401,10 +401,10 @@ export async function getMessages(
     return { success: false, error: error.message };
   }
 
-  // Mark messages as read
+  // Mark messages as read (with read_at timestamp)
   await supabase
     .from("messages")
-    .update({ is_read: true })
+    .update({ is_read: true, read_at: new Date().toISOString() })
     .eq("conversation_id", conversationId)
     .neq("sender_id", user.id)
     .eq("is_read", false);
@@ -545,4 +545,45 @@ export async function reportConversation(
   }
 
   return { success: true };
+}
+
+/**
+ * Mark messages in a conversation as read (called from client when viewing)
+ */
+export async function markAsRead(conversationId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return errorResponse("Je moet ingelogd zijn");
+  }
+
+  // Verify user is part of conversation
+  const { data: conversation } = await supabase
+    .from("conversations")
+    .select("id")
+    .eq("id", conversationId)
+    .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`)
+    .single();
+
+  if (!conversation) {
+    return errorResponse("Je hebt geen toegang tot deze conversatie");
+  }
+
+  const { error } = await supabase
+    .from("messages")
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq("conversation_id", conversationId)
+    .neq("sender_id", user.id)
+    .eq("is_read", false);
+
+  if (error) {
+    return errorResponse(error.message);
+  }
+
+  revalidatePath(`/messages/${conversationId}`);
+  revalidatePath("/messages");
+  return successResponse(null);
 }

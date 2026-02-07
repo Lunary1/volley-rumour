@@ -7,10 +7,10 @@ import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getConversations } from "@/app/actions/messages";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Search } from "lucide-react";
 
 interface ConversationPreview {
   id: string;
@@ -129,74 +129,109 @@ export default function MessagesPage() {
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-3xl">
-        <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
-        <Card className="overflow-hidden">
-          <div className="divide-y divide-border/50">
-            {conversations.map((conversation) => (
+        <h1 className="mb-6 text-3xl font-bold">Berichten</h1>
+        <div className="space-y-2">
+          {conversations.map((conversation) => {
+            const adTypeBadge =
+              conversation.ad_type === "transfer" ? "Transfer" : "Zoekertje";
+
+            return (
               <Link
                 key={conversation.id}
                 href={`/messages/${conversation.id}`}
-                className="block transition-colors duration-150 hover:bg-muted/60"
+                className="block"
               >
-                <div className="border-l-4 border-l-primary/30 p-4 transition-all duration-200 hover:border-l-primary/70">
-                  <div className="flex items-start gap-4">
-                    {/* Avatar */}
-                    <Avatar className="h-12 w-12 shrink-0">
-                      {conversation.other_user_avatar_url ? (
-                        <img
-                          src={conversation.other_user_avatar_url}
-                          alt={conversation.other_user_name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+                <Card
+                  className={`transition-colors duration-150 hover:bg-muted/40 ${
+                    conversation.unread_count > 0
+                      ? "border-l-4 border-l-primary"
+                      : "border-l-4 border-l-transparent"
+                  }`}
+                >
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      {/* Avatar */}
+                      <Avatar className="h-11 w-11 shrink-0">
+                        {conversation.other_user_avatar_url ? (
+                          <AvatarImage
+                            src={conversation.other_user_avatar_url}
+                            alt={conversation.other_user_name}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-primary/15 text-primary font-semibold text-sm">
                           {getInitials(conversation.other_user_name)}
                         </AvatarFallback>
-                      )}
-                    </Avatar>
+                      </Avatar>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <h3
-                          className={`font-semibold text-sm ${
-                            conversation.unread_count > 0
-                              ? "text-foreground font-bold"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {conversation.other_user_name}
-                        </h3>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDistanceToNow(
-                            new Date(
-                              conversation.last_message_at || new Date(),
-                            ),
-                            { locale: nl, addSuffix: false },
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <h3
+                              className={`text-sm truncate ${
+                                conversation.unread_count > 0
+                                  ? "font-bold text-foreground"
+                                  : "font-semibold text-foreground"
+                              }`}
+                            >
+                              {conversation.other_user_name}
+                            </h3>
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 h-4 font-medium shrink-0"
+                            >
+                              {adTypeBadge}
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                            {conversation.last_message_at
+                              ? formatDistanceToNow(
+                                  new Date(conversation.last_message_at),
+                                  { locale: nl, addSuffix: false },
+                                )
+                              : ""}
+                          </span>
+                        </div>
+
+                        {/* Ad title */}
+                        {conversation.ad_title && (
+                          <p className="text-xs text-muted-foreground truncate mb-1">
+                            {conversation.ad_title}
+                          </p>
+                        )}
+
+                        {/* Message preview */}
+                        <div className="flex items-center justify-between gap-2">
+                          <p
+                            className={`truncate text-sm ${
+                              conversation.unread_count > 0
+                                ? "text-foreground font-medium"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {conversation.last_message_is_from_me ? (
+                              <span className="text-muted-foreground">
+                                Jij:{" "}
+                              </span>
+                            ) : null}
+                            {conversation.last_message || "Nog geen berichten"}
+                          </p>
+
+                          {/* Unread count badge */}
+                          {conversation.unread_count > 0 && (
+                            <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 shrink-0">
+                              {conversation.unread_count}
+                            </span>
                           )}
-                        </span>
+                        </div>
                       </div>
-
-                      {/* Message preview */}
-                      <p
-                        className={`truncate text-sm mb-2 ${
-                          conversation.unread_count > 0
-                            ? "text-foreground font-medium"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {conversation.last_message_is_from_me ? (
-                          <span className="text-muted-foreground">Jij: </span>
-                        ) : null}
-                        {conversation.last_message || "Nog geen berichten"}
-                      </p>
                     </div>
                   </div>
-                </div>
+                </Card>
               </Link>
-            ))}
-          </div>
-        </Card>
+            );
+          })}
+        </div>
       </div>
     </main>
   );
