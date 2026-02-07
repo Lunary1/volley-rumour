@@ -42,7 +42,6 @@ export function ChatInterface({
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -116,19 +115,34 @@ export function ChatInterface({
             if (newMsg.conversation_id !== conversationId) return;
 
             setMessages((prev) => {
+              // Skip if we already have this exact message
               if (prev.some((m) => m.id === newMsg.id)) return prev;
-              return [
-                ...prev,
-                {
-                  id: newMsg.id as string,
-                  content: newMsg.content as string,
-                  created_at: newMsg.created_at as string,
-                  sender_id: newMsg.sender_id as string,
-                  is_from_me: newMsg.sender_id === currentUserId,
-                  is_read: (newMsg.is_read as boolean) ?? false,
-                  read_at: (newMsg.read_at as string | null) ?? null,
-                },
-              ];
+
+              const realMessage = {
+                id: newMsg.id as string,
+                content: newMsg.content as string,
+                created_at: newMsg.created_at as string,
+                sender_id: newMsg.sender_id as string,
+                is_from_me: newMsg.sender_id === currentUserId,
+                is_read: (newMsg.is_read as boolean) ?? false,
+                read_at: (newMsg.read_at as string | null) ?? null,
+              };
+
+              // If this is our own message arriving via Realtime,
+              // replace the optimistic temp message instead of appending
+              if (newMsg.sender_id === currentUserId) {
+                const tempIndex = prev.findIndex(
+                  (m) =>
+                    m.id.startsWith("temp-") && m.content === newMsg.content,
+                );
+                if (tempIndex !== -1) {
+                  const updated = [...prev];
+                  updated[tempIndex] = realMessage;
+                  return updated;
+                }
+              }
+
+              return [...prev, realMessage];
             });
           }
 
@@ -286,7 +300,6 @@ export function ChatInterface({
             const initials = getInitials(senderName);
             const showAvatar = shouldShowAvatar(index);
             const showDate = shouldShowDateSeparator(index);
-            const isHovered = hoveredMessageId === msg.id;
             const isTemporary = msg.id.startsWith("temp-");
 
             return (
@@ -305,8 +318,6 @@ export function ChatInterface({
                   className={`flex items-end gap-2 ${isFromMe ? "justify-end" : "justify-start"} ${
                     showAvatar ? "mb-2" : "mb-0.5"
                   }`}
-                  onMouseEnter={() => setHoveredMessageId(msg.id)}
-                  onMouseLeave={() => setHoveredMessageId(null)}
                 >
                   {/* Other user avatar */}
                   {!isFromMe && (
@@ -349,8 +360,8 @@ export function ChatInterface({
                       }`}
                     >
                       <span
-                        className={`text-[10px] text-muted-foreground transition-opacity ${
-                          isHovered || showAvatar ? "opacity-100" : "opacity-0"
+                        className={`text-[10px] text-muted-foreground ${
+                          showAvatar ? "opacity-100" : "opacity-0"
                         }`}
                         title={format(
                           new Date(msg.created_at),
@@ -358,14 +369,10 @@ export function ChatInterface({
                           { locale: nl },
                         )}
                       >
-                        {isHovered
-                          ? format(new Date(msg.created_at), "HH:mm", {
-                              locale: nl,
-                            })
-                          : formatDistanceToNow(new Date(msg.created_at), {
-                              addSuffix: false,
-                              locale: nl,
-                            })}
+                        {formatDistanceToNow(new Date(msg.created_at), {
+                          addSuffix: false,
+                          locale: nl,
+                        })}
                       </span>
 
                       {/* Read receipt for own messages */}
