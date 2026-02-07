@@ -3,10 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { createConversation } from "@/app/actions/messages";
+import { SendHorizontal } from "lucide-react";
 
 interface ContactModalProps {
   userId: string;
@@ -53,49 +60,52 @@ export function ContactModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-md bg-card">
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-foreground mb-2">
-            Contact {userName}
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Contact {userName}</DialogTitle>
+          <DialogDescription>
             Stuur je eerste bericht om een conversatie te starten.
-          </p>
+          </DialogDescription>
+        </DialogHeader>
 
-          <form onSubmit={handleStartConversation} className="space-y-4">
-            <div>
-              <Textarea
-                placeholder="Typ je bericht..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                disabled={sending}
-                rows={4}
-                className="w-full"
-              />
-            </div>
+        <form onSubmit={handleStartConversation} className="space-y-4">
+          <Textarea
+            placeholder="Typ je bericht..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            disabled={sending}
+            rows={4}
+            className="w-full resize-none"
+          />
 
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={sending}
-                className="flex-1"
-              >
-                Annuleer
-              </Button>
-              <Button
-                type="submit"
-                disabled={sending || !message.trim()}
-                className="flex-1"
-              >
-                {sending ? "Verzenden..." : "Verstuur bericht"}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </Card>
-    </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={sending}
+              className="flex-1"
+            >
+              Annuleer
+            </Button>
+            <Button
+              type="submit"
+              disabled={sending || !message.trim()}
+              className="flex-1"
+            >
+              {sending ? (
+                "Verzenden..."
+              ) : (
+                <>
+                  <SendHorizontal className="h-4 w-4 mr-2" />
+                  Verstuur
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

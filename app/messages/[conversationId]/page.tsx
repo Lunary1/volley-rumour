@@ -2,10 +2,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatInterface } from "@/components/chat-interface";
 import { getMessages } from "@/app/actions/messages";
 import { getCurrentUser } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 interface ConversationPageProps {
   params: {
@@ -107,24 +110,77 @@ export default async function ConversationPage({
 
   const isBlocked = blockData && blockData.length > 0;
 
+  // Determine ad link
+  const adLink =
+    conversation.ad_type === "transfer"
+      ? `/transfers`
+      : `/zoekertjes/${conversation.ad_id}`;
+
+  const adTypeBadge =
+    conversation.ad_type === "transfer" ? "Transfer" : "Zoekertje";
+
+  // Get initials for avatar fallback
+  const otherUserInitials = (otherUserData?.username || "G")
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-border bg-card shrink-0">
         <div className="px-4 py-3 max-w-2xl mx-auto w-full">
-          <Link href="/messages" className="inline-block mb-3">
-            <Button variant="ghost" size="sm">
-              ← Terug
-            </Button>
-          </Link>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <h1 className="text-lg font-semibold text-foreground mb-1">
-                {adData?.title || "Gesprek"}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Met {otherUserData?.username}
-              </p>
+          <div className="flex items-center gap-3">
+            <Link href="/messages">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                aria-label="Terug naar berichten"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+
+            {/* Other user avatar */}
+            <Avatar className="h-10 w-10 shrink-0">
+              {otherUserData?.avatar_url && (
+                <AvatarImage
+                  src={otherUserData.avatar_url}
+                  alt={otherUserData.username}
+                />
+              )}
+              <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">
+                {otherUserInitials}
+              </AvatarFallback>
+            </Avatar>
+
+            {/* Title + meta */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold text-foreground truncate">
+                  {otherUserData?.username}
+                </h1>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0 h-4 font-medium"
+                >
+                  {adTypeBadge}
+                </Badge>
+                <Link
+                  href={adLink}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors truncate flex items-center gap-1"
+                >
+                  <span className="truncate">
+                    {adData?.title || "Gesprek"}
+                  </span>
+                  <ExternalLink className="h-3 w-3 shrink-0" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
