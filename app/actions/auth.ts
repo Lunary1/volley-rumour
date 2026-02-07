@@ -1,10 +1,10 @@
 "use server";
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-// Request-level cache for getCurrentUser to avoid duplicate queries
-const userCache = new Map<string, any>();
+
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
@@ -28,21 +28,15 @@ export async function login(email: string, password: string) {
   return { success: true };
 }
 
-export async function getCurrentUser() {
-  // Use request-level cache to avoid duplicate queries within same render
-  const cacheKey = "current-user";
-
-  if (userCache.has(cacheKey)) {
-    return userCache.get(cacheKey);
-  }
-
+// Use React cache() for request-scoped deduplication — automatically
+// scoped to a single server request, so no stale data persists across requests.
+export const getCurrentUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    userCache.set(cacheKey, null);
     return null;
   }
 
@@ -61,6 +55,5 @@ export async function getCurrentUser() {
     avatar_url: profile?.avatar_url,
   };
 
-  userCache.set(cacheKey, userData);
   return userData;
-}
+});

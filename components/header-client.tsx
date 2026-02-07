@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { createClient } from "@/lib/supabase/client";
 
 interface NavItem {
   href?: string;
@@ -27,6 +28,22 @@ interface HeaderClientProps {
 export function HeaderClient({ user, navItems }: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Listen for auth state changes so the header re-renders when the user
+  // signs out (or signs in via another tab). This eliminates the stale-user
+  // split-brain state where the header still shows the old user data.
+  useEffect(() => {
+    const supabase = createClient();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT" || event === "SIGNED_IN") {
+        router.refresh(); // Force server component tree to re-render
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   // Determine active main nav item and its submenu
   const activeMainItem = useMemo(() => {
