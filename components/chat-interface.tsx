@@ -261,7 +261,10 @@ export function ChatInterface({
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Messages container */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-hide">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-hide"
+      >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
