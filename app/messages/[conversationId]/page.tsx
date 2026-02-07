@@ -128,7 +128,7 @@ export default async function ConversationPage({
     .slice(0, 2);
 
   return (
-    <div className="flex-1 min-h-0 bg-background flex flex-col overflow-hidden">
+    <div className="h-[calc(100dvh-4rem)] bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-border bg-card shrink-0">
         <div className="px-4 py-3 max-w-2xl mx-auto w-full">
