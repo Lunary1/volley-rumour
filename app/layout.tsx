@@ -52,7 +52,7 @@ export default function RootLayout({
           <Suspense fallback={<HeaderSkeleton />}>
             <Header />
           </Suspense>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 flex flex-col min-h-0">{children}</main>
           <Footer />
           <Analytics />
           <ToasterProvider />
