@@ -69,7 +69,10 @@ export function ChatInterface({
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (container) {
-      container.scrollTop = container.scrollHeight;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [messages]);
 
@@ -248,8 +251,8 @@ export function ChatInterface({
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full bg-background">
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex flex-col h-full min-h-0 bg-background">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
@@ -273,11 +276,11 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full min-h-0 bg-background">
       {/* Messages container */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-hide"
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-1 scrollbar-hide"
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
@@ -417,7 +420,7 @@ export function ChatInterface({
       </div>
 
       {/* Input area */}
-      <div className="border-t border-border bg-card p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+      <div className="shrink-0 border-t border-x border-border bg-card p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
         <form
           onSubmit={handleSendMessage}
           className="flex items-center gap-2 max-w-2xl mx-auto"

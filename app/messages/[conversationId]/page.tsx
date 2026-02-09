@@ -185,7 +185,7 @@ export default async function ConversationPage({
       </div>
 
       {/* Chat container */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
         {isBlocked ? (
           <div className="flex-1 flex items-center justify-center p-4">
             <Card className="p-6 border-destructive/50 bg-destructive/5 text-center max-w-2xl">
@@ -200,7 +200,7 @@ export default async function ConversationPage({
             </Card>
           </div>
         ) : (
-          <div className="flex-1 overflow-hidden flex flex-col max-w-2xl mx-auto w-full">
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col max-w-2xl mx-auto w-full">
             <ChatInterface
               conversationId={conversationId}
               currentUserId={user.id}
