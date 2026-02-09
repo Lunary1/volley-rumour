@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   MapPin,
-  Calendar,
   MessageSquare,
   Star,
   Search,
@@ -28,7 +27,6 @@ import {
   CLASSIFIED_TYPE_LABELS,
   CLASSIFIED_TYPE_COLORS,
 } from "@/lib/classifieds-utils";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Classified {
   id: string;
@@ -83,20 +81,39 @@ export function ClassifiedsList({
 }: ClassifiedsListProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("newest");
-  const [showFilters, setShowFilters] = useState(false);
   const [contactModal, setContactModal] = useState<string | null>(null);
   const [checkingConversation, setCheckingConversation] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search input (300ms)
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setCurrentPage(1);
+    }, 300);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const { filteredAndSorted, totalPages, totalResults } = useMemo(() => {
     let filtered = classifieds.filter((ad) => {
       const matchesSearch =
-        ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ad.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ad.profiles?.username.toLowerCase().includes(searchQuery.toLowerCase());
+        ad.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        ad.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        ad.profiles?.username
+          .toLowerCase()
+          .includes(debouncedSearch.toLowerCase());
 
       const matchesType = !selectedType || ad.type === selectedType;
       const matchesProvince =
@@ -136,7 +153,7 @@ export function ClassifiedsList({
     const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedResults = allSorted.slice(
       startIdx,
-      startIdx + ITEMS_PER_PAGE
+      startIdx + ITEMS_PER_PAGE,
     );
 
     return {
@@ -146,7 +163,7 @@ export function ClassifiedsList({
     };
   }, [
     classifieds,
-    searchQuery,
+    debouncedSearch,
     selectedType,
     selectedProvince,
     sortBy,
@@ -158,7 +175,7 @@ export function ClassifiedsList({
     try {
       const result = await getExistingConversation(
         classified.id,
-        classified.user_id
+        classified.user_id,
       );
 
       if (result.success && result.data?.conversationId) {
@@ -174,7 +191,8 @@ export function ClassifiedsList({
     }
   }
 
-  const hasActiveFilters = searchQuery || selectedType || selectedProvince;
+  const hasActiveFilters =
+    debouncedSearch || selectedType || selectedProvince || sortBy !== "newest";
   const pageStartNum = (currentPage - 1) * ITEMS_PER_PAGE + 1;
   const pageEndNum = Math.min(currentPage * ITEMS_PER_PAGE, totalResults);
 
@@ -186,65 +204,46 @@ export function ClassifiedsList({
     callback();
   };
 
+  const resetAllFilters = () => {
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setSelectedType(null);
+    setSelectedProvince(null);
+    setSortBy("newest");
+    setCurrentPage(1);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Category filter tabs */}
-      <Tabs
-        value={selectedType ?? ""}
-        onValueChange={(v) =>
-          handleFilterChange(() => setSelectedType(v || null))
-        }
-      >
-        <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/60 p-1.5">
-          {CATEGORY_OPTIONS.map(({ value, label }) => (
-            <TabsTrigger
-              key={value || "all"}
-              value={value}
-              className="flex-1 min-w-0 sm:flex-none data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      {/* Search bar + suggestions */}
+      {/* Consolidated filter bar */}
       <div className="space-y-3">
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Zoek op titel, beschrijving of auteur..."
-              value={searchQuery}
-              onChange={(e) =>
-                handleFilterChange(() => setSearchQuery(e.target.value))
-              }
-              className="pl-10 bg-background"
-            />
-          </div>
-          <Button
-            variant={hasActiveFilters ? "default" : "outline"}
-            onClick={() => setShowFilters(!showFilters)}
-            className="px-4 shrink-0"
-          >
-            Filters {hasActiveFilters && "✓"}
-          </Button>
+        {/* Search input */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Zoek op titel, beschrijving of auteur..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10 bg-background"
+          />
         </div>
-        {/* Follow-up: consider copy tweak for this label (e.g. "Filter op type:") */}
-        <p className="text-xs text-muted-foreground">Populaire categorieën:</p>
-        <div className="flex flex-wrap gap-2">
-          {CATEGORY_OPTIONS.filter((o) => o.value).map(({ value, label }) => (
+
+        {/* Category pills — single row, horizontally scrollable on mobile */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {CATEGORY_OPTIONS.map(({ value, label }) => (
             <button
-              key={value}
+              key={value || "all"}
               type="button"
               onClick={() =>
                 handleFilterChange(() => {
-                  setSelectedType(selectedType === value ? null : value);
+                  setSelectedType(value || null);
                 })
               }
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                selectedType === value
-                  ? CLASSIFIED_TYPE_COLORS[value]
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                (value === "" && !selectedType) || selectedType === value
+                  ? value
+                    ? CLASSIFIED_TYPE_COLORS[value]
+                    : "bg-primary text-primary-foreground"
                   : "bg-muted/80 text-muted-foreground hover:bg-muted"
               }`}
             >
@@ -252,69 +251,51 @@ export function ClassifiedsList({
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Filters panel (province, sort) */}
-      {showFilters && (
-        <div className="bg-card p-4 rounded-lg border border-border space-y-4 animate-in fade-in slide-in-from-top-2">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Provincie
-              </label>
-              <select
-                value={selectedProvince || ""}
-                onChange={(e) =>
-                  handleFilterChange(() =>
-                    setSelectedProvince(e.target.value || null)
-                  )
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              >
-                <option value="">Alle provincies</option>
-                {Object.entries(PROVINCE_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Sorteren
-              </label>
-              <select
-                value={sortBy}
-                onChange={(e) =>
-                  handleFilterChange(() => setSortBy(e.target.value))
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              >
-                <option value="newest">Nieuwste eerst</option>
-                <option value="oldest">Oudste eerst</option>
-                <option value="title">Titel (A-Z)</option>
-              </select>
-            </div>
-          </div>
+        {/* Province + Sort dropdowns + Reset — always visible */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <select
+            value={selectedProvince || ""}
+            onChange={(e) =>
+              handleFilterChange(() =>
+                setSelectedProvince(e.target.value || null),
+              )
+            }
+            className="flex-1 sm:flex-none sm:min-w-45 px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+          >
+            <option value="">Alle provincies</option>
+            {Object.entries(PROVINCE_LABELS).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) =>
+              handleFilterChange(() => setSortBy(e.target.value))
+            }
+            className="flex-1 sm:flex-none sm:min-w-40 px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+          >
+            <option value="newest">Nieuwste eerst</option>
+            <option value="oldest">Oudste eerst</option>
+            <option value="title">Titel (A-Z)</option>
+          </select>
+
           {hasActiveFilters && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => {
-                setCurrentPage(1);
-                setSearchQuery("");
-                setSelectedType(null);
-                setSelectedProvince(null);
-                setSortBy("newest");
-              }}
-              className="text-xs"
+              onClick={resetAllFilters}
+              className="text-xs text-muted-foreground hover:text-foreground shrink-0 self-start sm:self-auto"
             >
               <X className="h-3 w-3 mr-1" />
-              Filters wissen
+              Reset
             </Button>
           )}
         </div>
-      )}
+      </div>
 
       {/* Results */}
       {totalResults === 0 ? (
@@ -339,15 +320,7 @@ export function ClassifiedsList({
               </Button>
             )}
             {classifieds.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedType(null);
-                  setSelectedProvince(null);
-                  setCurrentPage(1);
-                }}
-              >
+              <Button variant="outline" onClick={resetAllFilters}>
                 Filters wissen
               </Button>
             )}
@@ -434,7 +407,7 @@ export function ClassifiedsList({
                                 {classified.contact_name || "Onbekend"}
                               </h3>
                               {classified.position && (
-                                <p className="text-base font-semibold text-primary mt-2">
+                                <p className="text-base font-semibold text-primary mt-2 capitalize">
                                   {classified.position}
                                 </p>
                               )}
@@ -472,7 +445,7 @@ export function ClassifiedsList({
                                   {
                                     addSuffix: true,
                                     locale: nl,
-                                  }
+                                  },
                                 )}
                               </p>
                             </div>
@@ -550,7 +523,7 @@ export function ClassifiedsList({
                             {classified.contact_name || "Onbekend"}
                           </h3>
                           {classified.position && (
-                            <p className="text-sm text-primary font-medium mt-1">
+                            <p className="text-sm text-primary font-medium mt-1 capitalize">
                               {classified.position}
                             </p>
                           )}
@@ -586,7 +559,7 @@ export function ClassifiedsList({
                               {
                                 addSuffix: true,
                                 locale: nl,
-                              }
+                              },
                             )}
                           </p>
                           <p className="text-foreground/60 flex items-center gap-2 flex-wrap">
