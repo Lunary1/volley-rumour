@@ -25,7 +25,7 @@ export const CLASSIFIED_TYPE_LABELS: Record<string, string> = {
 
 export const CLASSIFIED_TYPE_COLORS: Record<string, string> = {
   player_seeks_team: "bg-primary/20 text-primary border-primary/30",
-  team_seeks_player: "bg-accent/20 text-accent border-accent/30",
+  team_seeks_player: "bg-accent text-accent-foreground border-accent",
   trainer_seeks_team: "bg-chart-3/20 text-chart-3 border-chart-3/30",
   team_seeks_trainer: "bg-chart-4/20 text-chart-4 border-chart-4/30",
 };

@@ -111,7 +111,9 @@ export function ClassifiedsList({
       const matchesSearch =
         ad.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         ad.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        ad.profiles?.username.toLowerCase().includes(debouncedSearch.toLowerCase());
+        ad.profiles?.username
+          .toLowerCase()
+          .includes(debouncedSearch.toLowerCase());
 
       const matchesType = !selectedType || ad.type === selectedType;
       const matchesProvince =
@@ -151,7 +153,7 @@ export function ClassifiedsList({
     const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedResults = allSorted.slice(
       startIdx,
-      startIdx + ITEMS_PER_PAGE
+      startIdx + ITEMS_PER_PAGE,
     );
 
     return {
@@ -173,7 +175,7 @@ export function ClassifiedsList({
     try {
       const result = await getExistingConversation(
         classified.id,
-        classified.user_id
+        classified.user_id,
       );
 
       if (result.success && result.data?.conversationId) {
@@ -189,7 +191,8 @@ export function ClassifiedsList({
     }
   }
 
-  const hasActiveFilters = debouncedSearch || selectedType || selectedProvince || sortBy !== "newest";
+  const hasActiveFilters =
+    debouncedSearch || selectedType || selectedProvince || sortBy !== "newest";
   const pageStartNum = (currentPage - 1) * ITEMS_PER_PAGE + 1;
   const pageEndNum = Math.min(currentPage * ITEMS_PER_PAGE, totalResults);
 
@@ -255,7 +258,7 @@ export function ClassifiedsList({
             value={selectedProvince || ""}
             onChange={(e) =>
               handleFilterChange(() =>
-                setSelectedProvince(e.target.value || null)
+                setSelectedProvince(e.target.value || null),
               )
             }
             className="flex-1 sm:flex-none sm:min-w-45 px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
@@ -317,10 +320,7 @@ export function ClassifiedsList({
               </Button>
             )}
             {classifieds.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={resetAllFilters}
-              >
+              <Button variant="outline" onClick={resetAllFilters}>
                 Filters wissen
               </Button>
             )}
@@ -407,7 +407,7 @@ export function ClassifiedsList({
                                 {classified.contact_name || "Onbekend"}
                               </h3>
                               {classified.position && (
-                                <p className="text-base font-semibold text-primary mt-2">
+                                <p className="text-base font-semibold text-primary mt-2 capitalize">
                                   {classified.position}
                                 </p>
                               )}
@@ -445,7 +445,7 @@ export function ClassifiedsList({
                                   {
                                     addSuffix: true,
                                     locale: nl,
-                                  }
+                                  },
                                 )}
                               </p>
                             </div>
@@ -523,7 +523,7 @@ export function ClassifiedsList({
                             {classified.contact_name || "Onbekend"}
                           </h3>
                           {classified.position && (
-                            <p className="text-sm text-primary font-medium mt-1">
+                            <p className="text-sm text-primary font-medium mt-1 capitalize">
                               {classified.position}
                             </p>
                           )}
@@ -559,7 +559,7 @@ export function ClassifiedsList({
                               {
                                 addSuffix: true,
                                 locale: nl,
-                              }
+                              },
                             )}
                           </p>
                           <p className="text-foreground/60 flex items-center gap-2 flex-wrap">
