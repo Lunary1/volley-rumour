@@ -4,17 +4,12 @@ import { TransferCard } from "@/components/transfer-card";
 import { LeaderboardPeek } from "@/components/leaderboard-peek";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ComingSoonPage } from "@/components/coming-soon-page";
 
 // Cache homepage for 60 seconds — revalidates frequently due to new content
 export const revalidate = 60;
 
-import {
-  TrendingUp,
-  Users,
-  ArrowRight,
-  Plus,
-  Flame,
-} from "lucide-react";
+import { TrendingUp, Users, ArrowRight, Plus, Flame } from "lucide-react";
 import Link from "next/link";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -70,12 +65,8 @@ async function getSiteCounts() {
       .from("rumours")
       .select("id", { count: "exact", head: true })
       .eq("status", "rumour"),
-    supabase
-      .from("transfers")
-      .select("id", { count: "exact", head: true }),
-    supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true }),
+    supabase.from("transfers").select("id", { count: "exact", head: true }),
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
   ]);
 
   return {
@@ -90,6 +81,11 @@ async function getSiteCounts() {
 /* ------------------------------------------------------------------ */
 
 export default async function HomePage() {
+  // Coming-soon mode: show landing page when env var is set to "true"
+  if (process.env.NEXT_PUBLIC_COMING_SOON === "true") {
+    return <ComingSoonPage />;
+  }
+
   const [featuredRumours, latestTransfers, topContributors, counts] =
     await Promise.all([
       getFeaturedRumours(),
