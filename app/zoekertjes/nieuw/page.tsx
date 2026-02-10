@@ -120,7 +120,7 @@ export default function NewClassifiedPage() {
       classifiedData = {
         ...classifiedData,
         title: `${formData.get("voornaam")} ${formData.get("naam")}`,
-        description: formData.get("description"),
+        description: (formData.get("description") as string) || null,
         contact_name: `${formData.get("voornaam")} ${formData.get("naam")}`,
         position: formData.get("position"),
         team_name: formData.get("clubnaam"),
@@ -131,7 +131,7 @@ export default function NewClassifiedPage() {
       classifiedData = {
         ...classifiedData,
         title: formData.get("team_name") as string,
-        description: formData.get("description"),
+        description: (formData.get("description") as string) || null,
         contact_name: formData.get("team_name"),
         position: formData.get("position"),
         team_name: formData.get("team_name"),
@@ -142,7 +142,7 @@ export default function NewClassifiedPage() {
       classifiedData = {
         ...classifiedData,
         title: `${formData.get("voornaam")} ${formData.get("naam")}`,
-        description: formData.get("description"),
+        description: (formData.get("description") as string) || null,
         contact_name: `${formData.get("voornaam")} ${formData.get("naam")}`,
         position: formData.get("diploma"),
         team_name: (formData.get("current_club") as string) || null,
@@ -153,7 +153,7 @@ export default function NewClassifiedPage() {
       classifiedData = {
         ...classifiedData,
         title: formData.get("team_name") as string,
-        description: formData.get("description"),
+        description: (formData.get("description") as string) || null,
         contact_name: formData.get("team_name"),
         team_name: formData.get("team_name"),
         province: formData.get("province"),
@@ -352,7 +352,6 @@ export default function NewClassifiedPage() {
                     name="description"
                     placeholder="Vertel meer over jezelf en wat je zoekt..."
                     rows={4}
-                    required
                     className="bg-input border-border text-foreground"
                   />
                 </div>
@@ -463,7 +462,6 @@ export default function NewClassifiedPage() {
                     name="description"
                     placeholder="Vertel meer over je team en wat je zoekt..."
                     rows={4}
-                    required
                     className="bg-input border-border text-foreground"
                   />
                 </div>
@@ -601,7 +599,6 @@ export default function NewClassifiedPage() {
                     name="description"
                     placeholder="Vertel meer over jezelf en wat je zoekt..."
                     rows={4}
-                    required
                     className="bg-input border-border text-foreground"
                   />
                 </div>
@@ -694,7 +691,6 @@ export default function NewClassifiedPage() {
                     name="description"
                     placeholder="Vertel meer over je team en wat je zoekt..."
                     rows={4}
-                    required
                     className="bg-input border-border text-foreground"
                   />
                 </div>
