@@ -9,6 +9,7 @@ import { ArrowRight, Calendar, UserCircle, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { ContactModal } from "@/components/contact-modal";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { getExistingConversation } from "@/app/actions/messages";
 
 interface TransferCardInteractiveProps {
@@ -22,6 +23,7 @@ interface TransferCardInteractiveProps {
     is_official: boolean;
     creator_id: string;
     creator_name?: string;
+    is_verified_source?: boolean;
   };
   currentUserId?: string;
 }
@@ -102,13 +104,24 @@ export function TransferCardInteractive({
             <h3 className="font-semibold text-balance">
               {transfer.player_name}
             </h3>
+            {transfer.is_verified_source && <VerifiedBadge size="sm" />}
           </div>
 
           <div className="flex items-center gap-2 text-sm mb-3">
             {isRetirement ? (
-              <span className="text-muted-foreground">
-                {transfer.from_club && `Verlaat ${transfer.from_club}`}
-              </span>
+              <>
+                {transfer.from_club && (
+                  <>
+                    <span className="text-muted-foreground">
+                      {transfer.from_club}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-red-500 shrink-0" />
+                  </>
+                )}
+                <span className="text-red-600 dark:text-red-400 font-bold uppercase">
+                  Stopt
+                </span>
+              </>
             ) : (
               <>
                 {transfer.from_club ? (

@@ -62,9 +62,19 @@ export function TransferCard({ transfer }: TransferCardProps) {
 
         <div className="flex items-center gap-2 text-sm mb-3">
           {isRetirement ? (
-            <span className="text-muted-foreground">
-              {transfer.from_club && `Verlaat ${transfer.from_club}`}
-            </span>
+            <>
+              {transfer.from_club && (
+                <>
+                  <span className="text-muted-foreground">
+                    {transfer.from_club}
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-red-500 shrink-0" />
+                </>
+              )}
+              <span className="text-red-600 dark:text-red-400 font-bold uppercase">
+                Stopt
+              </span>
+            </>
           ) : (
             <>
               {transfer.from_club ? (

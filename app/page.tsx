@@ -49,7 +49,7 @@ async function getTopContributors() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, username, trust_score, avatar_url")
+    .select("id, username, trust_score, avatar_url, is_verified_source")
     .order("trust_score", { ascending: false })
     .limit(3);
 

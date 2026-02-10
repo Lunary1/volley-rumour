@@ -16,7 +16,7 @@ async function getRumours(status?: string) {
     .select(
       `
       *,
-      creator:creator_id(username, trust_score)
+      creator:creator_id(username, trust_score, is_verified_source)
     `,
     )
     .order("created_at", { ascending: false });

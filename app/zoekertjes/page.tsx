@@ -24,7 +24,7 @@ async function getClassifieds() {
       user_id,
       is_featured,
       featured_until,
-      profiles(username, trust_score)
+      profiles(username, is_verified_source)
     `,
     )
     .eq("is_active", true)
@@ -37,7 +37,9 @@ async function getClassifieds() {
   const rows = data ?? [];
   return rows.map((row: (typeof rows)[0]) => ({
     ...row,
-    profiles: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles,
+    profiles: Array.isArray(row.profiles)
+      ? (row.profiles[0] ?? null)
+      : row.profiles,
   }));
 }
 
