@@ -38,10 +38,12 @@ import {
   Award,
   Target,
   Mail,
+  Instagram,
 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
+import { VerifiedBadge } from "@/components/verified-badge";
 
 const TRUST_TIERS = [
   { min: 100, label: "Legende", color: "bg-yellow-500 text-yellow-950" },
@@ -54,7 +56,9 @@ const TRUST_TIERS = [
 const TRUST_CAP = 100; // For progress bar display
 
 function getTrustBadge(score: number) {
-  const tier = TRUST_TIERS.find((t) => score >= t.min) ?? TRUST_TIERS[TRUST_TIERS.length - 1];
+  const tier =
+    TRUST_TIERS.find((t) => score >= t.min) ??
+    TRUST_TIERS[TRUST_TIERS.length - 1];
   return { label: tier.label, color: tier.color };
 }
 
@@ -68,6 +72,9 @@ interface Profile {
   avatar_url: string | null;
   email?: string;
   trust_score: number;
+  is_verified_source?: boolean;
+  instagram_url?: string | null;
+  source_description?: string | null;
 }
 
 interface Stats {
@@ -80,7 +87,12 @@ interface Stats {
 // Achievements derived from stats (no backend table)
 function getAchievements(stats: Stats | null) {
   if (!stats) return [];
-  const a: { id: string; label: string; icon: React.ReactNode; earned: boolean }[] = [
+  const a: {
+    id: string;
+    label: string;
+    icon: React.ReactNode;
+    earned: boolean;
+  }[] = [
     {
       id: "first-rumour",
       label: "Eerste gerucht",
@@ -109,7 +121,7 @@ function getAchievements(stats: Stats | null) {
       id: "trusted-source",
       label: "Betrouwbare bron",
       icon: <Award className="h-4 w-4" />,
-      earned: (stats.confirmedCount >= 1 && stats.rumourCount >= 1),
+      earned: stats.confirmedCount >= 1 && stats.rumourCount >= 1,
     },
   ];
   return a;
@@ -218,7 +230,7 @@ export default function ProfilePage() {
     } else {
       setSuccess("Profiel bijgewerkt!");
       setProfile((p) =>
-        p ? { ...p, username, avatar_url: avatarUrl || null } : null
+        p ? { ...p, username, avatar_url: avatarUrl || null } : null,
       );
       setEditModalOpen(false);
     }
@@ -301,14 +313,18 @@ export default function ProfilePage() {
           <div className="bg-muted/30 px-6 pt-6 pb-4 sm:px-8 sm:pt-8 sm:pb-6">
             <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-end sm:text-left">
               <Avatar className="h-24 w-24 border-4 border-background shadow-md sm:h-28 sm:w-28">
-                <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                <AvatarImage
+                  src={profile.avatar_url || undefined}
+                  alt={profile.username}
+                />
                 <AvatarFallback className="text-2xl bg-primary/20 text-primary">
                   {profile.username.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-1">
-                <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+                <h1 className="text-2xl font-bold text-foreground sm:text-3xl flex items-center gap-2">
                   {profile.username}
+                  {profile.is_verified_source && <VerifiedBadge size="lg" />}
                 </h1>
                 {profile.email && (
                   <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground sm:justify-start">
@@ -329,6 +345,28 @@ export default function ProfilePage() {
               </Button>
             </div>
           </div>
+
+          {/* Verified source info */}
+          {profile.is_verified_source && (
+            <div className="px-6 pb-4 sm:px-8 sm:pb-6 border-t border-border pt-4 space-y-2">
+              {profile.source_description && (
+                <p className="text-sm text-muted-foreground">
+                  {profile.source_description}
+                </p>
+              )}
+              {profile.instagram_url && (
+                <a
+                  href={profile.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                >
+                  <Instagram className="h-4 w-4" />
+                  Instagram
+                </a>
+              )}
+            </div>
+          )}
         </Card>
 
         {/* Trust score visualization */}
@@ -341,13 +379,16 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-foreground">{trustScore}</span>
+              <span className="text-4xl font-bold text-foreground">
+                {trustScore}
+              </span>
               <span className="text-muted-foreground">punten</span>
             </div>
             <div className="space-y-2">
               <Progress value={trustProgress} className="h-3" />
               <p className="text-xs text-muted-foreground">
-                +5 bij bevestigd gerucht, +1 per upvote. Streef naar 100 voor Legende.
+                +5 bij bevestigd gerucht, +1 per upvote. Streef naar 100 voor
+                Legende.
               </p>
             </div>
           </CardContent>
@@ -393,22 +434,30 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
                 <Flame className="mb-2 h-6 w-6 text-orange-500" />
-                <p className="text-2xl font-bold text-foreground">{stats?.rumourCount ?? 0}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats?.rumourCount ?? 0}
+                </p>
                 <p className="text-xs text-muted-foreground">Geruchten</p>
               </div>
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
                 <MessageSquare className="mb-2 h-6 w-6 text-blue-500" />
-                <p className="text-2xl font-bold text-foreground">{stats?.voteCount ?? 0}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats?.voteCount ?? 0}
+                </p>
                 <p className="text-xs text-muted-foreground">Stemmen</p>
               </div>
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
                 <CheckCircle className="mb-2 h-6 w-6 text-green-500" />
-                <p className="text-2xl font-bold text-foreground">{stats?.confirmedCount ?? 0}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats?.confirmedCount ?? 0}
+                </p>
                 <p className="text-xs text-muted-foreground">Bevestigd</p>
               </div>
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
                 <ShoppingBag className="mb-2 h-6 w-6 text-purple-500" />
-                <p className="text-2xl font-bold text-foreground">{stats?.classifiedCount ?? 0}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats?.classifiedCount ?? 0}
+                </p>
                 <p className="text-xs text-muted-foreground">Zoekertjes</p>
               </div>
             </div>
@@ -426,7 +475,9 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             {recentActivity?.rumours && recentActivity.rumours.length > 0 && (
               <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">Geruchten</p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  Geruchten
+                </p>
                 <ul className="space-y-2">
                   {recentActivity.rumours.map((r) => (
                     <li key={r.id}>
@@ -435,12 +486,20 @@ export default function ProfilePage() {
                         className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40"
                       >
                         <Zap className="h-4 w-4 text-orange-500" />
-                        <span className="truncate font-medium text-foreground">{r.player_name}</span>
-                        <Badge variant="outline" className="ml-auto shrink-0 text-xs">
+                        <span className="truncate font-medium text-foreground">
+                          {r.player_name}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="ml-auto shrink-0 text-xs"
+                        >
                           {r.status}
                         </Badge>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: nl })}
+                          {formatDistanceToNow(new Date(r.created_at), {
+                            addSuffix: true,
+                            locale: nl,
+                          })}
                         </span>
                       </Link>
                     </li>
@@ -448,32 +507,42 @@ export default function ProfilePage() {
                 </ul>
               </div>
             )}
-            {recentActivity?.classifieds && recentActivity.classifieds.length > 0 && (
-              <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">Zoekertjes</p>
-                <ul className="space-y-2">
-                  {recentActivity.classifieds.map((c) => (
-                    <li key={c.id}>
-                      <Link
-                        href="/zoekertjes"
-                        className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40"
-                      >
-                        <ShoppingBag className="h-4 w-4 text-purple-500" />
-                        <span className="truncate font-medium text-foreground">{c.title}</span>
-                        <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: nl })}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {(!recentActivity?.rumours?.length && !recentActivity?.classifieds?.length) && (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Nog geen recente activiteit. Deel een gerucht of plaats een zoekertje!
-              </p>
-            )}
+            {recentActivity?.classifieds &&
+              recentActivity.classifieds.length > 0 && (
+                <div>
+                  <p className="mb-2 text-sm font-medium text-muted-foreground">
+                    Zoekertjes
+                  </p>
+                  <ul className="space-y-2">
+                    {recentActivity.classifieds.map((c) => (
+                      <li key={c.id}>
+                        <Link
+                          href="/zoekertjes"
+                          className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40"
+                        >
+                          <ShoppingBag className="h-4 w-4 text-purple-500" />
+                          <span className="truncate font-medium text-foreground">
+                            {c.title}
+                          </span>
+                          <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(c.created_at), {
+                              addSuffix: true,
+                              locale: nl,
+                            })}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            {!recentActivity?.rumours?.length &&
+              !recentActivity?.classifieds?.length && (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  Nog geen recente activiteit. Deel een gerucht of plaats een
+                  zoekertje!
+                </p>
+              )}
           </CardContent>
         </Card>
 
@@ -532,7 +601,9 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <Label htmlFor="confirm-password">Bevestig nieuw wachtwoord</Label>
+                <Label htmlFor="confirm-password">
+                  Bevestig nieuw wachtwoord
+                </Label>
                 <Input
                   id="confirm-password"
                   type="password"
@@ -567,7 +638,9 @@ export default function ProfilePage() {
               <div className="mt-2 flex gap-3">
                 <Avatar className="h-14 w-14 shrink-0">
                   <AvatarImage src={avatarUrl || undefined} alt={username} />
-                  <AvatarFallback>{username.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>
+                    {username.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <Input
                   placeholder="https://..."

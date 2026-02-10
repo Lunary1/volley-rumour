@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import {
   MapPin,
   MessageSquare,
-  Star,
   Search,
   X,
   ChevronLeft,
@@ -17,6 +16,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { ContactModal } from "@/components/contact-modal";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { getExistingConversation } from "@/app/actions/messages";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -44,7 +44,7 @@ interface Classified {
   featured_until?: string | null;
   profiles?: {
     username: string;
-    trust_score?: number | null;
+    is_verified_source?: boolean;
   } | null;
 }
 
@@ -454,11 +454,8 @@ export function ClassifiedsList({
                               <span className="font-medium text-foreground/80">
                                 {classified.profiles?.username || "Onbekend"}
                               </span>
-                              {classified.profiles?.trust_score != null && (
-                                <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
-                                  <Star className="h-3 w-3 fill-current" />
-                                  {classified.profiles.trust_score}
-                                </span>
+                              {classified.profiles?.is_verified_source && (
+                                <VerifiedBadge size="sm" />
                               )}
                             </p>
                           </div>
@@ -567,11 +564,8 @@ export function ClassifiedsList({
                             <span className="font-medium text-foreground/80">
                               {classified.profiles?.username || "Onbekend"}
                             </span>
-                            {classified.profiles?.trust_score != null && (
-                              <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
-                                <Star className="h-3 w-3 fill-current" />
-                                {classified.profiles.trust_score}
-                              </span>
+                            {classified.profiles?.is_verified_source && (
+                              <VerifiedBadge size="sm" />
                             )}
                           </p>
                         </div>

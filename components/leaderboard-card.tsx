@@ -1,31 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy, TrendingUp, Medal } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, TrendingUp, Medal } from "lucide-react";
+import { VerifiedBadge } from "@/components/verified-badge";
 
 interface LeaderboardUser {
-  id: string
-  username: string
-  trust_score: number
-  avatar_url: string | null
+  id: string;
+  username: string;
+  trust_score: number;
+  avatar_url: string | null;
+  is_verified_source?: boolean;
 }
 
 interface LeaderboardCardProps {
-  users: LeaderboardUser[]
-  title?: string
+  users: LeaderboardUser[];
+  title?: string;
 }
 
-export function LeaderboardCard({ users, title = "Top Contributors" }: LeaderboardCardProps) {
+export function LeaderboardCard({
+  users,
+  title = "Top Contributors",
+}: LeaderboardCardProps) {
   const getMedalColor = (index: number) => {
     switch (index) {
       case 0:
-        return "text-yellow-500"
+        return "text-yellow-500";
       case 1:
-        return "text-gray-400"
+        return "text-gray-400";
       case 2:
-        return "text-amber-600"
+        return "text-amber-600";
       default:
-        return "text-muted-foreground"
+        return "text-muted-foreground";
     }
-  }
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -46,14 +51,19 @@ export function LeaderboardCard({ users, title = "Top Contributors" }: Leaderboa
                 {index < 3 ? (
                   <Medal className={`h-6 w-6 ${getMedalColor(index)}`} />
                 ) : (
-                  <span className="text-sm font-medium text-muted-foreground">{index + 1}</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {index + 1}
+                  </span>
                 )}
               </div>
-              
+
               <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{user.username}</div>
+                <div className="font-medium truncate flex items-center gap-1.5">
+                  {user.username}
+                  {user.is_verified_source && <VerifiedBadge size="sm" />}
+                </div>
               </div>
-              
+
               <div className="flex items-center gap-1 text-primary">
                 <TrendingUp className="h-4 w-4" />
                 <span className="font-semibold">{user.trust_score}</span>
@@ -63,5 +73,5 @@ export function LeaderboardCard({ users, title = "Top Contributors" }: Leaderboa
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

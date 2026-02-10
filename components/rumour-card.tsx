@@ -17,6 +17,7 @@ import { nl } from "date-fns/locale";
 import { getUserVoteOnRumour } from "@/app/actions/vote";
 import { createClient } from "@/lib/supabase/client";
 import { RumourDetailModal } from "@/components/rumour-detail-modal";
+import { VerifiedBadge } from "@/components/verified-badge";
 
 interface RumourCardProps {
   rumour: {
@@ -33,6 +34,7 @@ interface RumourCardProps {
     creator: {
       username: string;
       trust_score: number;
+      is_verified_source?: boolean;
     };
   };
   onVote?: (rumourId: string, voteType: "up" | "down") => Promise<any>;
@@ -250,15 +252,31 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
             {/* Player & Club Transfer */}
             <h3 className="text-lg font-semibold mb-2">{rumour.player_name}</h3>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-              {rumour.from_club_name && (
+              {rumour.category.includes("retirement") ? (
                 <>
-                  <span className="text-xs">{rumour.from_club_name}</span>
-                  <ArrowRight className="h-3.5 w-3.5 text-primary" />
+                  {rumour.from_club_name && (
+                    <>
+                      <span className="text-xs">{rumour.from_club_name}</span>
+                      <ArrowRight className="h-3.5 w-3.5 text-red-500" />
+                    </>
+                  )}
+                  <span className="text-red-600 dark:text-red-400 font-bold text-sm uppercase">
+                    Stopt
+                  </span>
+                </>
+              ) : (
+                <>
+                  {rumour.from_club_name && (
+                    <>
+                      <span className="text-xs">{rumour.from_club_name}</span>
+                      <ArrowRight className="h-3.5 w-3.5 text-primary" />
+                    </>
+                  )}
+                  <span className="text-foreground font-medium text-sm">
+                    {rumour.to_club_name}
+                  </span>
                 </>
               )}
-              <span className="text-foreground font-medium text-sm">
-                {rumour.to_club_name}
-              </span>
             </div>
 
             {/* Description */}
@@ -333,6 +351,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
             <div className="flex items-center gap-1.5">
               <User className="h-3.5 w-3.5" />
               <span className="font-medium">{rumour.creator.username}</span>
+              {rumour.creator.is_verified_source && <VerifiedBadge size="sm" />}
             </div>
             <div className="flex items-center gap-1.5">
               <TrendingUp className="h-3.5 w-3.5 text-primary" />

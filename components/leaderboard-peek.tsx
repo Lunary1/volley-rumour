@@ -1,12 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, TrendingUp, ArrowRight, Medal } from "lucide-react";
 import Link from "next/link";
+import { VerifiedBadge } from "@/components/verified-badge";
 
 interface LeaderboardPeekUser {
   id: string;
   username: string;
   trust_score: number;
   avatar_url: string | null;
+  is_verified_source?: boolean;
 }
 
 interface LeaderboardPeekProps {
@@ -15,8 +17,8 @@ interface LeaderboardPeekProps {
 
 const medalColors = [
   "text-yellow-500", // gold
-  "text-gray-400",   // silver
-  "text-amber-600",  // bronze
+  "text-gray-400", // silver
+  "text-amber-600", // bronze
 ];
 
 export function LeaderboardPeek({ users }: LeaderboardPeekProps) {
@@ -62,6 +64,7 @@ export function LeaderboardPeek({ users }: LeaderboardPeekProps) {
                   aria-label={`Positie ${i + 1}`}
                 />
                 <span className="truncate font-medium">{user.username}</span>
+                {user.is_verified_source && <VerifiedBadge size="sm" />}
               </span>
               <span className="flex items-center gap-1 shrink-0 text-primary font-semibold text-sm">
                 <TrendingUp className="h-3.5 w-3.5" />

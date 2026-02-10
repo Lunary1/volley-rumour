@@ -14,11 +14,12 @@ import {
   CLASSIFIED_TYPE_COLORS,
 } from "@/lib/classifieds-utils";
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
+import { VerifiedBadge } from "@/components/verified-badge";
 
 /** Profile fragment returned with classified (from Supabase relation). */
 export interface ClassifiedProfile {
   username?: string | null;
-  trust_score?: number | null;
+  is_verified_source?: boolean;
 }
 
 async function getClassified(id: string) {
@@ -40,8 +41,8 @@ async function getClassified(id: string) {
       user_id,
       is_featured,
       featured_until,
-      profiles(username, trust_score)
-    `
+      profiles(username, is_verified_source)
+    `,
     )
     .eq("id", id)
     .eq("is_active", true)
@@ -49,7 +50,7 @@ async function getClassified(id: string) {
 
   if (error || !data) return null;
   const profile: ClassifiedProfile | null = Array.isArray(data.profiles)
-    ? (data.profiles[0] as ClassifiedProfile) ?? null
+    ? ((data.profiles[0] as ClassifiedProfile) ?? null)
     : (data.profiles as ClassifiedProfile);
   return { ...data, profiles: profile } as Omit<typeof data, "profiles"> & {
     profiles: ClassifiedProfile | null;
@@ -155,10 +156,8 @@ export default async function ClassifiedDetailPage({
               <span className="font-medium text-foreground">
                 {classified.profiles?.username ?? "Onbekend"}
               </span>
-              {classified.profiles?.trust_score != null && (
-                <span className="text-amber-600 dark:text-amber-400 font-medium">
-                  • Trust {classified.profiles.trust_score}
-                </span>
+              {classified.profiles?.is_verified_source && (
+                <VerifiedBadge size="sm" />
               )}
             </p>
             {!isOwn && (

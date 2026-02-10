@@ -16,7 +16,7 @@ async function getTransfers(type?: string) {
     .select(
       `
       *,
-      creator:profiles!transfers_creator_id_fkey(id, username)
+      creator:profiles!transfers_creator_id_fkey(id, username, is_verified_source)
     `,
     )
     .order("confirmed_at", { ascending: false });
@@ -91,6 +91,7 @@ export default async function TransfersPage() {
                   transfer={{
                     ...transfer,
                     creator_name: transfer.creator?.username,
+                    is_verified_source: transfer.creator?.is_verified_source,
                   }}
                   currentUserId={user?.id}
                 />
@@ -110,6 +111,7 @@ export default async function TransfersPage() {
                   transfer={{
                     ...transfer,
                     creator_name: transfer.creator?.username,
+                    is_verified_source: transfer.creator?.is_verified_source,
                   }}
                   currentUserId={user?.id}
                 />
@@ -129,6 +131,7 @@ export default async function TransfersPage() {
                   transfer={{
                     ...transfer,
                     creator_name: transfer.creator?.username,
+                    is_verified_source: transfer.creator?.is_verified_source,
                   }}
                   currentUserId={user?.id}
                 />
@@ -148,6 +151,7 @@ export default async function TransfersPage() {
                   transfer={{
                     ...transfer,
                     creator_name: transfer.creator?.username,
+                    is_verified_source: transfer.creator?.is_verified_source,
                   }}
                   currentUserId={user?.id}
                 />
