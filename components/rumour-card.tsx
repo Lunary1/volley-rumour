@@ -248,7 +248,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0 overflow-hidden">
             {/* Player & Club Transfer */}
             <h3 className="text-lg font-semibold mb-2">{rumour.player_name}</h3>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -281,7 +281,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
 
             {/* Description */}
             {rumour.description && (
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2 break-words overflow-hidden">
                 {rumour.description}
               </p>
             )}
