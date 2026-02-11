@@ -36,6 +36,10 @@ export default function RootLayout({
   return (
     <html lang="nl" suppressHydrationWarning>
       <head>
+        <meta
+          name="facebook-domain-verification"
+          content="rfsxnkp2bfyfjsmsijd0juphva8ibt"
+        />
         <link rel="icon" href="/volleyrumours_logo.png" />
         <link rel="shortcut icon" href="/volleyrumours_logo.png" />
       </head>
