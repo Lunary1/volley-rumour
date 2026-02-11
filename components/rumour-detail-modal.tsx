@@ -111,8 +111,8 @@ export function RumourDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg w-[calc(100vw-2rem)] sm:w-full">
-        <DialogHeader>
+      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden max-w-lg w-[calc(100vw-2rem)] sm:w-full">
+        <DialogHeader className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
@@ -135,8 +135,8 @@ export function RumourDetailModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm">
+        <div className="space-y-4 min-w-0">
+          <div className="flex items-center gap-2 text-sm flex-wrap">
             {rumour.category.includes("retirement") ? (
               <>
                 {rumour.from_club_name && (
@@ -167,7 +167,7 @@ export function RumourDetailModal({
           </div>
 
           {rumour.description && (
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap border rounded-lg p-4 bg-muted/30">
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap break-all border rounded-lg p-4 bg-muted/30">
               {rumour.description}
             </p>
           )}

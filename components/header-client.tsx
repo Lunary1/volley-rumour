@@ -77,11 +77,18 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/logo-text.svg"
+              src="/volleyrumours_logo_text.png"
               alt="VolleyRumours"
               width={320}
               height={48}
-              className="h-8 w-auto"
+              className="h-8 w-auto dark:hidden"
+            />
+            <Image
+              src="/volleyrumours_logo_text_inverted.png"
+              alt="VolleyRumours"
+              width={320}
+              height={48}
+              className="h-8 w-auto hidden dark:block"
             />
           </Link>
 

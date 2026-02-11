@@ -20,14 +20,11 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/favicon.svg",
-        type: "image/svg+xml",
-      },
-      {
-        url: "/favicon.ico",
-        sizes: "any",
+        url: "/volleyrumours_logo.png",
+        type: "image/png",
       },
     ],
+    apple: "/volleyrumours_logo.png",
   },
 };
 
@@ -39,8 +36,8 @@ export default function RootLayout({
   return (
     <html lang="nl" suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon.svg" />
+        <link rel="icon" href="/volleyrumours_logo.png" />
+        <link rel="shortcut icon" href="/volleyrumours_logo.png" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <ThemeProvider

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame } from "lucide-react";
+import Image from "next/image";
 
 export function Footer() {
   return (
@@ -8,12 +8,20 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Flame className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold tracking-tight">
-                VolleyRumours
-              </span>
+              <Image
+                src="/volleyrumours_logo_text.png"
+                alt="VolleyRumours"
+                width={240}
+                height={36}
+                className="h-8 w-auto dark:hidden"
+              />
+              <Image
+                src="/volleyrumours_logo_text_inverted.png"
+                alt="VolleyRumours"
+                width={240}
+                height={36}
+                className="h-8 w-auto hidden dark:block"
+              />
             </Link>
             <p className="text-muted-foreground text-sm max-w-md">
               De community-gedreven website voor Belgische volleybal transfers.
