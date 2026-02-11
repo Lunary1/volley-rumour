@@ -281,7 +281,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
 
             {/* Description */}
             {rumour.description && (
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-2 break-words overflow-hidden">
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2 wrap-break-word overflow-hidden">
                 {rumour.description}
               </p>
             )}
