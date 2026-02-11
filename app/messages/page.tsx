@@ -127,12 +127,12 @@ export default function MessagesPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Je hebt nog geen actieve berichten. Zoek naar spelers, teams
-                  of geruchten om een gesprek te starten!
+                  of zoekertjes om een gesprek te starten!
                 </p>
               </div>
-              <Link href="/geruchten" className="mt-2">
+              <Link href="/zoekertjes" className="mt-2">
                 <Button size="sm" variant="outline">
-                  Bekijk geruchten
+                  Bekijk zoekertjes
                 </Button>
               </Link>
             </div>
