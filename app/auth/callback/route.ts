@@ -55,6 +55,14 @@ export async function GET(request: NextRequest) {
     );
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      console.error(
+        "[auth/callback] exchangeCodeForSession failed:",
+        error.message,
+      );
+    }
+
     if (!error) {
       const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === "development";
@@ -69,7 +77,10 @@ export async function GET(request: NextRequest) {
       }
 
       const response = NextResponse.redirect(redirectUrl);
-      // Apply auth cookies to the redirect response
+      // Apply auth cookies to the redirect response.
+      // These MUST be on the response so the browser stores them before
+      // hitting the homepage — without them the session is invisible to
+      // the server-side Supabase client on the next request.
       cookiesToSet.forEach(({ name, value, options }) => {
         response.cookies.set(name, value, options as Record<string, string>);
       });
