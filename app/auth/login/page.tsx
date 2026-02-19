@@ -33,20 +33,6 @@ function getOAuthErrorMessage(code: string): string {
   }
 }
 
-/**
- * KAN-53 – Maps server-action error codes to Dutch user-facing messages.
- * The "google_account_use_google_login" code is returned when a
- * Google-registered user tries to log in with email + password.
- */
-function getLoginErrorMessage(code: string): string {
-  switch (code) {
-    case "google_account_use_google_login":
-      return "Dit account is aangemeld via Google. Gebruik de knop \u2018Doorgaan met Google\u2019 om in te loggen.";
-    default:
-      return code;
-  }
-}
-
 export default function Page() {
   return (
     <Suspense>
@@ -90,8 +76,7 @@ function LoginPage() {
     try {
       const result = await login(email, password);
       if (result?.error) {
-        // KAN-53: translate known error codes to Dutch messages
-        setError(getLoginErrorMessage(result.error));
+        setError(result.error);
         setIsLoading(false);
       } else {
         // Login successful, redirect to home
@@ -280,6 +265,13 @@ function LoginPage() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                         />
+                        {/* KAN-53 – Static, unconditional hint for Google users.
+                             Shown always so it never leaks per-email account info. */}
+                        <p className="text-xs text-muted-foreground">
+                          Via Google aangemeld? Gebruik de knop{" "}
+                          <span className="font-medium">‘Doorgaan met Google’</span>{" "}
+                          hierboven.
+                        </p>
                       </div>
                       {error && (
                         <p className="text-sm text-red-500">{error}</p>
