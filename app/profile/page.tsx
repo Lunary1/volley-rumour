@@ -584,7 +584,7 @@ export default function ProfilePage() {
         )}
 
         {/* Security / Password */}
-        <Card className="border-border bg-card">
+        <Card className="mb-6 border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <Shield className="h-5 w-5 text-accent" />
@@ -672,10 +672,13 @@ export default function ProfilePage() {
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent showCloseButton className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-destructive">Account verwijderen</DialogTitle>
+            <DialogTitle className="text-destructive">
+              Account verwijderen
+            </DialogTitle>
             <DialogDescription>
               Al je berichten en gesprekken worden permanent verwijderd. Je
-              geruchten en zoekertjes blijven zichtbaar maar worden geanonimiseerd.
+              geruchten en zoekertjes blijven zichtbaar maar worden
+              geanonimiseerd.
               <br />
               <br />
               Typ <strong>VERWIJDER</strong> om te bevestigen.

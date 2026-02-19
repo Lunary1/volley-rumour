@@ -132,7 +132,11 @@ export async function deleteAccount(): Promise<{ error?: string }> {
   // --- 3. Anonymize classifieds (strip PII, keep listing) ---
   const { error: classifiedErr } = await supabase
     .from("classifieds")
-    .update({ user_id: null, contact_name: "[verwijderd]", contact_email: null })
+    .update({
+      user_id: null,
+      contact_name: "[verwijderd]",
+      contact_email: null,
+    })
     .eq("user_id", userId);
   if (classifiedErr) return { error: "Kon zoekertjes niet verwerken." };
 
@@ -183,7 +187,8 @@ export async function deleteAccount(): Promise<{ error?: string }> {
     .single();
 
   const avatarUrl: string | null = profileRow?.avatar_url ?? null;
-  const supabaseStoragePrefix = process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/";
+  const supabaseStoragePrefix =
+    process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/";
   if (avatarUrl && avatarUrl.startsWith(supabaseStoragePrefix)) {
     // Extract bucket + path from the URL
     const withoutPrefix = avatarUrl.replace(supabaseStoragePrefix, "");
