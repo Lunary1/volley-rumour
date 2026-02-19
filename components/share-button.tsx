@@ -46,10 +46,7 @@ export function ShareButton({
       return `${SITE_URL}${url}`;
     }
     // Fallback: replace origin with production domain
-    return window.location.href.replace(
-      window.location.origin,
-      SITE_URL,
-    );
+    return window.location.href.replace(window.location.origin, SITE_URL);
   };
 
   /** Build the full share message (intro text + link). */
