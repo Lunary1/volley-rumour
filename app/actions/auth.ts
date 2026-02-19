@@ -15,13 +15,19 @@ export async function logout() {
 }
 
 /**
- * KAN-53 – Auth model: login method mismatch detection
+ * KAN-53 – Auth model: login method mismatch
  *
  * Auth model (Pattern C — Linked Identity Model):
  * - Google-registered users can ONLY log in via OAuth by default.
  * - They can optionally add a password via the "Forgot password" flow.
  * - After setting a password the account works with both methods (Supabase auto-links).
  * - Email/password users who later sign in via Google are auto-linked (KAN-50).
+ *
+ * Security note: we intentionally do NOT detect whether a failed login is due to
+ * a Google-only account. Doing so would allow account enumeration (anyone could
+ * probe which emails are registered and via which provider — a GDPR violation).
+ * Instead, the login page shows a static, unconditional hint to guide Google
+ * users without leaking any per-email information.
  */
 export async function login(email: string, password: string) {
   const supabase = await createClient();
@@ -32,29 +38,10 @@ export async function login(email: string, password: string) {
   });
 
   if (error) {
-    // Detect method mismatch: Google-registered user trying email + password.
-    // We only perform this check after a failed login so we never enumerate
-    // email addresses proactively. The admin client is used server-side only.
-    if (
-      error.message === "Invalid login credentials" ||
-      error.message.toLowerCase().includes("invalid login credentials")
-    ) {
-      try {
-        const adminClient = createAdminClient();
-        const { data: isGoogleOnly } = await adminClient.rpc(
-          "is_google_only_account",
-          { email_address: email },
-        );
-        if (isGoogleOnly === true) {
-          return { error: "google_account_use_google_login" };
-        }
-      } catch {
-        // If the identity check fails for any reason, fall through to
-        // the generic error — never block the user on an internal error.
-      }
-    }
-
-    return { error: error.message };
+    // Always return the same generic message regardless of account type
+    // to prevent leaking whether an email address is registered or which
+    // provider it uses.
+    return { error: "Ongeldig e-mailadres of wachtwoord." };
   }
 
   revalidatePath("/", "layout");
