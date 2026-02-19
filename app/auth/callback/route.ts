@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
       console.error(
         "[auth/callback] exchangeCodeForSession failed:",
         error.message,
+        { code: error.status, name: error.name },
       );
     }
 
@@ -81,9 +82,15 @@ export async function GET(request: NextRequest) {
       // These MUST be on the response so the browser stores them before
       // hitting the homepage — without them the session is invisible to
       // the server-side Supabase client on the next request.
-      cookiesToSet.forEach(({ name, value, options }) => {
-        response.cookies.set(name, value, options as Record<string, string>);
-      });
+      for (const { name, value, options } of cookiesToSet) {
+        response.cookies.set(name, value, options);
+      }
+      console.log(
+        "[auth/callback] Success — setting",
+        cookiesToSet.length,
+        "cookies, redirecting to",
+        redirectUrl,
+      );
       return response;
     }
   }
