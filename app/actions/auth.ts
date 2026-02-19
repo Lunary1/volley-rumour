@@ -67,16 +67,25 @@ export async function signInWithGoogle() {
     provider: "google",
     options: {
       redirectTo: `${origin}/auth/callback`,
+      queryParams: {
+        prompt: "select_account",
+      },
     },
   });
 
   if (error) {
-    return { error: error.message };
+    // Map common Supabase errors to Dutch messages
+    if (error.message.includes("provider")) {
+      return { error: "Google login is momenteel niet beschikbaar." };
+    }
+    return {
+      error: "Er ging iets mis met Google login. Probeer het later opnieuw.",
+    };
   }
 
   if (data.url) {
     redirect(data.url);
   }
 
-  return { error: "Er ging iets mis met Google login" };
+  return { error: "Er ging iets mis met Google login. Probeer het opnieuw." };
 }

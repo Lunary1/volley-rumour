@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 
 import { createClient } from "@/lib/supabase/client";
 import { signInWithGoogle } from "@/app/actions/auth";
@@ -15,9 +15,34 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+/**
+ * Maps OAuth / callback error codes to Dutch user-facing messages.
+ */
+function getOAuthErrorMessage(code: string): string {
+  switch (code) {
+    case "auth-code-error":
+      return "Registreren is mislukt. Probeer het opnieuw.";
+    case "oauth-cancelled":
+      return "Google registratie geannuleerd. Probeer het opnieuw.";
+    case "oauth-provider-error":
+      return "Google login is momenteel niet beschikbaar.";
+    default:
+      return "Er ging iets mis. Probeer het opnieuw.";
+  }
+}
 
 export default function SignUpPage() {
+  return (
+    <Suspense>
+      <SignUpPageInner />
+    </Suspense>
+  );
+}
+
+function SignUpPageInner() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -25,6 +50,17 @@ export default function SignUpPage() {
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Pick up error query param set by /auth/callback on failure
+  useEffect(() => {
+    const errorCode = searchParams.get("error");
+    if (errorCode) {
+      setError(getOAuthErrorMessage(errorCode));
+      router.replace("/auth/sign-up", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

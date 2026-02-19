@@ -5,11 +5,27 @@ import type { NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const errorParam = searchParams.get("error");
+  const errorDescription = searchParams.get("error_description");
   // if "next" is in param, use it as the redirect URL
   let next = searchParams.get("next") ?? "/";
   if (!next.startsWith("/")) {
     // if "next" is not a relative URL, use the default
     next = "/";
+  }
+
+  // Handle OAuth provider errors (e.g. user cancelled, access_denied)
+  if (errorParam) {
+    const loginUrl = new URL("/auth/login", origin);
+    if (errorParam === "access_denied") {
+      loginUrl.searchParams.set("error", "oauth-cancelled");
+    } else {
+      loginUrl.searchParams.set("error", "oauth-provider-error");
+    }
+    if (errorDescription) {
+      loginUrl.searchParams.set("error_description", errorDescription);
+    }
+    return NextResponse.redirect(loginUrl.toString());
   }
 
   if (code) {
