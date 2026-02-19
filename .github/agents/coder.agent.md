@@ -31,6 +31,7 @@ Workflow:
 
 Do NOT:
 
+- Try any type of linting, we haven't set that up yet and it will just cause confusion
 - Merge code
 - Move tickets to Done or In Review
 - Skip failing checks
