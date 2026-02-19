@@ -18,6 +18,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ShareButton } from "@/components/share-button";
 
 export type RumourForModal = {
   id: string;
@@ -231,6 +232,13 @@ export function RumourDetailModal({
               </span>
             </div>
           </div>
+
+          <ShareButton
+            title={`${rumour.player_name} — ${rumour.from_club_name ? `${rumour.from_club_name} ➜ ` : ""}${rumour.to_club_name}`}
+            url={`/geruchten`}
+            variant="outline"
+            size="sm"
+          />
         </div>
       </DialogContent>
     </Dialog>

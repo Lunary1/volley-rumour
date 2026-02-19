@@ -15,6 +15,7 @@ import {
 } from "@/lib/classifieds-utils";
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ShareButton } from "@/components/share-button";
 
 /** Profile fragment returned with classified (from Supabase relation). */
 export interface ClassifiedProfile {
@@ -160,13 +161,21 @@ export default async function ClassifiedDetailPage({
                 <VerifiedBadge size="sm" />
               )}
             </p>
-            {!isOwn && (
-              <ClassifiedDetailContact
-                classifiedId={classified.id}
-                userId={classified.user_id}
-                userName={classified.profiles?.username ?? "deze gebruiker"}
+            <div className="flex items-center gap-2">
+              {!isOwn && (
+                <ClassifiedDetailContact
+                  classifiedId={classified.id}
+                  userId={classified.user_id}
+                  userName={classified.profiles?.username ?? "deze gebruiker"}
+                />
+              )}
+              <ShareButton
+                title={classified.contact_name || classified.title || "Zoekertje"}
+                url={`/zoekertjes/${classified.id}`}
+                variant="outline"
+                size="sm"
               />
-            )}
+            </div>
           </footer>
         </div>
       </article>

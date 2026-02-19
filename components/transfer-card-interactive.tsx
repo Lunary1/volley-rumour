@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { ContactModal } from "@/components/contact-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ShareButton } from "@/components/share-button";
 import { getExistingConversation } from "@/app/actions/messages";
 
 interface TransferCardInteractiveProps {
@@ -153,20 +154,28 @@ export function TransferCardInteractive({
             </span>
           </div>
 
-          {!isOwnTransfer && (
-            <Button
-              onClick={handleContactClick}
-              disabled={checkingConversation}
+          <div className="flex items-center gap-2">
+            {!isOwnTransfer && (
+              <Button
+                onClick={handleContactClick}
+                disabled={checkingConversation}
+                variant="outline"
+                size="sm"
+                className="flex-1"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                {checkingConversation
+                  ? "Laden..."
+                  : `Contact ${transfer.creator_name || "gebruiker"}`}
+              </Button>
+            )}
+            <ShareButton
+              title={`${transfer.player_name} — ${transfer.from_club ? `${transfer.from_club} ➜ ` : ""}${transfer.to_club}`}
+              url="/transfers"
               variant="outline"
               size="sm"
-              className="w-full"
-            >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              {checkingConversation
-                ? "Laden..."
-                : `Contact ${transfer.creator_name || "gebruiker"}`}
-            </Button>
-          )}
+            />
+          </div>
         </CardContent>
       </Card>
 
