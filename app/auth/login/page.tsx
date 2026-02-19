@@ -14,7 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { login, signInWithGoogle, requestPasswordReset } from "@/app/actions/auth";
+import {
+  login,
+  signInWithGoogle,
+  requestPasswordReset,
+} from "@/app/actions/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /**
@@ -136,7 +140,10 @@ function LoginPage() {
                       e-mail met instructies.
                     </p>
                   ) : (
-                    <form onSubmit={handlePasswordReset} className="flex flex-col gap-4">
+                    <form
+                      onSubmit={handlePasswordReset}
+                      className="flex flex-col gap-4"
+                    >
                       <div className="grid gap-2">
                         <Label htmlFor="reset-email">E-mailadres</Label>
                         <Input
@@ -269,13 +276,13 @@ function LoginPage() {
                              Shown always so it never leaks per-email account info. */}
                         <p className="text-xs text-muted-foreground">
                           Via Google aangemeld? Gebruik de knop{" "}
-                          <span className="font-medium">‘Doorgaan met Google’</span>{" "}
+                          <span className="font-medium">
+                            ‘Doorgaan met Google’
+                          </span>{" "}
                           hierboven.
                         </p>
                       </div>
-                      {error && (
-                        <p className="text-sm text-red-500">{error}</p>
-                      )}
+                      {error && <p className="text-sm text-red-500">{error}</p>}
                       <Button
                         type="submit"
                         className="w-full"
