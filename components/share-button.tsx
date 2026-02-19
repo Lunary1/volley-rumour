@@ -64,7 +64,11 @@ export function ShareButton({
     // On mobile / environments with Web Share API → use native share sheet
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({ title, url: shareUrl });
+        await navigator.share({
+          title,
+          text: shareText ?? title,
+          url: shareUrl,
+        });
       } catch (err) {
         // User cancelled or share failed — ignore AbortError
         if (err instanceof Error && err.name !== "AbortError") {
