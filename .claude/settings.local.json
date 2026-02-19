@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Atlassian__search",
+      "mcp__claude_ai_Atlassian__getJiraIssue",
+      "mcp__5b838372-52e8-495f-ac59-59d9fc005874__getJiraIssue"
+    ]
+  }
+}

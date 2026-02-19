@@ -40,8 +40,8 @@ export default function RootLayout({
           name="facebook-domain-verification"
           content="rfsxnkp2bfyfjsmsijd0juphva8ibt"
         />
-        <link rel="icon" href="/volleyrumours_logo.png" />
-        <link rel="shortcut icon" href="/volleyrumours_logo.png" />
+        <link rel="icon" href="/volleyrumours_logo_inverted.png" />
+        <link rel="shortcut icon" href="/volleyrumours_logo_inverted.png" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <ThemeProvider

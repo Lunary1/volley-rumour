@@ -178,8 +178,10 @@ export default function NewRumourPage() {
                   💡 Hoe werkt het?
                 </p>
                 <p>
-                  Bevestigde transfers geven je <strong>+5 punten</strong>. Hoe
-                  meer je tip opvalt, hoe hoger je op de leaderboard!
+                  Voor elke <strong>bevestigde transfer</strong> ontvang je{" "}
+                  <strong>+5 punten</strong>. Hoe sneller en nauwkeuriger je
+                  tip, hoe groter je impact op het klassement. Klim naar de top
+                  van de leaderboard en word dé transferinsider van België!
                 </p>
               </div>
             </div>
