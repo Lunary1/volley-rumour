@@ -14,6 +14,15 @@ export async function logout() {
   redirect("/");
 }
 
+/**
+ * KAN-53 – Auth model: login method mismatch detection
+ *
+ * Auth model (Pattern C — Linked Identity Model):
+ * - Google-registered users can ONLY log in via OAuth by default.
+ * - They can optionally add a password via the "Forgot password" flow.
+ * - After setting a password the account works with both methods (Supabase auto-links).
+ * - Email/password users who later sign in via Google are auto-linked (KAN-50).
+ */
 export async function login(email: string, password: string) {
   const supabase = await createClient();
 
@@ -23,6 +32,28 @@ export async function login(email: string, password: string) {
   });
 
   if (error) {
+    // Detect method mismatch: Google-registered user trying email + password.
+    // We only perform this check after a failed login so we never enumerate
+    // email addresses proactively. The admin client is used server-side only.
+    if (
+      error.message === "Invalid login credentials" ||
+      error.message.toLowerCase().includes("invalid login credentials")
+    ) {
+      try {
+        const adminClient = createAdminClient();
+        const { data: isGoogleOnly } = await adminClient.rpc(
+          "is_google_only_account",
+          { email_address: email },
+        );
+        if (isGoogleOnly === true) {
+          return { error: "google_account_use_google_login" };
+        }
+      } catch {
+        // If the identity check fails for any reason, fall through to
+        // the generic error — never block the user on an internal error.
+      }
+    }
+
     return { error: error.message };
   }
 
@@ -59,6 +90,30 @@ export const getCurrentUser = cache(async () => {
 
   return userData;
 });
+
+/**
+ * KAN-53 – Password reset request
+ *
+ * Works for both email/password accounts AND Google-only accounts:
+ * - For email/password accounts: standard password reset.
+ * - For Google-only accounts: Supabase sends a magic link; after following
+ *   it and setting a password, both Google and email/password login work.
+ *
+ * Always returns a generic success message to prevent email enumeration.
+ */
+export async function requestPasswordReset(email: string) {
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") || "";
+
+  // Fire the reset regardless of whether the account exists — Supabase only
+  // sends an email when the address is registered (prevents enumeration).
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+  });
+
+  // Always return the same message to avoid leaking account existence.
+  return { success: true };
+}
 
 export async function signInWithGoogle() {
   const supabase = await createClient();
