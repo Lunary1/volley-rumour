@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +13,52 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { login, signInWithGoogle } from "@/app/actions/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
+/**
+ * Maps OAuth / callback error codes to Dutch user-facing messages.
+ */
+function getOAuthErrorMessage(code: string): string {
+  switch (code) {
+    case "auth-code-error":
+      return "Inloggen is mislukt. Probeer het opnieuw.";
+    case "oauth-cancelled":
+      return "Google login geannuleerd. Probeer het opnieuw.";
+    case "oauth-provider-error":
+      return "Google login is momenteel niet beschikbaar.";
+    default:
+      return "Er ging iets mis. Probeer het opnieuw.";
+  }
+}
 
 export default function Page() {
+  return (
+    <Suspense>
+      <LoginPage />
+    </Suspense>
+  );
+}
+
+function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Pick up error query param set by /auth/callback on failure
+  useEffect(() => {
+    const errorCode = searchParams.get("error");
+    if (errorCode) {
+      setError(getOAuthErrorMessage(errorCode));
+      // Clean the URL so the message doesn't stick around on refresh
+      router.replace("/auth/login", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
