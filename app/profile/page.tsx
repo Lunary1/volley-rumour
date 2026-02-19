@@ -9,6 +9,7 @@ import {
   type RecentRumour,
   type RecentClassified,
 } from "@/app/actions/profile";
+import { deleteAccount } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ import {
   Target,
   Mail,
   Instagram,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -145,6 +147,9 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -236,6 +241,22 @@ export default function ProfilePage() {
     }
 
     setSubmitting(false);
+  }
+
+  async function handleDeleteAccount(e: React.FormEvent) {
+    e.preventDefault();
+    if (deleteConfirmInput !== "VERWIJDER") {
+      setError('Typ "VERWIJDER" om te bevestigen');
+      return;
+    }
+    setDeleting(true);
+    setError(null);
+    const result = await deleteAccount();
+    if (result?.error) {
+      setError(result.error);
+      setDeleting(false);
+    }
+    // On success the server action redirects — nothing more to do here
   }
 
   async function handleUpdatePassword(e: React.FormEvent) {
@@ -621,7 +642,74 @@ export default function ProfilePage() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Danger zone – account deletion */}
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Gevaarzone
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Account permanent verwijderen — deze actie is onomkeerbaar.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setDeleteConfirmInput("");
+                setDeleteModalOpen(true);
+              }}
+            >
+              Account verwijderen
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Delete account confirmation dialog */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent showCloseButton className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Account verwijderen</DialogTitle>
+            <DialogDescription>
+              Al je berichten en gesprekken worden permanent verwijderd. Je
+              geruchten en zoekertjes blijven zichtbaar maar worden geanonimiseerd.
+              <br />
+              <br />
+              Typ <strong>VERWIJDER</strong> om te bevestigen.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleDeleteAccount} className="space-y-4">
+            <Input
+              placeholder="VERWIJDER"
+              value={deleteConfirmInput}
+              onChange={(e) => setDeleteConfirmInput(e.target.value)}
+              disabled={deleting}
+              autoComplete="off"
+              className="border-border bg-background"
+            />
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDeleteModalOpen(false)}
+                disabled={deleting}
+              >
+                Annuleren
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={deleting || deleteConfirmInput !== "VERWIJDER"}
+              >
+                {deleting ? "Bezig..." : "Permanent verwijderen"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit profile modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
