@@ -171,6 +171,7 @@ export function TransferCardInteractive({
             )}
             <ShareButton
               title={`${transfer.player_name} — ${transfer.from_club ? `${transfer.from_club} ➜ ` : ""}${transfer.to_club}`}
+              shareText={`🏐 Transfer bevestigd: ${transfer.player_name} ${transfer.from_club ? `van ${transfer.from_club} naar ${transfer.to_club}` : `naar ${transfer.to_club}`}. Bekijk het op VolleyRumours!`}
               url="/transfers"
               variant="outline"
               size="sm"

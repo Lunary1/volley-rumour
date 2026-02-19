@@ -5,11 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.volleyrumours.be";
+
 interface ShareButtonProps {
   /** Title of the post to share */
   title: string;
-  /** Absolute URL to the post (if omitted, uses current page URL) */
+  /** Path to the post, e.g. "/zoekertjes/abc" (will be prefixed with site URL) */
   url?: string;
+  /** Custom introductory text for the share message (shown before the link) */
+  shareText?: string;
   /** Visual variant */
   variant?: "outline" | "ghost" | "default";
   /** Button size */
@@ -26,6 +31,7 @@ interface ShareButtonProps {
 export function ShareButton({
   title,
   url,
+  shareText,
   variant = "outline",
   size = "sm",
   className,
@@ -33,13 +39,23 @@ export function ShareButton({
   const [showOptions, setShowOptions] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  /** Build the absolute shareable URL using the production domain. */
   const resolveUrl = () => {
     if (url) {
-      // Ensure absolute URL
       if (url.startsWith("http")) return url;
-      return `${window.location.origin}${url}`;
+      return `${SITE_URL}${url}`;
     }
-    return window.location.href;
+    // Fallback: replace origin with production domain
+    return window.location.href.replace(
+      window.location.origin,
+      SITE_URL,
+    );
+  };
+
+  /** Build the full share message (intro text + link). */
+  const buildShareMessage = (shareUrl: string) => {
+    const intro = shareText ?? title;
+    return `${intro}\n${shareUrl}`;
   };
 
   const handleShare = async () => {
@@ -64,9 +80,9 @@ export function ShareButton({
 
   const handleWhatsApp = () => {
     const shareUrl = resolveUrl();
-    const text = `${title} — ${shareUrl}`;
+    const message = buildShareMessage(shareUrl);
     window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
       "_blank",
       "noopener,noreferrer",
     );

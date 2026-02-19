@@ -171,6 +171,7 @@ export default async function ClassifiedDetailPage({
               )}
               <ShareButton
                 title={classified.contact_name || classified.title || "Zoekertje"}
+                shareText={`🏐 Bekijk dit zoekertje op VolleyRumours: ${classified.contact_name || classified.title || "Zoekertje"}`}
                 url={`/zoekertjes/${classified.id}`}
                 variant="outline"
                 size="sm"
