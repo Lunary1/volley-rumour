@@ -33,17 +33,34 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
   // Listen for auth state changes so the header re-renders when the user
   // signs out (or signs in via another tab). This eliminates the stale-user
   // split-brain state where the header still shows the old user data.
+  //
+  // IMPORTANT: We also handle INITIAL_SESSION for the OAuth redirect case.
+  // After Google OAuth, the browser does a full-page navigation to /. The
+  // Supabase browser client fires INITIAL_SESSION (not SIGNED_IN) because
+  // it's detecting the session for the first time. If the server render
+  // missed the session (race between cookie storage and SSR), we need to
+  // force a refresh so the header picks up the authenticated state.
   useEffect(() => {
     const supabase = createClient();
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT" || event === "SIGNED_IN") {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        event === "SIGNED_OUT" ||
+        event === "SIGNED_IN" ||
+        event === "TOKEN_REFRESHED"
+      ) {
         router.refresh(); // Force server component tree to re-render
+      }
+
+      // Recovery: server rendered without auth but client detects a valid
+      // session from cookies → force server re-render to pick up the user.
+      if (event === "INITIAL_SESSION" && session && !user) {
+        router.refresh();
       }
     });
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, [router, user?.id]);
 
   // Determine active main nav item and its submenu
   const activeMainItem = useMemo(() => {

@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ComingSoonPage } from "@/components/coming-soon-page";
 
-// Cache homepage for 60 seconds — revalidates frequently due to new content
-export const revalidate = 60;
+// The homepage is dynamically rendered (layout uses cookies() for auth).
+// No revalidate needed — each request gets a fresh render.
 
 import { TrendingUp, Users, ArrowRight, Plus, Flame } from "lucide-react";
 import Link from "next/link";
