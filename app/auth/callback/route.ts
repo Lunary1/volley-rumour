@@ -65,6 +65,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (!error) {
+      // CRITICAL: @supabase/auth-js@2.x defers the SIGNED_IN notification
+      // via setTimeout(0) inside _exchangeCodeForSession. However,
+      // @supabase/ssr@0.8.x only flushes session cookies (via setAll) when
+      // the onAuthStateChange handler fires with SIGNED_IN. Without this
+      // yield, cookiesToSet is still empty when we build the redirect
+      // response — the browser never receives the session cookies and the
+      // user appears logged out.
+      //
+      // Yielding one macrotask tick allows the deferred SIGNED_IN event to
+      // fire, which triggers applyServerStorage → setAll → cookiesToSet.
+      await new Promise((resolve) => setTimeout(resolve, 0));
       const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === "development";
 
