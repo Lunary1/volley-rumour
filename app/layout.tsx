@@ -8,6 +8,7 @@ import { HeaderSkeleton } from "@/components/header-skeleton";
 import { Footer } from "@/components/footer";
 import { ToasterProvider } from "@/components/toaster-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { DatadogRumProvider } from "@/components/datadog-rum-provider";
 
 const _inter = Inter({ subsets: ["latin"] });
 const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
@@ -57,6 +58,7 @@ export default function RootLayout({
           <Footer />
           <Analytics />
           <ToasterProvider />
+          <DatadogRumProvider />
         </ThemeProvider>
       </body>
     </html>

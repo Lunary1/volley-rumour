@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ComingSoonPage } from "@/components/coming-soon-page";
 
-// The homepage is dynamically rendered (layout uses cookies() for auth).
-// No revalidate needed — each request gets a fresh render.
+// Force dynamic rendering — this route calls cookies() via createClient() and
+// must not be statically pre-rendered at build time.
+export const dynamic = "force-dynamic";
 
 import { TrendingUp, Users, ArrowRight, Plus, Flame } from "lucide-react";
 import Link from "next/link";
