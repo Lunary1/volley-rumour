@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
@@ -74,6 +75,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/react": "^19",

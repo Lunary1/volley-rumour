@@ -34,9 +34,10 @@ Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
 | Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` (ESLint 9, `eslint-config-next`; warnings allowed, errors fail CI) |
 | Build | `npm run build` |
-| E2E | `npx playwright test` — not set up yet (M1) |
+| E2E tests | `npm run test:e2e` — builds the app against the local stack and runs Playwright on :3100 (needs `npm run db:start`; once: `npx playwright install chromium`) |
 | Local database | `npm run db:start` / `npm run db:stop` (needs Docker) |
 | Rebuild local DB from migrations + seed | `npm run db:reset` |
+| Database tests (pgTAP) | `npm run db:test` |
 | New migration | `npm run db:new -- <snake_case_name>` |
 
 ## Database and migrations
@@ -58,6 +59,8 @@ a normal migration.
 - **Production is migrated by the owner, after merge**: `npx supabase db push`.
   Agents never push migrations or run SQL against the linked project.
 - `supabase/seed.sql` holds fake data for local development and tests only.
+  Every seeded account logs in with `test-wachtwoord`; the accounts are listed
+  at the top of the file and in `e2e/fixtures.ts`. Keep the two in sync.
 
 ## Branching and release
 
@@ -103,7 +106,7 @@ Rules:
 
 - [ ] Acceptance criteria of the issue are met, with evidence per criterion.
 - [ ] Typecheck, lint and build pass (CI green).
-- [ ] A Playwright test covers the key flow of the change (once the harness exists).
+- [ ] A Playwright test in `e2e/` covers the key flow of the change.
 - [ ] Schema changes are committed as Supabase migrations in `supabase/migrations/`.
 - [ ] UI copy is Dutch.
 - [ ] Privacy, moderation and minors impact considered.
