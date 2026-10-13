@@ -18,4 +18,4 @@ Closes #
 - [ ] Vercel preview checked manually
 
 ## Notes for review
-<!-- Risks, follow-ups, anything to apply manually (env vars, migrations). Previews use the production database until M1 — don't create test data there. -->
+<!-- Risks, follow-ups, anything to apply manually (env vars, migrations). Previews use the production database (D-010) — look, don't write. -->

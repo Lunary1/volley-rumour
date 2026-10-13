@@ -16,6 +16,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-007 | 2026-10-13 | Accepted | npm is the package manager; `pnpm-lock.yaml` is removed           |
 | D-008 | 2026-10-13 | Accepted | GitHub Flow: protected `main` is production; PRs with CI, squash merge |
 | D-009 | 2026-10-13 | Accepted | Coming-soon mode closes every route except the homepage and info pages |
+| D-010 | 2026-10-13 | Accepted | Vercel previews keep using the production database; no separate preview project |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -162,8 +163,8 @@ or revert through a PR. Details in `CLAUDE.md`.
 
 **Why not a `develop`/staging branch?** It doubles every merge and drifts from
 `main`, and a staging site that writes to the production database gives false
-safety. The real gap is the database: add a separate non-production Supabase
-project for Preview deployments (M1). Revisit a staging branch if batched
+safety. The real gap is the database; a separate preview project was
+considered and declined (D-010). Revisit a staging branch if batched
 releases or a fixed staging URL for moderators become necessary.
 
 ## D-009 — Coming-soon mode closes every route
@@ -187,6 +188,31 @@ launch.
 **Limit.** This closes the website, not the Supabase API: with the public anon
 key, someone can still call Supabase Auth sign-up directly. Disabling sign-ups
 in the Supabase Auth settings until launch closes that gap (owner, dashboard).
+
+## D-010 — Previews keep using the production database
+
+**Context.** Vercel preview deployments use the production Supabase project
+(D-008). The plan was a separate non-production project for previews in M1
+(step 1.7): its own database built from `supabase/migrations/`, preview env
+vars, auth redirect URLs.
+
+**Decision.** No separate preview project. The owner accepts the risk for a
+project of this size: one developer plus AI agents, a handful of real accounts,
+and a second project to keep migrated and configured is overhead with little
+return before launch.
+
+**How the risk is contained.**
+- Previews are for **looking**, not writing: no test data, no destructive
+  flows (deleting ads, accounts, conversations), no migrations from a preview.
+- Anything that writes data is tested locally against the Supabase stack in
+  Docker (`npm run db:start`, seeded from `supabase/seed.sql`).
+- Playwright (step 1.4) runs against that local stack, in CI and on laptops —
+  never against a preview URL.
+- Until launch, sign-ups are disabled in Supabase Auth, so a preview can't
+  create accounts either.
+
+**Revisit when** a second developer joins, moderators need a place to practise,
+or end-to-end tests need a deployed environment.
 
 ## O-001 — Rumour confirmation authority (Open)
 

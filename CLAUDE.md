@@ -91,9 +91,10 @@ Rules:
 - Hotfixes follow the same flow on a `fix/` branch — the gate is the safety net.
 - **Rollback**: promote the previous deployment in Vercel (Instant Rollback),
   then fix forward or revert the PR through a new PR.
-- **Preview deployments currently use the production Supabase database.** Do
-  not create test data, run destructive flows or apply migrations from a
-  preview until a separate non-production Supabase project exists (M1).
+- **Preview deployments use the production Supabase database** (D-010). Use
+  previews to look, not to write: no test data, no destructive flows, no
+  migrations. Test anything that writes data against the local stack
+  (`npm run db:start`).
 
 ## Definition of Done
 
