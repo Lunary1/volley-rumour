@@ -109,7 +109,7 @@ export default function NewClassifiedPage() {
     }
 
     const type = formData.get("type") as string;
-    let classifiedData: any = {
+    let classifiedData: Record<string, unknown> = {
       user_id: user.id,
       type: type,
       is_active: true,

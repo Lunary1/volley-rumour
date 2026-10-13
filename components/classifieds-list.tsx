@@ -107,7 +107,7 @@ export function ClassifiedsList({
   }, []);
 
   const { filteredAndSorted, totalPages, totalResults } = useMemo(() => {
-    let filtered = classifieds.filter((ad) => {
+    const filtered = classifieds.filter((ad) => {
       const matchesSearch =
         ad.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         ad.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||

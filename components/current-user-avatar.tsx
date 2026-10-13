@@ -1,22 +1,17 @@
 "use client";
 
-import { useCurrentUserImage } from "@/hooks/use-current-user-image";
-import { useCurrentUserName } from "@/hooks/use-current-user-name";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface CurrentUserAvatarProps {
-  imageUrl?: string | null;
-  name?: string | null;
+  imageUrl: string | null;
+  name: string | null;
 }
 
 export const CurrentUserAvatar = ({
   imageUrl,
   name,
-}: CurrentUserAvatarProps = {}) => {
-  const profileImage =
-    imageUrl !== undefined ? imageUrl : useCurrentUserImage();
-  const userName = name !== undefined ? name : useCurrentUserName();
-  const initials = userName
+}: CurrentUserAvatarProps) => {
+  const initials = name
     ?.split(" ")
     ?.map((word) => word[0])
     ?.join("")
@@ -24,7 +19,7 @@ export const CurrentUserAvatar = ({
 
   return (
     <Avatar>
-      {profileImage && <AvatarImage src={profileImage} alt={initials} />}
+      {imageUrl && <AvatarImage src={imageUrl} alt={initials} />}
       <AvatarFallback>{initials || "?"}</AvatarFallback>
     </Avatar>
   );

@@ -16,6 +16,7 @@ import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { getUserVoteOnRumour } from "@/app/actions/vote";
 import { createClient } from "@/lib/supabase/client";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { RumourDetailModal } from "@/components/rumour-detail-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
 
@@ -37,7 +38,10 @@ interface RumourCardProps {
       is_verified_source?: boolean;
     };
   };
-  onVote?: (rumourId: string, voteType: "up" | "down") => Promise<any>;
+  onVote?: (
+    rumourId: string,
+    voteType: "up" | "down",
+  ) => Promise<{ success?: boolean; error?: string } | void>;
   userVote?: "up" | "down" | null;
 }
 
@@ -81,7 +85,11 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
   const [isVoting, setIsVoting] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const votesRef = useRef({ up: rumour.votes_true, down: rumour.votes_false });
-  votesRef.current = { up: localUpvotes, down: localDownvotes };
+
+  // Keep the latest counts available to the realtime handler below
+  useEffect(() => {
+    votesRef.current = { up: localUpvotes, down: localDownvotes };
+  }, [localUpvotes, localDownvotes]);
 
   // Fetch persistent user vote on mount
   useEffect(() => {
@@ -95,7 +103,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
 
   // Subscribe to real-time updates for this rumour's vote counts
   useEffect(() => {
-    let channel: any = null;
+    let channel: RealtimeChannel | null = null;
 
     const subscribeToRumourUpdates = async () => {
       const supabase = await createClient();
