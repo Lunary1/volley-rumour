@@ -15,6 +15,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-006 | 2026-10-13 | Accepted | Moderation needs an admin role, separate from the user account type |
 | D-007 | 2026-10-13 | Accepted | npm is the package manager; `pnpm-lock.yaml` is removed           |
 | D-008 | 2026-10-13 | Accepted | GitHub Flow: protected `main` is production; PRs with CI, squash merge |
+| D-009 | 2026-10-13 | Accepted | Coming-soon mode closes every route except the homepage and info pages |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -164,6 +165,28 @@ or revert through a PR. Details in `CLAUDE.md`.
 safety. The real gap is the database: add a separate non-production Supabase
 project for Preview deployments (M1). Revisit a staging branch if batched
 releases or a fixed staging URL for moderators become necessary.
+
+## D-009 — Coming-soon mode closes every route
+
+**Context.** `NEXT_PUBLIC_COMING_SOON` only replaced the homepage (X-11), so
+every other page — posting rumours and zoekertjes, sign-up, messaging — was
+live in production for anyone with the URL.
+
+**Decision.** While the flag is `"true"`, the proxy lets through only `/`,
+`/privacy`, `/voorwaarden`, `/over-ons` and `/contact` (the pages the
+coming-soon page links to). `/auth/callback` is outside the proxy and unaffected.
+Every other route gets a temporary (307) redirect to `/`, so visitors land on
+the waitlist. The header and footer hide links to closed pages. There is **no
+bypass** on production: the full site is reviewed locally or on Vercel
+previews, where the flag is off. The open list lives in `lib/coming-soon.ts`.
+
+**Why no bypass?** A secret link leaks, and an admin-only bypass needs login to
+stay open plus a database lookup on every request. Neither is worth it before
+launch.
+
+**Limit.** This closes the website, not the Supabase API: with the public anon
+key, someone can still call Supabase Auth sign-up directly. Disabling sign-ups
+in the Supabase Auth settings until launch closes that gap (owner, dashboard).
 
 ## O-001 — Rumour confirmation authority (Open)
 

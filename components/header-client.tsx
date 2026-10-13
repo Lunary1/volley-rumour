@@ -9,7 +9,7 @@ import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 
-interface NavItem {
+export interface NavItem {
   href?: string;
   label: string;
   submenu?: Array<{ href: string; label: string }>;
@@ -23,9 +23,15 @@ interface HeaderClientProps {
     avatar_url: string | null;
   } | null;
   navItems: NavItem[];
+  /** False in coming-soon mode: login, sign-up and account links are closed. */
+  showUserMenu?: boolean;
 }
 
-export function HeaderClient({ user, navItems }: HeaderClientProps) {
+export function HeaderClient({
+  user,
+  navItems,
+  showUserMenu = true,
+}: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -154,7 +160,7 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
 
           <div className="hidden md:flex items-center gap-1">
             <ThemeToggle />
-            <UserMenu user={user} />
+            {showUserMenu && <UserMenu user={user} />}
           </div>
 
           <button
@@ -214,7 +220,7 @@ export function HeaderClient({ user, navItems }: HeaderClientProps) {
                   )}
                 </div>
               ))}
-              <UserMenu user={user} isMobile={true} />
+              {showUserMenu && <UserMenu user={user} isMobile={true} />}
               <div className="px-4 pt-2">
                 <ThemeToggle />
               </div>
