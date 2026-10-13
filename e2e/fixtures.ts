@@ -1,0 +1,58 @@
+import { test as base, expect, type Page } from "@playwright/test";
+
+// Accounts created by supabase/seed.sql. Keep the two in sync.
+export const SEED_PASSWORD = "test-wachtwoord";
+
+export const seedUsers = {
+  jana: { email: "jana@example.test", username: "speler_jana" },
+  tom: { email: "tom@example.test", username: "coach_tom" },
+  club: { email: "club@example.test", username: "vc_testdorp" },
+  moderator: { email: "moderator@example.test", username: "moderator_vr" },
+  // Logging out ends every session of the user (global sign-out), which
+  // would log out parallel tests on the same account. Only logout tests use it.
+  uitlogger: { email: "uitlog@example.test", username: "test_uitlogger" },
+} as const;
+
+export type SeedUser = keyof typeof seedUsers;
+
+// Rows from supabase/seed.sql that tests look for.
+export const seed = {
+  activeAdCount: 3,
+  activeAd: {
+    id: "d0000000-0000-4000-8000-000000000001",
+    contactName: "VC Testdorp",
+    description:
+      "Ons herenteam in Nationale 2 zoekt een ervaren setter voor volgend seizoen. Training op dinsdag en donderdag.",
+  },
+  inactiveAd: { id: "d0000000-0000-4000-8000-000000000004" },
+  openRumour: { playerName: "Pieter Proefspeler" },
+  confirmedRumour: { playerName: "Koen Kladversie" },
+} as const;
+
+/** Logs in through the login form and waits for the header to show the user. */
+export async function loginAs(page: Page, user: SeedUser) {
+  const { email, username } = seedUsers[user];
+  await page.goto("/auth/login");
+  await page.getByLabel("E-mailadres").fill(email);
+  await page.getByLabel("Wachtwoord", { exact: true }).fill(SEED_PASSWORD);
+  await page
+    .locator("form")
+    .getByRole("button", { name: "Inloggen", exact: true })
+    .click();
+  await page.waitForURL("/");
+  await expect(page.getByRole("banner").getByText(username)).toBeVisible();
+}
+
+export const test = base.extend<{ blockThirdParties: void }>({
+  // A production build sends Datadog RUM sessions to the production app;
+  // tests must never end up in its analytics.
+  blockThirdParties: [
+    async ({ context }, use) => {
+      await context.route(/datadoghq\.eu/, (route) => route.abort());
+      await use();
+    },
+    { auto: true },
+  ],
+});
+
+export { expect };
