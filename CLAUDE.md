@@ -1,0 +1,145 @@
+# CLAUDE.md
+
+Instructions for anyone — human or AI agent — changing this repository. This is
+the **only** instruction file; Copilot and other tools are pointed here.
+
+## What this is
+
+**volleyrumours.be** — a Dutch-language community site for Belgian volleyball:
+classifieds (*zoekertjes*) are the core value, moderated transfer rumours
+(*geruchten*) are the acquisition engine. Product intent lives in `docs/product/`:
+
+| File | Purpose |
+| --- | --- |
+| `docs/product/journeys.md` | 15 user journeys (J-01 … J-15) with acceptance criteria |
+| `docs/product/decisions.md` | Decision log (D-xxx) and open decisions (O-xxx) |
+| `docs/product/audit.md` | Gap audit of every journey against the code |
+
+When product intent is unclear, ask the owner — don't guess. Record the answer
+in `docs/product/decisions.md`.
+
+## Stack
+
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Supabase
+(Postgres + RLS, Auth with email/password and Google OAuth, Realtime) ·
+shadcn/ui (new-york) on Radix · Tailwind 4 · React Hook Form + Zod · Vercel ·
+Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
+
+## Commands
+
+| Purpose | Command |
+| --- | --- |
+| Install | `npm ci` |
+| Dev server | `npm run dev` (needs a `.env.local`, see below) |
+| Typecheck | `npm run typecheck` |
+| Lint | `npm run lint` — **broken until ESLint is set up (M1)** |
+| Build | `npm run build` |
+| E2E | `npx playwright test` — not set up yet (M1) |
+
+## Branching and release
+
+`main` **is production**: every merge deploys to volleyrumours.be via Vercel.
+Note that coming-soon mode only replaces the homepage — every other route is
+publicly reachable. Treat every merge as a release.
+
+```
+feature/42-password-reset ──PR──┐
+fix/57-search-crash       ──PR──┼──► main ──► Production (volleyrumours.be)
+chore/61-eslint           ──PR──┘   protected · CI required · squash only
+        │
+        └─ every PR gets a Vercel preview deployment
+```
+
+1. **Pick an issue** from the GitHub Project board. No issue, no branch.
+2. **Branch from an up-to-date `main`**: `<type>/<issue>-<slug>`, where type is
+   `feature`, `fix`, `chore` or `docs` (e.g. `fix/57-search-crash`). Keep
+   branches short-lived — days, not weeks. Rebase on `main` if it moves.
+3. **Commit** in Conventional Commit style: `feat(rumours): …`, `fix(auth): …`,
+   `chore(deps): …`, `docs(product): …`.
+4. **Open a PR** using the template. Title in Conventional Commit style (it
+   becomes the squash commit). Link the issue with `Closes #42`.
+5. **Gate**: CI green, Definition of Done ticked, Vercel preview checked by hand.
+6. **Squash merge**, then delete the branch.
+
+Rules:
+- Never push directly to `main`, never force-push `main`. Branch protection
+  enforces this, including for admins.
+- Hotfixes follow the same flow on a `fix/` branch — the gate is the safety net.
+- **Rollback**: promote the previous deployment in Vercel (Instant Rollback),
+  then fix forward or revert the PR through a new PR.
+- **Preview deployments currently use the production Supabase database.** Do
+  not create test data, run destructive flows or apply migrations from a
+  preview until a separate non-production Supabase project exists (M1).
+
+## Definition of Done
+
+- [ ] Acceptance criteria of the issue are met, with evidence per criterion.
+- [ ] Typecheck, lint and build pass (CI green).
+- [ ] A Playwright test covers the key flow of the change (once the harness exists).
+- [ ] Schema changes are committed as Supabase migrations in `supabase/migrations/`.
+- [ ] UI copy is Dutch.
+- [ ] Privacy, moderation and minors impact considered.
+- [ ] Vercel preview checked manually.
+
+## Code conventions
+
+### Server vs client
+- Pages are async Server Components that fetch data directly.
+- Mutations go through **Server Actions** in `app/actions/<domain>.ts`
+  (`"use server"`). Don't insert or update from the browser.
+- Add `"use client"` only for forms, interactivity and Realtime subscriptions.
+- Call `revalidatePath()` for affected routes after a mutation.
+
+### Server Action shape
+Return `ActionResponse<T>` from `@/lib/response`:
+
+```ts
+const supabase = await createClient();
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) return errorResponse("Je moet ingelogd zijn");
+// validate input with zod, do the work, revalidatePath(...)
+return successResponse(data);
+```
+
+Use `errorResponseFromError()` / `extractErrorMessage()` to map Supabase errors
+to Dutch messages. On the client, `handleServerActionResponse()` from
+`@/lib/client-utils` shows the toast.
+
+### Supabase clients
+- Server: `createClient()` from `@/lib/supabase/server` — create it **inside**
+  each function, never at module scope (Fluid compute).
+- Browser: `createClient()` from `@/lib/supabase/client`.
+- Admin: `createAdminClient()` bypasses RLS with `SUPABASE_SERVICE_ROLE_KEY`.
+  Server-only, use sparingly, and check authorisation yourself first.
+- Security lives in RLS. Any new table or policy change ships as a migration.
+
+### Conversations
+Conversations are bidirectional (`initiator_id`, `recipient_id`, linked by
+`ad_id` + `ad_type`). Always query both directions with `or(and(…),and(…))`.
+
+### Language and UI
+- All user-facing text is **Dutch**: labels, errors, toasts, validation
+  messages, emails. Dates via `date-fns` with `import { nl } from "date-fns/locale"`.
+- Use `@/` imports, `cn()` from `@/lib/utils`, shadcn components in `components/ui/`.
+- Support light (default) and dark themes.
+
+## Environment variables
+
+Put local values in `.env.local` (git-ignored). Never commit secrets.
+
+| Variable | Notes |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only — never in client code |
+| `NEXT_PUBLIC_COMING_SOON` | `"true"` shows the coming-soon homepage |
+| `NEXT_PUBLIC_LAUNCH_DATE` | Countdown target |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL for share links |
+| `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` | OAuth redirect for local dev |
+
+## Ground rules for agents
+
+- Never run anything against the remote Supabase database without the owner's OK.
+- Never run load or stress tests against production.
+- Don't merge PRs, close issues or change repository settings — the owner does.
+- Don't skip failing checks or hooks; fix the cause.
+- Keep PRs to one issue. Unrelated cleanups get their own issue.

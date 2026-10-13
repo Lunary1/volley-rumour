@@ -1,0 +1,52 @@
+name: Bug
+description: Something that worked, or should work, and doesn't
+title: "fix(<area>): "
+labels: ["type/bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Ga naar /zoekertjes
+        2. …
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Production (volleyrumours.be)
+        - Vercel preview
+        - Local
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - critical — data loss, security, privacy, site down
+        - high — a journey is blocked
+        - medium — a journey works with a workaround
+        - low — cosmetic
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Screenshots, console errors, audit ID (e.g. X-2). Never paste personal data of real users.

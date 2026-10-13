@@ -1,0 +1,41 @@
+name: Story
+description: A user-facing change tied to a journey in docs/product/journeys.md
+title: "feat(<area>): "
+labels: ["type/story"]
+body:
+  - type: input
+    id: journey
+    attributes:
+      label: Journey
+      description: Journey ID(s) from docs/product/journeys.md, and decision IDs if relevant.
+      placeholder: "J-04, D-002"
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      placeholder: "Als <persona> wil ik <iets> zodat <waarde>."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Testable, one per line. Each needs evidence in the PR.
+      placeholder: |
+        - [ ] Given … when … then …
+    validations:
+      required: true
+  - type: textarea
+    id: trust-safety
+    attributes:
+      label: Trust & safety impact
+      description: Moderation, privacy (personal data, processors), minors. Write "none" if none.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Dutch UI copy, schema changes, out of scope, links.
