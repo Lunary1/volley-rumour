@@ -14,6 +14,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-005 | 2026-10-13 | Proposed | Replace popularity points with an accuracy-based track record     |
 | D-006 | 2026-10-13 | Accepted | Moderation needs an admin role, separate from the user account type |
 | D-007 | 2026-10-13 | Accepted | npm is the package manager; `pnpm-lock.yaml` is removed           |
+| D-008 | 2026-10-13 | Accepted | GitHub Flow: protected `main` is production; PRs with CI, squash merge |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -142,6 +143,27 @@ instructions also mandate npm.
 **Why not switch to pnpm?** There's no concrete benefit for a single-app repo
 of this size, and switching means regenerating the lockfile, which changes
 the resolved dependency tree in the middle of a stabilisation effort.
+
+## D-008 — Branching: protected `main` is production
+
+**Context.** Vercel deploys `main` to volleyrumours.be on every push, and
+`main` had no branch protection. Coming-soon mode only hides the homepage
+(X-11), so every merge is effectively public. Development is done by one
+person plus AI agents. Preview deployments use the production Supabase project.
+
+**Decision.** GitHub Flow. Short-lived `<type>/<issue>-<slug>` branches
+(`feature`, `fix`, `chore`, `docs`) from `main`; every change lands through a PR
+with CI green, the Definition of Done ticked and the Vercel preview checked;
+squash merge; branch deleted after merge. `main` is protected: PR required,
+`checks` status required, branch up to date, linear history, no force-push or
+deletion, enforced for admins. Rollback is Vercel Instant Rollback, then a fix
+or revert through a PR. Details in `CLAUDE.md`.
+
+**Why not a `develop`/staging branch?** It doubles every merge and drifts from
+`main`, and a staging site that writes to the production database gives false
+safety. The real gap is the database: add a separate non-production Supabase
+project for Preview deployments (M1). Revisit a staging branch if batched
+releases or a fixed staging URL for moderators become necessary.
 
 ## O-001 — Rumour confirmation authority (Open)
 
