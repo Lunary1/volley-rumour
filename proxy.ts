@@ -1,7 +1,15 @@
 import { updateSession } from "@/lib/supabase/proxy";
-import { type NextRequest } from "next/server";
+import { isComingSoon, isOpenDuringComingSoon } from "@/lib/coming-soon";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  if (isComingSoon() && !isOpenDuringComingSoon(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    url.search = "";
+    return NextResponse.redirect(url, 307);
+  }
+
   return await updateSession(request);
 }
 

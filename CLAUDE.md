@@ -62,8 +62,9 @@ a normal migration.
 ## Branching and release
 
 `main` **is production**: every merge deploys to volleyrumours.be via Vercel.
-Note that coming-soon mode only replaces the homepage — every other route is
-publicly reachable. Treat every merge as a release.
+Coming-soon mode (D-009) closes every route except the homepage and info pages,
+but those pages, the Supabase API and the waitlist are live. Treat every merge
+as a release.
 
 ```
 feature/42-password-reset ──PR──┐
@@ -154,7 +155,7 @@ Put local values in `.env.local` (git-ignored). Never commit secrets.
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only — never in client code |
-| `NEXT_PUBLIC_COMING_SOON` | `"true"` shows the coming-soon homepage |
+| `NEXT_PUBLIC_COMING_SOON` | `"true"` shows the coming-soon homepage and redirects every other route except the info pages to `/` (`lib/coming-soon.ts`) |
 | `NEXT_PUBLIC_LAUNCH_DATE` | Countdown target |
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL for share links |
 | `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` | OAuth redirect for local dev |

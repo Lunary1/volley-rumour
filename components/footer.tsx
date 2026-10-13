@@ -1,7 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
+import { isComingSoon } from "@/lib/coming-soon";
 
 export function Footer() {
+  // Coming-soon mode: only link to pages that are still reachable.
+  const comingSoon = isComingSoon();
+
   return (
     <footer className="border-t border-border bg-card">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -29,63 +33,69 @@ export function Footer() {
             </p>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-4">Navigatie</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link
-                  href="/geruchten"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Transfer Talk
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/transfers"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Transfers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/zoekertjes"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Zoekertjes
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/leaderboard"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Leaderboard
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {!comingSoon && (
+            <div>
+              <h3 className="font-semibold mb-4">Navigatie</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link
+                    href="/geruchten"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Transfer Talk
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/transfers"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Transfers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/zoekertjes"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Zoekertjes
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/leaderboard"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Leaderboard
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
 
           <div>
             <h3 className="font-semibold mb-4">Community</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link
-                  href="/auth/sign-up"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Registreren
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/auth/login"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Inloggen
-                </Link>
-              </li>
+              {!comingSoon && (
+                <>
+                  <li>
+                    <Link
+                      href="/auth/sign-up"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      Registreren
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/auth/login"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      Inloggen
+                    </Link>
+                  </li>
+                </>
+              )}
               <li>
                 <Link
                   href="/over-ons"

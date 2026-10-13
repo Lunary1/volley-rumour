@@ -5,6 +5,7 @@ import { LeaderboardPeek } from "@/components/leaderboard-peek";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ComingSoonPage } from "@/components/coming-soon-page";
+import { isComingSoon } from "@/lib/coming-soon";
 
 // Force dynamic rendering — this route calls cookies() via createClient() and
 // must not be statically pre-rendered at build time.
@@ -83,7 +84,7 @@ async function getSiteCounts() {
 
 export default async function HomePage() {
   // Coming-soon mode: show landing page when env var is set to "true"
-  if (process.env.NEXT_PUBLIC_COMING_SOON === "true") {
+  if (isComingSoon()) {
     return <ComingSoonPage />;
   }
 
