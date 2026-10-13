@@ -1,0 +1,2 @@
+-- Local development seed data. Fake data only — never real users.
+-- Filled in with the Playwright harness (step 1.4).
