@@ -17,7 +17,7 @@ export type SeedUser = keyof typeof seedUsers;
 
 // Rows from supabase/seed.sql that tests look for.
 export const seed = {
-  activeAdCount: 3,
+  activeAdCount: 4,
   activeAd: {
     id: "d0000000-0000-4000-8000-000000000001",
     contactName: "VC Testdorp",
@@ -25,6 +25,11 @@ export const seed = {
       "Ons herenteam in Nationale 2 zoekt een ervaren setter voor volgend seizoen. Training op dinsdag en donderdag.",
   },
   inactiveAd: { id: "d0000000-0000-4000-8000-000000000004" },
+  adWithoutDescription: {
+    id: "d0000000-0000-4000-8000-000000000005",
+    title: "Hulptrainer beschikbaar in Gent",
+    contactName: "Tom Testmans",
+  },
   openRumour: { playerName: "Pieter Proefspeler" },
   confirmedRumour: { playerName: "Koen Kladversie" },
 } as const;
