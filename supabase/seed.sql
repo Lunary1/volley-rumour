@@ -62,7 +62,8 @@ INSERT INTO public.clubs (id, name, province, division) VALUES
   ('c0000000-0000-4000-8000-000000000003', 'VBC Fictief',      'limburg',         'promo1_dames');
 
 -- ------------------------------------------------------------- zoekertjes
--- Every ad has a description; the search crash on ads without one is #59.
+-- The last ad has no description, which is what the create form stores for an
+-- empty field. Search must still work with it in the list (#59).
 INSERT INTO public.classifieds (
   id, user_id, type, title, description, contact_name, team_name, position,
   province, division, created_at
@@ -78,7 +79,11 @@ INSERT INTO public.classifieds (
   ('d0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000002',
    'trainer_seeks_team', 'Trainer B zoekt jeugdploeg',
    'Gediplomeerd trainer B zoekt een jeugdploeg voor het komende seizoen, liefst in Oost-Vlaanderen.',
-   'Tom Testmans', NULL, NULL, 'oost_vlaanderen', NULL, now() - interval '9 days');
+   'Tom Testmans', NULL, NULL, 'oost_vlaanderen', NULL, now() - interval '9 days'),
+  ('d0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000002',
+   'trainer_seeks_team', 'Hulptrainer beschikbaar in Gent',
+   NULL,
+   'Tom Testmans', NULL, NULL, 'oost_vlaanderen', NULL, now() - interval '12 days');
 
 -- An inactive ad: hidden from the list and its detail page returns 404.
 INSERT INTO public.classifieds (

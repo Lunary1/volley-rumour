@@ -32,7 +32,7 @@ interface Classified {
   id: string;
   title: string;
   type: string;
-  description: string;
+  description: string | null;
   province: string | null;
   position: string | null;
   team_name: string | null;
@@ -110,7 +110,7 @@ export function ClassifiedsList({
     const filtered = classifieds.filter((ad) => {
       const matchesSearch =
         ad.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        ad.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        ad.description?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         ad.profiles?.username
           .toLowerCase()
           .includes(debouncedSearch.toLowerCase());
