@@ -12,7 +12,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:diff": "supabase db diff",
-    "db:new": "supabase migration new"
+    "db:new": "supabase migration new",
+    "db:test": "supabase test db"
   },
   "dependencies": {
     "@datadog/browser-rum": "^6.30.1",
