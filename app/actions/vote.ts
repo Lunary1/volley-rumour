@@ -78,29 +78,12 @@ export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
     return { error: "Gerucht niet gevonden" };
   }
 
-  let newVotesTrue = rumour.votes_true;
-  let newVotesFalse = rumour.votes_false;
-
   if (existingVote) {
     // existingVote.vote_type is boolean: true = "up", false = "down"
     const existingVoteType = existingVote.vote_type === true ? "up" : "down";
 
     if (existingVoteType === voteType) {
       return { error: "Je hebt al op deze optie gestemd" };
-    }
-
-    // Change existing vote - adjust counts
-    if (existingVote.vote_type === true) {
-      newVotesTrue = Math.max(0, newVotesTrue - 1);
-    } else {
-      newVotesFalse = Math.max(0, newVotesFalse - 1);
-    }
-
-    // Add new vote
-    if (voteType === "up") {
-      newVotesTrue += 1;
-    } else {
-      newVotesFalse += 1;
     }
 
     // Update vote type (convert to boolean: true = up, false = down)
@@ -110,13 +93,6 @@ export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
       .update({ vote_type: isUpvote })
       .eq("id", existingVote.id);
   } else {
-    // New vote - just increment the appropriate count
-    if (voteType === "up") {
-      newVotesTrue += 1;
-    } else {
-      newVotesFalse += 1;
-    }
-
     // Create new vote record (convert to boolean: true = up, false = down)
     const isUpvote = voteType === "up";
     const { error: insertError } = await supabase.from("rumour_votes").insert({
@@ -131,36 +107,16 @@ export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
     }
   }
 
-  // Update rumour vote counts
-  const { error: updateError } = await supabase
+  // The on_vote_change trigger recounts votes_true/votes_false (and the
+  // creator's trust score) in the database; read the fresh counts back.
+  const { data: counts } = await supabase
     .from("rumours")
-    .update({
-      votes_true: newVotesTrue,
-      votes_false: newVotesFalse,
-    })
-    .eq("id", rumourId);
+    .select("votes_true, votes_false")
+    .eq("id", rumourId)
+    .single();
 
-  if (updateError) {
-    return { error: "Fout bij bijwerken van stemmen" };
-  }
-
-  // Award/deduct points to rumour creator (only for upvotes)
-  if (rumour.creator_id && voteType === "up" && !existingVote) {
-    // Get current trust score
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("trust_score")
-      .eq("id", rumour.creator_id)
-      .single();
-
-    if (profile) {
-      const newScore = (profile.trust_score || 0) + 1;
-      await supabase
-        .from("profiles")
-        .update({ trust_score: newScore })
-        .eq("id", rumour.creator_id);
-    }
-  }
+  const newVotesTrue = counts?.votes_true ?? rumour.votes_true;
+  const newVotesFalse = counts?.votes_false ?? rumour.votes_false;
 
   revalidatePath("/geruchten", "layout");
 

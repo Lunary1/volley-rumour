@@ -157,22 +157,27 @@ export async function deleteAccount(): Promise<{ error?: string }> {
   const authProvider =
     user.app_metadata?.provider ?? user.app_metadata?.providers?.[0] ?? null;
 
+  // The data steps below write columns users can't change themselves
+  // (authorship, contact details), so they run with the service role. Every
+  // query is scoped to the verified session's userId.
+  const admin = createAdminClient();
+
   // --- 1. Anonymize reported_conversations (retain moderation audit trail) ---
-  const { error: rcErr } = await supabase
+  const { error: rcErr } = await admin
     .from("reported_conversations")
     .update({ reporter_id: null })
     .eq("reporter_id", userId);
   if (rcErr) return { error: "Kon meldingen niet verwerken." };
 
   // --- 2. Anonymize rumours (detach authorship; content stays public) ---
-  const { error: rumourErr } = await supabase
+  const { error: rumourErr } = await admin
     .from("rumours")
     .update({ creator_id: null })
     .eq("creator_id", userId);
   if (rumourErr) return { error: "Kon geruchten niet verwerken." };
 
   // --- 3. Anonymize classifieds (strip PII, keep listing) ---
-  const { error: classifiedErr } = await supabase
+  const { error: classifiedErr } = await admin
     .from("classifieds")
     .update({
       user_id: null,
@@ -183,21 +188,21 @@ export async function deleteAccount(): Promise<{ error?: string }> {
   if (classifiedErr) return { error: "Kon zoekertjes niet verwerken." };
 
   // --- 4. Hard-delete rumour votes ---
-  const { error: votesErr } = await supabase
+  const { error: votesErr } = await admin
     .from("rumour_votes")
     .delete()
     .eq("user_id", userId);
   if (votesErr) return { error: "Kon stemmen niet verwijderen." };
 
   // --- 5. Hard-delete blocked_users (both directions) ---
-  const { error: blockErr } = await supabase
+  const { error: blockErr } = await admin
     .from("blocked_users")
     .delete()
     .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`);
   if (blockErr) return { error: "Kon geblokkeerde gebruikers niet verwerken." };
 
   // --- 6. Fetch conversation IDs the user was part of ---
-  const { data: convRows, error: convFetchErr } = await supabase
+  const { data: convRows, error: convFetchErr } = await admin
     .from("conversations")
     .select("id")
     .or(`initiator_id.eq.${userId},recipient_id.eq.${userId}`);
@@ -207,7 +212,7 @@ export async function deleteAccount(): Promise<{ error?: string }> {
 
   // --- 7. Hard-delete messages in those conversations ---
   if (convIds.length > 0) {
-    const { error: msgErr } = await supabase
+    const { error: msgErr } = await admin
       .from("messages")
       .delete()
       .in("conversation_id", convIds);
@@ -215,14 +220,14 @@ export async function deleteAccount(): Promise<{ error?: string }> {
   }
 
   // --- 8. Hard-delete conversations ---
-  const { error: convErr } = await supabase
+  const { error: convErr } = await admin
     .from("conversations")
     .delete()
     .or(`initiator_id.eq.${userId},recipient_id.eq.${userId}`);
   if (convErr) return { error: "Kon gesprekken niet verwijderen." };
 
   // --- 9. Delete avatar from Supabase Storage (if hosted there) ---
-  const { data: profileRow } = await supabase
+  const { data: profileRow } = await admin
     .from("profiles")
     .select("avatar_url")
     .eq("id", userId)
@@ -238,25 +243,24 @@ export async function deleteAccount(): Promise<{ error?: string }> {
     if (slashIdx !== -1) {
       const bucket = withoutPrefix.substring(0, slashIdx);
       const path = withoutPrefix.substring(slashIdx + 1);
-      await supabase.storage.from(bucket).remove([path]);
+      await admin.storage.from(bucket).remove([path]);
     }
   }
 
   // --- 10. Hard-delete profiles row ---
-  const { error: profileErr } = await supabase
+  const { error: profileErr } = await admin
     .from("profiles")
     .delete()
     .eq("id", userId);
   if (profileErr) return { error: "Kon profiel niet verwijderen." };
 
   // --- 11. Delete auth.users record (requires admin/service role) ---
-  const adminClient = createAdminClient();
-  const { error: authErr } = await adminClient.auth.admin.deleteUser(userId);
+  const { error: authErr } = await admin.auth.admin.deleteUser(userId);
   if (authErr) return { error: "Kon account niet verwijderen." };
 
   // --- 12. Write deletion audit log (SHA-256 hash only — no PII) ---
   const userIdHash = createHash("sha256").update(userId).digest("hex");
-  await adminClient.from("deletion_audit_log").insert({
+  await admin.from("deletion_audit_log").insert({
     user_id_hash: userIdHash,
     auth_provider: authProvider,
   });
