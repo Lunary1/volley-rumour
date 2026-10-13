@@ -114,7 +114,12 @@ INSERT INTO public.rumours (
   ('e0000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000002',
    'Lotte Lorem', 'c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000003',
    'VC Testdorp', 'VBC Fictief', 'Gehoord in de kantine.',
-   'transfer', 'denied', now() - interval '30 days');
+   'transfer', 'denied', now() - interval '30 days'),
+  -- No creator: what deleteAccount leaves behind. Pages must still load (#57).
+  ('e0000000-0000-4000-8000-000000000005', NULL,
+   'Wout Weesgerucht', 'c0000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000002',
+   'VBC Fictief', 'Volley Voorbeeld', 'Gepost door een account dat intussen verwijderd is.',
+   'transfer', 'rumour', now() - interval '6 days');
 
 -- Votes; the on_vote_change trigger fills the vote counts and trust scores.
 INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type) VALUES

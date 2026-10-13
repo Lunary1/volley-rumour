@@ -29,12 +29,16 @@ export type RumourForModal = {
   description: string | null;
   created_at: string;
   status: string;
+  // null once the creator's account is deleted (deleteAccount keeps the rumour)
   creator: {
     username: string;
     trust_score: number;
     is_verified_source?: boolean;
-  };
+  } | null;
 };
+
+/** Author label for a rumour whose creator deleted their account. */
+export const DELETED_CREATOR_LABEL = "Verwijderd account";
 
 const categoryLabels: Record<string, string> = {
   transfer: "Transfer",
@@ -222,15 +226,21 @@ export function RumourDetailModal({
           <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border">
             <div className="flex items-center gap-1.5">
               <User className="h-4 w-4" />
-              <span className="font-medium">{rumour.creator.username}</span>
-              {rumour.creator.is_verified_source && <VerifiedBadge size="sm" />}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <span className="font-semibold">
-                Trust {rumour.creator.trust_score}
+              <span className="font-medium">
+                {rumour.creator?.username ?? DELETED_CREATOR_LABEL}
               </span>
+              {rumour.creator?.is_verified_source && (
+                <VerifiedBadge size="sm" />
+              )}
             </div>
+            {rumour.creator && (
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="font-semibold">
+                  Trust {rumour.creator.trust_score}
+                </span>
+              </div>
+            )}
           </div>
 
           <ShareButton

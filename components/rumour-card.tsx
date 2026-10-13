@@ -17,7 +17,10 @@ import { nl } from "date-fns/locale";
 import { getUserVoteOnRumour } from "@/app/actions/vote";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { RumourDetailModal } from "@/components/rumour-detail-modal";
+import {
+  RumourDetailModal,
+  DELETED_CREATOR_LABEL,
+} from "@/components/rumour-detail-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
 
 interface RumourCardProps {
@@ -32,11 +35,12 @@ interface RumourCardProps {
     votes_false: number;
     created_at: string;
     status: string;
+    // null once the creator's account is deleted (deleteAccount keeps the rumour)
     creator: {
       username: string;
       trust_score: number;
       is_verified_source?: boolean;
-    };
+    } | null;
   };
   onVote?: (
     rumourId: string,
@@ -358,15 +362,21 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
             <div className="flex items-center gap-1.5">
               <User className="h-3.5 w-3.5" />
-              <span className="font-medium">{rumour.creator.username}</span>
-              {rumour.creator.is_verified_source && <VerifiedBadge size="sm" />}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              <span className="font-semibold">
-                {rumour.creator.trust_score}
+              <span className="font-medium">
+                {rumour.creator?.username ?? DELETED_CREATOR_LABEL}
               </span>
+              {rumour.creator?.is_verified_source && (
+                <VerifiedBadge size="sm" />
+              )}
             </div>
+            {rumour.creator && (
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                <span className="font-semibold">
+                  {rumour.creator.trust_score}
+                </span>
+              </div>
+            )}
             <Button
               variant="ghost"
               size="sm"
