@@ -151,10 +151,6 @@ export default function ProfilePage() {
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
   async function loadProfile() {
     try {
       const supabase = await createClient();
@@ -217,6 +213,10 @@ export default function ProfilePage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
 
   async function handleUpdateProfile(e: React.FormEvent) {
     e.preventDefault();

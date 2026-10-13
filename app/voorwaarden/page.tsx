@@ -238,7 +238,7 @@ export default function VoorwaardenPage() {
           <div className="space-y-4 text-muted-foreground">
             <p>
               <strong>Zoals aangeboden:</strong> VolleyRumours wordt aangeboden
-              "as-is" zonder garanties.
+              &quot;as-is&quot; zonder garanties.
             </p>
             <p>
               <strong>Geen aansprakelijkheid:</strong> We zijn niet

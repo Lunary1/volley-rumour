@@ -47,7 +47,7 @@ export function extractErrorMessage(
 
   if (error instanceof Error) {
     // Check for Supabase specific error properties
-    const err = error as any;
+    const err = error as Error & { code?: string };
     if (err.message) return err.message;
     if (err.code) {
       // Map common Supabase error codes
@@ -63,7 +63,7 @@ export function extractErrorMessage(
   }
 
   if (typeof error === "object" && error !== null) {
-    const err = error as any;
+    const err = error as { message?: string; error_description?: string };
     if (err.message) return err.message;
     if (err.error_description) return err.error_description;
   }

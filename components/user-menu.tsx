@@ -46,7 +46,7 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
           .neq("sender_id", userId);
 
         const unreadMap = new Map();
-        unreadMessages?.forEach((msg: any) => {
+        unreadMessages?.forEach((msg: { conversation_id: string }) => {
           unreadMap.set(
             msg.conversation_id,
             (unreadMap.get(msg.conversation_id) || 0) + 1,

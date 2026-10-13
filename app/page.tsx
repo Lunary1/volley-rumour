@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 import { TrendingUp, Users, ArrowRight, Plus, Flame } from "lucide-react";
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 /* ------------------------------------------------------------------ */
@@ -213,7 +214,7 @@ export default async function HomePage() {
           {featuredRumours.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {featuredRumours.map((rumour) => (
-                <RumourCard key={rumour.id} rumour={rumour as any} />
+                <RumourCard key={rumour.id} rumour={rumour} />
               ))}
             </div>
           ) : (
@@ -261,7 +262,10 @@ export default async function HomePage() {
           {transfersForDisplay.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {transfersForDisplay.map((transfer) => (
-                <TransferCard key={transfer.id} transfer={transfer as any} />
+                <TransferCard
+                  key={transfer.id}
+                  transfer={transfer as ComponentProps<typeof TransferCard>["transfer"]}
+                />
               ))}
             </div>
           ) : (

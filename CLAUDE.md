@@ -32,7 +32,7 @@ Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
 | Install | `npm ci` |
 | Dev server | `npm run dev` (needs a `.env.local`, see below) |
 | Typecheck | `npm run typecheck` |
-| Lint | `npm run lint` — **broken until ESLint is set up (M1)** |
+| Lint | `npm run lint` (ESLint 9, `eslint-config-next`; warnings allowed, errors fail CI) |
 | Build | `npm run build` |
 | E2E | `npx playwright test` — not set up yet (M1) |
 | Local database | `npm run db:start` / `npm run db:stop` (needs Docker) |
