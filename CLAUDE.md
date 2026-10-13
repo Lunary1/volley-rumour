@@ -35,6 +35,29 @@ Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
 | Lint | `npm run lint` — **broken until ESLint is set up (M1)** |
 | Build | `npm run build` |
 | E2E | `npx playwright test` — not set up yet (M1) |
+| Local database | `npm run db:start` / `npm run db:stop` (needs Docker) |
+| Rebuild local DB from migrations + seed | `npm run db:reset` |
+| New migration | `npm run db:new -- <snake_case_name>` |
+
+## Database and migrations
+
+`supabase/migrations/` is the source of truth for the schema. It starts from
+`20261013120000_baseline.sql`, a snapshot of production; everything after it is
+a normal migration.
+
+- **Never change the schema in the Supabase dashboard or via MCP.** Every change
+  is a migration file, reviewed in a PR like any other code.
+- Create files with `npm run db:new -- add_rumour_sources` (timestamped name).
+  Never edit a migration that has been applied; add a new one.
+- Test locally: `npm run db:reset` must apply every migration cleanly.
+- RLS is the security boundary. New tables enable RLS and ship their policies
+  and grants in the same migration. Prefer column-level grants for anything a
+  user must not change (roles, scores, statuses, flags).
+- SECURITY DEFINER functions: set `search_path = ''`, qualify every name, and
+  revoke `EXECUTE` from `anon`/`authenticated` unless they must call it.
+- **Production is migrated by the owner, after merge**: `npx supabase db push`.
+  Agents never push migrations or run SQL against the linked project.
+- `supabase/seed.sql` holds fake data for local development and tests only.
 
 ## Branching and release
 
