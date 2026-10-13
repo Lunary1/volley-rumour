@@ -15,7 +15,7 @@ Closes #
 - [ ] Schema changes committed as migrations in `supabase/migrations/` — or none
 - [ ] UI copy is Dutch
 - [ ] Privacy, moderation and minors impact considered — or none
-- [ ] Vercel preview checked manually
+- [ ] Change checked: Vercel preview by hand, or a local production build and smoke test
 
 ## Notes for review
 <!-- Risks, follow-ups, anything to apply manually (env vars, migrations). Previews use the production database (D-010) — look, don't write. -->

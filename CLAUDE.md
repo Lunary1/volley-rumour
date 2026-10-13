@@ -82,8 +82,11 @@ chore/61-eslint           ──PR──┘   protected · CI required · squash
    `chore(deps): …`, `docs(product): …`.
 4. **Open a PR** using the template. Title in Conventional Commit style (it
    becomes the squash commit). Link the issue with `Closes #42`.
-5. **Gate**: CI green, Definition of Done ticked, Vercel preview checked by hand.
-6. **Squash merge**, then delete the branch.
+5. **Gate**: CI green, Definition of Done ticked, the change checked. Vercel
+   previews sit behind Vercel's login, so an agent checks with a local
+   production build and smoke test instead, and says so in the PR.
+6. **Squash merge**, then delete the branch. The author merges their own PR
+   once the gate passes, agents included (owner's call, 2026-10-13).
 
 Rules:
 - Never push directly to `main`, never force-push `main`. Branch protection
@@ -104,7 +107,8 @@ Rules:
 - [ ] Schema changes are committed as Supabase migrations in `supabase/migrations/`.
 - [ ] UI copy is Dutch.
 - [ ] Privacy, moderation and minors impact considered.
-- [ ] Vercel preview checked manually.
+- [ ] Change checked: Vercel preview by hand, or (agents) a local production
+      build and smoke test.
 
 ## Code conventions
 
@@ -165,6 +169,8 @@ Put local values in `.env.local` (git-ignored). Never commit secrets.
 
 - Never run anything against the remote Supabase database without the owner's OK.
 - Never run load or stress tests against production.
-- Don't merge PRs, close issues or change repository settings — the owner does.
+- Merge your own PR (squash) once the gate passes. Don't merge someone else's
+  PR, close issues by hand or change repository settings — the owner does.
+- Production database pushes (`npx supabase db push`) stay with the owner.
 - Don't skip failing checks or hooks; fix the cause.
 - Keep PRs to one issue. Unrelated cleanups get their own issue.
