@@ -32,6 +32,8 @@ export const seed = {
   },
   openRumour: { playerName: "Pieter Proefspeler" },
   confirmedRumour: { playerName: "Koen Kladversie" },
+  // creator_id is null, as after the creator deleted their account
+  rumourWithoutCreator: { playerName: "Wout Weesgerucht" },
 } as const;
 
 /** Logs in through the login form and waits for the header to show the user. */
