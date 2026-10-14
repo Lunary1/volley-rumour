@@ -33,6 +33,7 @@ Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
 | Dev server | `npm run dev` (needs a `.env.local`, see below) |
 | Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` (ESLint 9, `eslint-config-next`; warnings allowed, errors fail CI) |
+| Format | `npm run format` (Prettier, writes) / `npm run format:check` (CI) |
 | Build | `npm run build` |
 | E2E tests | `npm run test:e2e` — builds the app against the local stack and runs Playwright on :3100 (needs `npm run db:start`; once: `npx playwright install chromium`) |
 | Local database | `npm run db:start` / `npm run db:stop` (needs Docker). Starts the services the tests use, like CI; `npm run db:start:studio` adds Studio. **Stop it when you're not testing** — it uses a lot of RAM |
@@ -108,7 +109,7 @@ Rules:
 ## Definition of Done
 
 - [ ] Acceptance criteria of the issue are met, with evidence per criterion.
-- [ ] Typecheck, lint and build pass (CI green).
+- [ ] Typecheck, lint, format check and build pass (CI green).
 - [ ] A Playwright test in `e2e/` covers the key flow of the change.
 - [ ] Schema changes are committed as Supabase migrations in `supabase/migrations/`.
 - [ ] UI copy is Dutch.
@@ -169,6 +170,15 @@ Conversations are bidirectional (`initiator_id`, `recipient_id`, linked by
   messages, emails. Dates via `date-fns` with `import { nl } from "date-fns/locale"`.
 - Use `@/` imports, `cn()` from `@/lib/utils`, shadcn components in `components/ui/`.
 - Support light (default) and dark themes.
+
+### Formatting
+- Prettier with its default style; run `npm run format` before you commit.
+  Markdown is not formatted (`.prettierignore`), because Prettier pads every
+  table and one new row would rewrite it.
+- Git stores LF. `.prettierrc` sets `"endOfLine": "auto"`, so working copies
+  with `core.autocrlf=true` (Windows) keep CRLF on disk.
+- A commit that only reformats goes in `.git-blame-ignore-revs`. Locally:
+  `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
 ## Environment variables
 
