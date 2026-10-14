@@ -1,30 +1,66 @@
-# Volleytransfers reimagined
+# volleyrumours.be
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+A Dutch-language community site for Belgian volleyball. Players, coaches and
+clubs post classifieds (*zoekertjes*), and the community shares moderated
+transfer rumours (*geruchten*).
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/lunary1s-projects/v0-volleytransfers-reimagined)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/jPXk5tmcdJV)
+**Before you change anything, read [CLAUDE.md](CLAUDE.md).** It holds the
+workflow, the Definition of Done and the code conventions, for humans and AI
+agents alike.
 
-## Overview
+## Stack
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+Next.js 16 (App Router) · React 19 · TypeScript · Supabase (Postgres + RLS,
+Auth, Realtime) · shadcn/ui · Tailwind 4 · Playwright · Vercel.
+
+## Getting started
+
+You need Node 22, npm and Docker.
+
+```bash
+npm ci
+npm run db:start      # local Supabase stack with seeded test data
+npx supabase status   # prints the local API URL and keys
+```
+
+Create `.env.local` with the local values from `npx supabase status`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
+SUPABASE_SERVICE_ROLE_KEY=<service_role key>
+NEXT_PUBLIC_COMING_SOON=false
+```
+
+Then run `npm run dev` and open http://localhost:3000. Every seeded account
+signs in with the password `test-wachtwoord`. The accounts are listed at the
+top of [supabase/seed.sql](supabase/seed.sql).
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npm run db:test       # pgTAP database tests
+npm run test:e2e      # Playwright, against the local stack
+```
+
+CI runs all of these on every pull request. The full command list and the
+other environment variables are in [CLAUDE.md](CLAUDE.md).
+
+## Where things are
+
+| Path | What |
+| --- | --- |
+| `app/` | Routes (Server Components) and Server Actions in `app/actions/` |
+| `components/` | UI; shadcn primitives in `components/ui/` |
+| `lib/` | Supabase clients, helpers, schemas |
+| `supabase/` | Migrations (the schema's source of truth), seed data, database tests |
+| `e2e/` | Playwright tests |
+| `docs/product/` | User journeys, decision log, gap audit |
 
 ## Deployment
 
-Your project is live at:
-
-**[https://vercel.com/lunary1s-projects/v0-volleytransfers-reimagined](https://vercel.com/lunary1s-projects/v0-volleytransfers-reimagined)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/jPXk5tmcdJV](https://v0.app/chat/jPXk5tmcdJV)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+`main` is production. Every merge deploys to volleyrumours.be through Vercel.
+Production database migrations are applied by the owner after merge.

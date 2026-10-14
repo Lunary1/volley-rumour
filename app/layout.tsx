@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: "VolleyRumours - Belgische Volleybal Transfers & Transfer Talk",
   description:
     "Ontdek de nieuwste volleybal transfers, Transfer Talk en zoekertjes in België. Stem op transfers, verdien punten en word een betrouwbare bron in de community.",
-  generator: "v0.app",
   icons: {
     icon: [
       {
