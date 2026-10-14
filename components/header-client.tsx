@@ -21,6 +21,7 @@ interface HeaderClientProps {
     username: string;
     trust_score: number;
     avatar_url: string | null;
+    is_staff?: boolean;
   } | null;
   navItems: NavItem[];
   /** False in coming-soon mode: login, sign-up and account links are closed. */

@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User, MessageSquare, Settings } from "lucide-react";
+import {
+  LogOut,
+  User,
+  MessageSquare,
+  Settings,
+  ShieldCheck,
+} from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/client";
 import { CurrentUserAvatar } from "@/components/current-user-avatar";
@@ -15,6 +21,7 @@ interface UserMenuProps {
     username: string;
     trust_score: number;
     avatar_url: string | null;
+    is_staff?: boolean;
   } | null;
   isMobile?: boolean;
 }
@@ -145,6 +152,19 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
           )}
         </Button>
       </Link>
+
+      {user.is_staff && (
+        <Link href="/admin" className={isMobile ? "w-full" : ""}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={isMobile ? "w-full justify-start" : ""}
+          >
+            <ShieldCheck className="h-4 w-4" />
+            Beheer
+          </Button>
+        </Link>
+      )}
 
       {/* Profile settings link */}
       <Link href="/profile" className={isMobile ? "w-full" : ""}>
