@@ -455,6 +455,13 @@ export function ProfileView({
                           {r.rejection_note && ` — ${r.rejection_note}`}
                         </p>
                       )}
+                      {/* Neutral on purpose: the author isn't told who asked
+                          for the removal (Takedown Process). */}
+                      {r.status === "removed" && (
+                        <p className="mt-1 px-3 text-xs text-muted-foreground">
+                          Een moderator heeft dit gerucht van de site gehaald.
+                        </p>
+                      )}
                     </li>
                   ))}
                 </ul>

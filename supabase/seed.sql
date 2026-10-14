@@ -160,7 +160,18 @@ INSERT INTO public.rumours (
   ('e0000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000002',
    'Rik Retour', 'c0000000-0000-4000-8000-000000000002', NULL,
    'Volley Voorbeeld', NULL, 'Afgewezen door een moderator.',
-   'player_retirement', 'rejected', now() - interval '4 days');
+   'player_retirement', 'rejected', now() - interval '4 days'),
+  -- Only the takedown tests use these (#68): one gets removed, the other's
+  -- request rejected. e2e/global-setup.ts puts them back. Denied rather than
+  -- lopend, so they stay off the homepage's top 3.
+  ('e0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000003',
+   'Tim Terugtrek', 'c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000002',
+   'VC Testdorp', 'Volley Voorbeeld', 'Zou volgend seizoen bij Volley Voorbeeld spelen.',
+   'transfer', 'denied', now() - interval '50 days'),
+  ('e0000000-0000-4000-8000-000000000009', 'a0000000-0000-4000-8000-000000000003',
+   'Bram Bezwaar', 'c0000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000001',
+   'VBC Fictief', 'VC Testdorp', 'Gehoord op het tornooi.',
+   'transfer', 'denied', now() - interval '55 days');
 
 -- Why Rik Retour was rejected; Tom sees it on his profile (#66).
 UPDATE public.rumours
@@ -222,6 +233,19 @@ INSERT INTO public.messages (conversation_id, sender_id, content, is_read, creat
    'Hallo! Ik speel geen setter, maar ken iemand die interesse heeft.', true, now() - interval '1 day'),
   ('f0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000003',
    'Leuk, mag die persoon ons een berichtje sturen?', false, now() - interval '2 hours');
+
+-- ------------------------------------------------------- takedown request
+-- An open request about Lotte Lorem (#68), so the inbox isn't empty locally.
+-- Its status page: /verwijderverzoek/status/seedtokenvoorlokaletestsVolleyRumours000001
+INSERT INTO public.takedown_requests (
+  reference, token_hash, rumour_id, relation, requester_name, requester_email,
+  explanation, created_at
+) VALUES (
+  'VR-SEED42',
+  encode(extensions.digest('seedtokenvoorlokaletestsVolleyRumours000001', 'sha256'), 'hex'),
+  'e0000000-0000-4000-8000-000000000004', 'self', 'Lotte Lorem', 'lotte@example.test',
+  'Dit klopt niet: ik blijf gewoon bij VC Testdorp spelen.', now() - interval '1 day'
+);
 
 -- --------------------------------------------------------------- audit log
 -- Staff actions (#64), as moderation functions will write them. The second

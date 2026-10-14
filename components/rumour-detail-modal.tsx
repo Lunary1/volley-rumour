@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
+import Link from "next/link";
 import { RUMOUR_SOURCE_TYPES, labelFor } from "@/lib/rumours";
 
 export type RumourForModal = {
@@ -273,6 +274,17 @@ export function RumourDetailModal({
             variant="outline"
             size="sm"
           />
+
+          {/* Takedown requests (#68): no account needed. */}
+          <p className="text-xs text-muted-foreground">
+            Gaat dit gerucht over jou?{" "}
+            <Link
+              href={`/verwijderverzoek?gerucht=${rumour.id}`}
+              className="text-primary underline underline-offset-2"
+            >
+              Vraag de verwijdering aan
+            </Link>
+          </p>
         </div>
       </DialogContent>
     </Dialog>
