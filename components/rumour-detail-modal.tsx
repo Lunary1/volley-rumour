@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
+import { RUMOUR_SOURCE_TYPES, labelFor } from "@/lib/rumours";
 
 export type RumourForModal = {
   id: string;
@@ -27,6 +28,8 @@ export type RumourForModal = {
   to_club_name: string;
   category: string;
   description: string | null;
+  source_type: string | null;
+  source_url: string | null;
   created_at: string;
   status: string;
   // null once the creator's account is deleted (deleteAccount keeps the rumour)
@@ -92,6 +95,7 @@ export function RumourDetailModal({
 }: RumourDetailModalProps) {
   const total = votes.up + votes.down;
   const karma = total > 0 ? Math.round((votes.up / total) * 100) : 50;
+  const sourceLabel = labelFor(RUMOUR_SOURCE_TYPES, rumour.source_type);
 
   const getKarmaColor = (k: number) => {
     if (k < 35) return "text-red-600 dark:text-red-400";
@@ -170,6 +174,25 @@ export function RumourDetailModal({
               </>
             )}
           </div>
+
+          {(sourceLabel || rumour.source_url) && (
+            <p className="text-sm text-muted-foreground min-w-0">
+              Bron: {sourceLabel ?? "Onbekend"}
+              {rumour.source_url && (
+                <>
+                  {" · "}
+                  <a
+                    href={rumour.source_url}
+                    target="_blank"
+                    rel="nofollow ugc noopener noreferrer"
+                    className="text-primary underline underline-offset-2 break-all"
+                  >
+                    Bekijk bron
+                  </a>
+                </>
+              )}
+            </p>
+          )}
 
           {rumour.description && (
             <p className="text-sm text-muted-foreground whitespace-pre-wrap break-all border rounded-lg p-4 bg-muted/30">

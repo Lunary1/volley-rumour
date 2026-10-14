@@ -49,3 +49,69 @@ export const RUMOUR_CATEGORY_LABELS: Record<string, string> = {
   player_retirement: "Speler Stopt",
   trainer_retirement: "Trainer Stopt",
 };
+
+/**
+ * Where a rumour comes from (#67). Required on new rumours and shown on the
+ * card. Keep in sync with the source_type check in the migrations.
+ */
+export const RUMOUR_SOURCE_TYPES = {
+  own_observation: "Eigen waarneming",
+  player_or_trainer: "Speler of trainer zelf",
+  club: "Club",
+  media: "Media (krant, website, sociale media)",
+} as const;
+
+export type RumourSourceType = keyof typeof RUMOUR_SOURCE_TYPES;
+
+/** Short source labels for the cards: "Bron: Media". */
+export const RUMOUR_SOURCE_SHORT_LABELS: Record<RumourSourceType, string> = {
+  own_observation: "Eigen waarneming",
+  player_or_trainer: "Speler of trainer",
+  club: "Club",
+  media: "Media",
+};
+
+export const SOURCE_URL_MAX_LENGTH = 500;
+
+/**
+ * How many rumours one author may have waiting for a moderator (#54, D-013).
+ * The database enforces it in check_new_rumour(); keep the two in sync.
+ */
+export const MAX_PENDING_RUMOURS = 5;
+
+export const PENDING_LIMIT_MESSAGE = `Je hebt al ${MAX_PENDING_RUMOURS} geruchten die op een moderator wachten. Je kan een nieuw gerucht delen zodra er een is nagekeken.`;
+
+/** Senior divisions only (D-003). Keep in sync with the migrations. */
+export const RUMOUR_DIVISIONS = {
+  liga_heren: "LIGA HEREN",
+  liga_dames: "LIGA DAMES",
+  nat1_heren: "Nationale 1 Heren",
+  nat2_heren: "Nationale 2 Heren",
+  nat3_heren: "Nationale 3 Heren",
+  nat1_dames: "Nationale 1 Dames",
+  nat2_dames: "Nationale 2 Dames",
+  nat3_dames: "Nationale 3 Dames",
+  promo1_heren: "PROMO 1 Heren",
+  promo2_heren: "PROMO 2 Heren",
+  promo3_heren: "PROMO 3 Heren",
+  promo4_heren: "PROMO 4 Heren",
+  promo1_dames: "PROMO 1 Dames",
+  promo2_dames: "PROMO 2 Dames",
+  promo3_dames: "PROMO 3 Dames",
+  promo4_dames: "PROMO 4 Dames",
+} as const;
+
+export type RumourDivision = keyof typeof RUMOUR_DIVISIONS;
+
+export const RUMOUR_GENDERS = {
+  male: "Man",
+  female: "Vrouw",
+} as const;
+
+/** Looks up a label, or null for a missing or unknown value. */
+export function labelFor<T extends Record<string, string>>(
+  labels: T,
+  value: string | null | undefined,
+): string | null {
+  return value && value in labels ? labels[value as keyof T] : null;
+}

@@ -1,4 +1,11 @@
 import { z } from "zod";
+import {
+  RUMOUR_DIVISIONS,
+  RUMOUR_SOURCE_TYPES,
+  SOURCE_URL_MAX_LENGTH,
+  type RumourDivision,
+  type RumourSourceType,
+} from "@/lib/rumours";
 
 // Common validators
 const trimmedString = z.string().trim().min(1, "Veld mag niet leeg zijn");
@@ -21,6 +28,11 @@ export function isPlayerCategory(category: string): boolean {
   return category === "transfer" || category === "player_retirement";
 }
 
+const divisionSchema = z.enum(
+  Object.keys(RUMOUR_DIVISIONS) as [RumourDivision, ...RumourDivision[]],
+  { errorMap: () => ({ message: "Selecteer een geldig niveau" }) },
+);
+
 // Rumour schema — conditional validation based on category
 export const createRumourSchema = z
   .object({
@@ -37,14 +49,42 @@ export const createRumourSchema = z
     currentClub: trimmedString
       .min(1, "Huidige club is verplicht")
       .max(200, "Clubnaam is te lang"),
-    currentDivision: z.string().optional(),
+    currentDivision: divisionSchema.optional(),
     destinationClub: z.string().optional(),
-    destinationDivision: z.string().optional(),
+    destinationDivision: divisionSchema.optional(),
     description: z
       .string()
       .max(2000, "Beschrijving is te lang")
       .optional()
       .or(z.literal("")),
+    // Source and declarations (#67, D-003)
+    sourceType: z.enum(
+      Object.keys(RUMOUR_SOURCE_TYPES) as [
+        RumourSourceType,
+        ...RumourSourceType[],
+      ],
+      { errorMap: () => ({ message: "Kies waar je gerucht vandaan komt" }) },
+    ),
+    sourceUrl: z
+      .string()
+      .trim()
+      .max(SOURCE_URL_MAX_LENGTH, "De link is te lang")
+      .regex(
+        /^https?:\/\/\S+$/i,
+        "Geef een geldige link op, die begint met http:// of https://",
+      )
+      .optional(),
+    declaredGoodFaith: z.literal(true, {
+      errorMap: () => ({
+        message: "Bevestig dat je dit gerucht te goeder trouw deelt",
+      }),
+    }),
+    declaredSenior: z.literal(true, {
+      errorMap: () => ({
+        message:
+          "Bevestig dat het gerucht over een seniorspeler of -trainer gaat",
+      }),
+    }),
   })
   .superRefine((data, ctx) => {
     // Gender is required for player categories

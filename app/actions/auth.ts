@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { createHash } from "crypto";
 import { z } from "zod";
 import { isRecoverySession } from "@/lib/supabase/recovery";
+import { safeNextPath } from "@/lib/utils";
 import {
   errorResponse,
   successResponse,
@@ -187,14 +188,20 @@ export async function sendPasswordSetupLink(): Promise<ActionResponse> {
   return successResponse(undefined);
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(next?: string) {
   const supabase = await createClient();
   const origin = (await headers()).get("origin") || "";
+  // /auth/callback sends the user on to `next` (#67).
+  const target = safeNextPath(next);
+  const callbackUrl =
+    target === "/"
+      ? `${origin}/auth/callback`
+      : `${origin}/auth/callback?next=${encodeURIComponent(target)}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: callbackUrl,
       queryParams: {
         prompt: "select_account",
       },

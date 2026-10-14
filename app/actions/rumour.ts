@@ -2,12 +2,20 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { createRumourSchema, isTransferCategory } from "@/lib/schemas";
+import {
+  createRumourSchema,
+  isPlayerCategory,
+  isTransferCategory,
+} from "@/lib/schemas";
 import {
   successResponse,
   errorResponse,
   extractErrorMessage,
 } from "@/lib/response";
+import { PENDING_LIMIT_MESSAGE } from "@/lib/rumours";
+
+/** SQLSTATE raised by check_new_rumour() when the pending cap is reached. */
+const PENDING_LIMIT_ERROR_CODE = "VR001";
 
 export async function createRumour(formData: FormData) {
   const supabase = await createClient();
@@ -32,6 +40,11 @@ export async function createRumour(formData: FormData) {
     destinationDivision:
       (formData.get("destinationDivision") as string) || undefined,
     description: (formData.get("description") as string) || undefined,
+    sourceType: (formData.get("sourceType") as string) || undefined,
+    sourceUrl: (formData.get("sourceUrl") as string)?.trim() || undefined,
+    // Unticked checkboxes aren't sent at all.
+    declaredGoodFaith: formData.get("declaredGoodFaith") === "on",
+    declaredSenior: formData.get("declaredSenior") === "on",
   });
 
   if (!validationResult.success) {
@@ -44,18 +57,30 @@ export async function createRumour(formData: FormData) {
   const d = validationResult.data;
   const playerName = `${d.firstName} ${d.lastName}`.trim();
 
+  const isTransfer = isTransferCategory(d.category);
+
   const rumourData = {
     creator_id: user.id,
     player_name: playerName,
     from_club_name: d.currentClub,
-    to_club_name: isTransferCategory(d.category)
-      ? (d.destinationClub ?? null)
-      : null,
+    to_club_name: isTransfer ? (d.destinationClub ?? null) : null,
     category: d.category,
     description: d.description?.trim() || null,
+    gender: isPlayerCategory(d.category) ? (d.gender ?? null) : null,
+    from_division: d.currentDivision ?? null,
+    to_division: isTransfer ? (d.destinationDivision ?? null) : null,
+    source_type: d.sourceType,
+    source_url: d.sourceUrl ?? null,
+    declared_good_faith: d.declaredGoodFaith,
+    declared_senior: d.declaredSenior,
   };
 
   const { error } = await supabase.from("rumours").insert(rumourData);
+
+  // check_new_rumour() refuses a rumour over the pending cap (#54).
+  if (error?.code === PENDING_LIMIT_ERROR_CODE) {
+    return errorResponse(PENDING_LIMIT_MESSAGE);
+  }
 
   if (error) {
     const message = extractErrorMessage(

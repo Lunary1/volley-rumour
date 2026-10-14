@@ -19,6 +19,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-010 | 2026-10-13 | Accepted | Vercel previews keep using the production database; no separate preview project |
 | D-011 | 2026-10-14 | Accepted | Staff audit log entries are kept 2 years, then deleted            |
 | D-012 | 2026-10-14 | Accepted | Moderators may moderate their own rumours; the queue shows the username only |
+| D-013 | 2026-10-14 | Accepted | Rumours name a public source; at most 5 waiting per contributor   |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -255,6 +256,29 @@ about the author while the track record (D-005, #88) isn't built?
 
 **Consequences.** Revisit self-moderation when there are more moderators. The
 queue gets the source field with #67 and the track record with #88.
+
+## D-013 — Rumour sources and the pending cap
+
+**Context.** J-09 asks for a source on every rumour, a good-faith and
+senior-person declaration, and a cap on how many rumours one contributor can
+have waiting (#54, #67).
+
+**Decision.**
+- **Source types are a fixed list of four**: "Eigen waarneming", "Speler of
+  trainer zelf", "Club", "Media (krant, website, sociale media)". A source
+  type is required; a link (http or https) is optional.
+- **The source is public**: the rumour card shows "Bron: …", the detail view
+  links to the URL. Moderators see both in the queue.
+- **Two required declarations**: the rumour is about a senior player or
+  trainer (D-003), and it is shared in good faith. Both are stored per rumour.
+- **At most 5 rumours waiting per contributor.** The database refuses a sixth
+  until a moderator has handled one. The cap applies to staff too.
+- Rumours from before this change keep no source; they stay visible and can
+  still be voted on and moderated.
+
+**Consequences.** Source links are user content: they open in a new tab with
+`rel="nofollow ugc noopener noreferrer"`. Revisit the cap if active
+contributors hit it during the transfer window.
 
 ## O-001 — Rumour confirmation authority (Open)
 

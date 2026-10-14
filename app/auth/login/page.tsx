@@ -20,6 +20,7 @@ import {
   requestPasswordReset,
 } from "@/app/actions/auth";
 import { useRouter, useSearchParams } from "next/navigation";
+import { safeNextPath } from "@/lib/utils";
 
 /**
  * Maps OAuth / callback error codes to Dutch user-facing messages.
@@ -64,14 +65,21 @@ function LoginPage() {
   const searchParams = useSearchParams();
   // Error code set by /auth/callback on failure, read once on first render
   const errorCode = searchParams.get("error");
+  // Where to go after logging in, e.g. back to the rumour form (#67)
+  const next = safeNextPath(searchParams.get("next"));
   const [error, setError] = useState<string | null>(() =>
     errorCode ? getOAuthErrorMessage(errorCode) : null,
   );
 
   // Clean the URL so the message doesn't stick around on refresh
   useEffect(() => {
-    if (errorCode) router.replace("/auth/login", { scroll: false });
-  }, [errorCode, router]);
+    if (!errorCode) return;
+    const url =
+      next === "/"
+        ? "/auth/login"
+        : `/auth/login?next=${encodeURIComponent(next)}`;
+    router.replace(url, { scroll: false });
+  }, [errorCode, next, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,8 +92,7 @@ function LoginPage() {
         setError(result.error);
         setIsLoading(false);
       } else {
-        // Login successful, redirect to home
-        router.push("/");
+        router.push(next);
       }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -195,7 +202,7 @@ function LoginPage() {
                         setIsGoogleLoading(true);
                         setError(null);
                         try {
-                          const result = await signInWithGoogle();
+                          const result = await signInWithGoogle(next);
                           if (result?.error) {
                             setError(result.error);
                           }

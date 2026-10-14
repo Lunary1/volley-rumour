@@ -22,6 +22,7 @@ import {
   DELETED_CREATOR_LABEL,
 } from "@/components/rumour-detail-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { RUMOUR_SOURCE_SHORT_LABELS, labelFor } from "@/lib/rumours";
 
 interface RumourCardProps {
   rumour: {
@@ -31,6 +32,9 @@ interface RumourCardProps {
     to_club_name: string;
     category: string;
     description: string | null;
+    // Where the rumour comes from (#67); null on rumours from before sources
+    source_type?: string | null;
+    source_url?: string | null;
     votes_true: number;
     votes_false: number;
     created_at: string;
@@ -193,6 +197,8 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
     }
   };
 
+  const sourceLabel = labelFor(RUMOUR_SOURCE_SHORT_LABELS, rumour.source_type);
+
   // Infamous Karma meter: 0% = evil (red), 50% = neutral, 100% = good (blue)
   const karma =
     localUpvotes + localDownvotes > 0
@@ -290,6 +296,12 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
                 </>
               )}
             </div>
+
+            {sourceLabel && (
+              <p className="text-xs text-muted-foreground mb-2">
+                Bron: {sourceLabel}
+              </p>
+            )}
 
             {/* Description */}
             {rumour.description && (
@@ -398,6 +410,8 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
           to_club_name: rumour.to_club_name,
           category: rumour.category,
           description: rumour.description,
+          source_type: rumour.source_type ?? null,
+          source_url: rumour.source_url ?? null,
           created_at: rumour.created_at,
           status: rumour.status,
           creator: rumour.creator,
