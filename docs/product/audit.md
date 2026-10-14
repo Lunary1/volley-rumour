@@ -57,7 +57,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes aren't saved                     |
 | J-11    | Account and personal data                | **BROKEN**  | Account deletion can leave a half-deleted state (password reset fixed in #58) |
-| J-12    | Takedown request by named person         | **MISSING** | No path at all; contact form "report" is only `console.log`                 |
+| J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
 | J-13    | Pre-moderation queue                     | **PARTIAL** | Queue, approve/reject and audit log work (#66); no track record (#88) or email (#53) |
 | J-14    | Resolve a rumour                         | **MISSING** | `confirmRumour` removed in #65 (X-3); rebuilt with #70                        |
 | J-15    | Reports, takedowns, sanctions            | **MISSING** | Reports can be written to the database but nobody can read them            |
@@ -209,15 +209,15 @@ items.
 | Privacy page lists all processors | PARTIAL | [privacy/page.tsx](../../app/privacy/page.tsx) | Mentions Supabase and Vercel Analytics; not Datadog RUM or session replay |
 | Profile edit (username) | WORKS | [profile.ts:6-38](../../app/actions/profile.ts#L6-L38) | Minimal validation (2+ characters, no uniqueness message) |
 
-### J-12 — Takedown request by named person · MISSING
+### J-12 — Takedown request by named person · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| File without login, bot-protected | MISSING | — | Nearest thing: contact form category "report" |
-| Rumour hidden immediately pending review | MISSING | — | |
-| Email acknowledgement with reference | **BROKEN** | [contact.ts:37-46](../../app/actions/contact.ts#L37-L46) | Contact form submissions are only `console.log`ged; nobody receives them, yet the user sees success |
-| Outcome emailed | MISSING | — | |
-| Requests visible only to moderators, retention defined | MISSING | — | |
+| File without login, bot-protected | **WORKS** (#68) | [verwijderverzoek/page.tsx](../../app/verwijderverzoek/page.tsx), [takedown.ts](../../app/actions/takedown.ts), `submit_takedown_request()` | From the rumour detail view, the footer and the privacy page; honeypot plus 5 per IP and 3 per email per day |
+| Rumour hidden immediately pending review | **CHANGED** (D-014) | — | The owner decided the rumour stays visible until a moderator decides |
+| Acknowledgement with reference | **WORKS** (#68) | [takedown-form.tsx](../../app/verwijderverzoek/takedown-form.tsx) | Reference and private status link on screen; no email until #53. The contact form itself (#81) still only logs |
+| Outcome communicated | **WORKS** (#68) | [status page](../../app/verwijderverzoek/status/[token]/page.tsx), `remove_rumour_for_takedown()`, `reject_takedown_request()` | The status link shows the decision and the moderator's note; email waits on #53 |
+| Requests visible only to moderators, retention defined | **WORKS** (#68) | [admin/meldingen](../../app/admin/meldingen/page.tsx), `anonymise_expired_takedown_requests()` | RLS: staff only, hashes never readable. Personal fields wiped after 12 months (D-014); the function still has to be scheduled |
 
 ### J-13 — Pre-moderation queue · PARTIAL
 

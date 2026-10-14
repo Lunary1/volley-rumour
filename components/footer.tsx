@@ -112,6 +112,16 @@ export function Footer() {
                   Contact
                 </Link>
               </li>
+              {!comingSoon && (
+                <li>
+                  <Link
+                    href="/verwijderverzoek"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Gerucht over jou laten verwijderen
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>

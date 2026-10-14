@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import Link from "next/link";
+import { isComingSoon } from "@/lib/coming-soon";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - VolleyRumours",
@@ -6,6 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
+  // Coming-soon mode closes the takedown form, so don't link to it.
+  const comingSoon = isComingSoon();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -188,6 +193,53 @@ export default function PrivacyPage() {
               <li>
                 <strong>Voorkeur:</strong> Thema-voorkeur (donker/licht)
                 opslaan.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Takedown requests (#68, D-014). Copy to be reviewed in #94. */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            Geruchten over jou
+          </h2>
+          <div className="space-y-4 text-muted-foreground">
+            <p>
+              Gaat een gerucht over jou, je kind of iemand die je
+              vertegenwoordigt, dan kan je zonder account vragen om het te
+              verwijderen
+              {comingSoon ? (
+                "."
+              ) : (
+                <>
+                  {" "}
+                  via{" "}
+                  <Link
+                    href="/verwijderverzoek"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    dit formulier
+                  </Link>
+                  .
+                </>
+              )}{" "}
+              Een moderator beslist; tot dan blijft het gerucht zichtbaar.
+            </p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>
+                <strong>Wat we bewaren:</strong> je naam, e-mailadres, je uitleg
+                en over welk gerucht het gaat. Alleen moderators zien deze
+                gegevens.
+              </li>
+              <li>
+                <strong>Misbruik voorkomen:</strong> om te veel verzoeken te
+                beperken bewaren we een versleutelde code van je IP-adres die
+                elke dag verandert.
+              </li>
+              <li>
+                <strong>Hoe lang:</strong> 12 maanden na je verzoek wissen we je
+                naam, e-mailadres, uitleg en die code. Het referentienummer en
+                de beslissing blijven bewaard.
               </li>
             </ul>
           </div>

@@ -338,25 +338,25 @@ and delete my account and data if I leave.
 it taken down quickly, without needing an account.
 
 **Steps.**
-1. Click "Melden" on a rumour, or use the takedown link in the footer and
-   privacy page.
-2. Choose "Dit gerucht gaat over mij" and fill in name, email and reason.
-3. Receive an acknowledgement; the rumour is reviewed.
+1. Use "Vraag de verwijdering aan" in a rumour's detail view, or the takedown
+   link in the footer and privacy page (search the rumour by name).
+2. Choose who is asking (the person, a parent, a representative) and fill in
+   name, email and reason.
+3. Receive a reference and a private status link; a moderator reviews it.
 
-**Acceptance criteria.**
+**Acceptance criteria** (decided in D-014).
 - **Given** any approved rumour, **then** a takedown request can be filed
-  without logging in, with bot protection.
-- **Given** a takedown request from the named person, **when** it is submitted,
-  **then** the rumour is **hidden immediately** pending review **[assumption —
-  the safest default given defamation risk]** and moderators are alerted.
-- **Given** a request, **then** the requester receives an email acknowledgement
-  with a reference and the expected response time
-  **[assumption: within 72 hours]**.
-- **Given** a moderator decides (J-15), **then** the requester is informed of
-  the outcome by email.
+  without logging in, with bot protection (honeypot and daily limits).
+- **Given** a takedown request, **when** it is submitted, **then** the rumour
+  **stays visible until a moderator decides** (D-014) and the request appears
+  in the moderators' inbox (`/admin/meldingen`).
+- **Given** a request, **then** the requester sees a reference and a private
+  status link. There is no email until #53 is decided.
+- **Given** a moderator decides (J-15), **then** the status link shows the
+  outcome and the moderator's note; a removed rumour disappears from every
+  public view and its author sees it as "Verwijderd", without who asked.
 - **Given** the request contains personal data, **then** it is visible only to
-  moderators and kept no longer than needed **[retention period to be
-  defined]**.
+  moderators, and name, email and reason are wiped 12 months after the request.
 
 ## J-13 — Moderator works the pre-moderation queue
 

@@ -66,6 +66,25 @@ export const seed = {
   // Jana's own rows, shown on her profile.
   janaRumour: { playerName: "Pieter Proefspeler" },
   janaAd: { title: "Libero zoekt nieuwe ploeg" },
+  // Takedown requests (#68). Only takedown tests use these two rumours;
+  // global-setup.ts undoes their requests and removal before every run.
+  takedownRemoveRumour: {
+    id: "e0000000-0000-4000-8000-000000000008",
+    playerName: "Tim Terugtrek",
+  },
+  takedownRejectRumour: {
+    id: "e0000000-0000-4000-8000-000000000009",
+    playerName: "Bram Bezwaar",
+  },
+  // An open request about Lotte Lorem (a denied rumour).
+  takedownRequest: {
+    reference: "VR-SEED42",
+    playerName: "Lotte Lorem",
+    requesterName: "Lotte Lorem",
+    requesterEmail: "lotte@example.test",
+    statusPath:
+      "/verwijderverzoek/status/seedtokenvoorlokaletestsVolleyRumours000001",
+  },
   // Audit log entries by moderator_vr (#64); the second one's rumour is gone.
   staffActions: [
     { label: "Gerucht afgesloten", reason: "Officieel bevestigd door de club" },

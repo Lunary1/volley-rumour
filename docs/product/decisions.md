@@ -20,6 +20,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-011 | 2026-10-14 | Accepted | Staff audit log entries are kept 2 years, then deleted            |
 | D-012 | 2026-10-14 | Accepted | Moderators may moderate their own rumours; the queue shows the username only |
 | D-013 | 2026-10-14 | Accepted | Rumours name a public source; at most 5 waiting per contributor   |
+| D-014 | 2026-10-14 | Accepted | Takedown requests: rumour stays up until a moderator decides; status link, no email; 12-month retention |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -279,6 +280,33 @@ have waiting (#54, #67).
 **Consequences.** Source links are user content: they open in a new tab with
 `rel="nofollow ugc noopener noreferrer"`. Revisit the cap if active
 contributors hit it during the transfer window.
+
+## D-014 — Takedown requests
+
+**Context.** J-12: the person a rumour is about (or their parent or
+representative) must be able to ask for its removal without an account (#68).
+Open questions were whether the rumour is hidden at once (#48, Q5), how the
+requester hears back when the site sends no email yet (#53), bot protection,
+and how long requests are kept.
+
+**Decision** (owner, 2026-10-14).
+- **The rumour stays visible until a moderator decides.** No automatic hiding:
+  a request can't be used to suppress a true rumour. The moderator removes the
+  rumour (default for a valid request) or rejects the request with a note.
+- **Status link, no email.** The requester gets a reference (e.g. VR-7K3M9Q)
+  and a private status link that shows the decision and the moderator's note.
+  Staff see the email and can reply by hand. Automatic email comes with #53.
+- **Bot protection without a third party:** a honeypot field and daily limits
+  of 5 requests per IP address and 3 per email. The IP is stored only as an
+  HMAC with a key that changes daily.
+- **Retention: 12 months.** Name, email, explanation and IP hash are wiped 12
+  months after the request; the reference, rumour and decision stay. The audit
+  log keeps its own 2 years (D-011).
+- The rumour's author sees "Verwijderd", not who asked.
+
+**Consequences.** Because nothing is hidden automatically, response time
+matters: set a review target with the moderator rota (#93). The anonymise
+function must be scheduled before October 2027. Copy is reviewed in #94.
 
 ## O-001 — Rumour confirmation authority (Open)
 

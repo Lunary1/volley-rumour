@@ -12,6 +12,7 @@ const actionLabels: Record<string, string> = {
   rumour_rejected: "Gerucht afgewezen",
   rumour_resolved: "Gerucht afgesloten",
   content_removed: "Inhoud verwijderd",
+  takedown_rejected: "Verwijderverzoek afgewezen",
   user_suspended: "Gebruiker geschorst",
   user_unsuspended: "Schorsing opgeheven",
   role_changed: "Rol gewijzigd",
@@ -23,6 +24,7 @@ const targetLabels: Record<string, string> = {
   conversation: "Gesprek",
   message: "Bericht",
   user: "Gebruiker",
+  takedown_request: "Verwijderverzoek",
 };
 
 interface StaffAction {
