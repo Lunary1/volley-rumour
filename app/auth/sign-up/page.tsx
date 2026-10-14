@@ -46,21 +46,21 @@ function SignUpPageInner() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Error code set by /auth/callback on failure, read once on first render
+  const errorCode = searchParams.get("error");
+  const [error, setError] = useState<string | null>(() =>
+    errorCode ? getOAuthErrorMessage(errorCode) : null,
+  );
 
-  // Pick up error query param set by /auth/callback on failure
+  // Clean the URL so the message doesn't stick around on refresh
   useEffect(() => {
-    const errorCode = searchParams.get("error");
-    if (errorCode) {
-      setError(getOAuthErrorMessage(errorCode));
-      router.replace("/auth/sign-up", { scroll: false });
-    }
-  }, [searchParams, router]);
+    if (errorCode) router.replace("/auth/sign-up", { scroll: false });
+  }, [errorCode, router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

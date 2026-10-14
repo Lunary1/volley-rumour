@@ -35,6 +35,7 @@ export function HeaderClient({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const hasUser = user !== null;
 
   // Listen for auth state changes so the header re-renders when the user
   // signs out (or signs in via another tab). This eliminates the stale-user
@@ -61,12 +62,12 @@ export function HeaderClient({
 
       // Recovery: server rendered without auth but client detects a valid
       // session from cookies → force server re-render to pick up the user.
-      if (event === "INITIAL_SESSION" && session && !user) {
+      if (event === "INITIAL_SESSION" && session && !hasUser) {
         router.refresh();
       }
     });
     return () => subscription.unsubscribe();
-  }, [router, user?.id]);
+  }, [router, hasUser]);
 
   // Determine active main nav item and its submenu
   const activeMainItem = useMemo(() => {

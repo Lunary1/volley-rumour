@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChatInterface } from "@/components/chat-interface";
+import { ChatInterface, type Message } from "@/components/chat-interface";
 import { getCurrentUser } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -109,6 +109,19 @@ export default async function ConversationPage({
 
   const isBlocked = blockData && blockData.length > 0;
 
+  // The latest 50 messages, oldest first. ChatInterface marks unread ones as
+  // read and adds new ones through Realtime.
+  const { data: latestMessages } = await supabase
+    .from("messages")
+    .select("id, content, created_at, sender_id, is_read, read_at")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  const initialMessages: Message[] = (latestMessages ?? [])
+    .map((msg) => ({ ...msg, is_from_me: msg.sender_id === user.id }))
+    .reverse();
+
   // Determine ad link
   const adLink =
     conversation.ad_type === "transfer"
@@ -202,6 +215,7 @@ export default async function ConversationPage({
           <div className="flex-1 overflow-hidden flex flex-col max-w-2xl mx-auto w-full">
             <ChatInterface
               conversationId={conversationId}
+              initialMessages={initialMessages}
               currentUserId={user.id}
               otherUserName={otherUserData?.username || "Gebruiker"}
               currentUserName={user.username}

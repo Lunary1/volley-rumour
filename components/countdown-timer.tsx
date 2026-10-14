@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useIsClient } from "@/lib/use-is-client";
 
 interface TimeLeft {
   days: number;
@@ -22,14 +23,15 @@ function calculateTimeLeft(targetDate: Date): TimeLeft | null {
 }
 
 export function CountdownTimer({ launchDate }: { launchDate: string }) {
-  const target = new Date(launchDate);
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const isClient = useIsClient();
+  // Only rendered once on the client (see below), so the server's clock never
+  // reaches the markup.
+  const [timeLeft, setTimeLeft] = useState(() =>
+    calculateTimeLeft(new Date(launchDate)),
+  );
 
   useEffect(() => {
-    setMounted(true);
-    setTimeLeft(calculateTimeLeft(target));
-
+    const target = new Date(launchDate);
     const interval = setInterval(() => {
       const tl = calculateTimeLeft(target);
       setTimeLeft(tl);
@@ -37,11 +39,10 @@ export function CountdownTimer({ launchDate }: { launchDate: string }) {
     }, 1000);
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [launchDate]);
 
   // SSR / pre-hydration placeholder
-  if (!mounted) {
+  if (!isClient) {
     return (
       <p className="text-lg text-muted-foreground font-medium">
         Binnenkort beschikbaar

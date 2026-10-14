@@ -1,19 +1,15 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsClient } from "@/lib/use-is-client";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const isClient = useIsClient();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  if (!isClient) {
     // Prevent hydration mismatch — render placeholder with same dimensions
     return (
       <Button variant="ghost" size="icon" className="h-9 w-9" disabled>

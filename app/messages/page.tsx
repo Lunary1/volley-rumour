@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useState, useCallback } from "react";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -11,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getConversations } from "@/app/actions/messages";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
 interface ConversationPreview {
   id: string;
@@ -39,69 +36,17 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-export default function MessagesPage() {
-  const pathname = usePathname();
-  const [conversations, setConversations] = useState<ConversationPreview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadConversations = useCallback(async (showLoader = false) => {
-    try {
-      if (showLoader) setLoading(true);
-      const result = await getConversations();
-      if (result.success && result.data) {
-        setConversations(result.data);
-      } else {
-        setError(result.error || "Failed to load conversations");
-      }
-    } catch (err) {
-      setError("An unexpected error occurred");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Initial load
-  useEffect(() => {
-    loadConversations(true);
-  }, [loadConversations]);
-
-  // Re-fetch on window focus (handles browser back, tab switching)
-  useEffect(() => {
-    const handleFocus = () => loadConversations();
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [loadConversations]);
-
-  // Re-fetch when navigating back to this page via client-side navigation
-  useEffect(() => {
-    if (pathname === "/messages") {
-      loadConversations();
-    }
-  }, [pathname, loadConversations]);
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-background p-4 md:p-8">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <Card
-                key={i}
-                className="h-24 border-l-4 border-l-primary/20 bg-muted/50 animate-pulse"
-              />
-            ))}
-          </div>
-        </div>
-      </main>
-    );
-  }
+export default async function MessagesPage() {
+  const result = await getConversations();
+  const conversations: ConversationPreview[] = result.data ?? [];
+  const error = result.success
+    ? null
+    : result.error || "Failed to load conversations";
 
   if (error) {
     return (
       <main className="min-h-screen bg-background p-4 md:p-8">
+        <RefreshOnFocus />
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
           <Card className="border-l-4 border-l-destructive/50 p-6">
@@ -115,6 +60,7 @@ export default function MessagesPage() {
   if (conversations.length === 0) {
     return (
       <main className="min-h-screen bg-background p-4 md:p-8">
+        <RefreshOnFocus />
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-8 text-3xl font-bold">Berichten</h1>
           <Card className="border-l-4 border-l-border/30 p-12 text-center">
@@ -143,6 +89,7 @@ export default function MessagesPage() {
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
+      <RefreshOnFocus />
       <div className="mx-auto max-w-3xl">
         <h1 className="mb-6 text-3xl font-bold">Berichten</h1>
         <div className="space-y-2">

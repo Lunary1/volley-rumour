@@ -21,12 +21,15 @@ interface UserMenuProps {
 
 export function UserMenu({ user, isMobile = false }: UserMenuProps) {
   const [unreadCount, setUnreadCount] = useState(0);
+  // Depend on the id, not the object: every server refresh passes a new user
+  // object, and resubscribing the channel below breaks other channels on the
+  // same Realtime connection (the open chat stopped getting updates).
+  const userId = user?.id;
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     const supabase = createClient();
-    const userId = user.id;
 
     // Initial count
     async function getUnreadCount() {
@@ -64,27 +67,30 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
     getUnreadCount();
 
     // Subscribe to changes on messages table
-    const channel = supabase
-      .channel("messages-unread")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-        },
-        async (payload) => {
-          console.log("[UserMenu] Received Realtime payload:", payload);
-          // Recalculate unread count when messages change
-          await getUnreadCount();
-        },
-      )
-      .subscribe();
+    const channel = supabase.channel("messages-unread").on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "messages",
+      },
+      async () => {
+        // Recalculate unread count when messages change
+        await getUnreadCount();
+      },
+    );
+
+    // Join with the user's token, not as anon (see ChatInterface)
+    let cancelled = false;
+    supabase.realtime.setAuth().then(() => {
+      if (!cancelled) channel.subscribe();
+    });
 
     return () => {
+      cancelled = true;
       channel.unsubscribe();
     };
-  }, [user]);
+  }, [userId]);
 
   const containerClass = isMobile
     ? "flex flex-col gap-2 mt-4 pt-4 border-t border-border px-4"

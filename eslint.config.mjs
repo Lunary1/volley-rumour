@@ -7,11 +7,9 @@ export default defineConfig([
   ...nextTs,
   {
     rules: {
-      // Existing load-on-mount effects (OAuth errors, messages, countdown,
-      // theme toggle, profile) trip this React Compiler rule. Rewriting them
-      // changes auth and messaging behaviour, so it waits for Playwright
-      // coverage (step 1.4). New code should not add to the warnings.
-      "react-hooks/set-state-in-effect": "warn",
+      // Load data on the server or derive it while rendering; set state in
+      // an effect only from a callback (timer, subscription, promise).
+      "react-hooks/set-state-in-effect": "error",
       // A leading underscore marks a name as intentionally unused, e.g. the
       // next/font loaders in app/layout.tsx, which register @font-face as a
       // side effect and must be assigned to a const.
