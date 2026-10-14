@@ -24,4 +24,10 @@ export const adminSections: AdminSection[] = [
     description: "Gebruikers opzoeken, schorsen en rollen beheren.",
     issue: 80,
   },
+  {
+    label: "Logboek",
+    description: "Wie welke moderatieactie deed, wanneer en waarom.",
+    href: "/admin/logboek",
+    issue: 64,
+  },
 ];

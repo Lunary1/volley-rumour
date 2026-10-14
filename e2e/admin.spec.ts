@@ -1,4 +1,4 @@
-import { expect, loginAs, test } from "./fixtures";
+import { expect, loginAs, seed, seedUsers, test } from "./fixtures";
 
 // The admin area (issue #63, D-006) is for staff only. Everyone else gets a
 // plain 404, so the area doesn't advertise itself.
@@ -35,4 +35,28 @@ test("a visitor who isn't logged in gets a 404 on /admin", async ({ page }) => {
   const response = await page.goto("/admin");
   expect(response?.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "Beheer" })).toHaveCount(0);
+});
+
+test("a moderator reads the audit log", async ({ page }) => {
+  await loginAs(page, "moderator");
+  await page.goto("/admin");
+
+  await page
+    .getByRole("navigation", { name: "Beheer" })
+    .getByRole("link", { name: "Logboek" })
+    .click();
+  await page.waitForURL("/admin/logboek");
+
+  for (const entry of seed.staffActions) {
+    const row = page.getByRole("row").filter({ hasText: entry.reason });
+    await expect(row).toContainText(entry.label);
+    await expect(row).toContainText(seedUsers.moderator.username);
+  }
+});
+
+test("a normal user gets a 404 on the audit log", async ({ page }) => {
+  await loginAs(page, "jana");
+  const response = await page.goto("/admin/logboek");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { name: "Logboek" })).toHaveCount(0);
 });

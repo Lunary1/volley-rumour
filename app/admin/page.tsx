@@ -12,7 +12,8 @@ export default function AdminPage() {
   return (
     <div className="space-y-4">
       <p className="text-muted-foreground">
-        Hier behandel je geruchten, meldingen en gebruikers.
+        Hier behandel je geruchten, meldingen en gebruikers. Elke actie komt in
+        het logboek.
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         {adminSections.map((section) => {

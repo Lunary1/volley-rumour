@@ -179,3 +179,12 @@ INSERT INTO public.messages (conversation_id, sender_id, content, is_read, creat
    'Hallo! Ik speel geen setter, maar ken iemand die interesse heeft.', true, now() - interval '1 day'),
   ('f0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000003',
    'Leuk, mag die persoon ons een berichtje sturen?', false, now() - interval '2 hours');
+
+-- --------------------------------------------------------------- audit log
+-- Staff actions (#64), as moderation functions will write them. The second
+-- one is about a rumour that no longer exists: the log outlives its target.
+INSERT INTO public.staff_actions (actor_id, action, target_type, target_id, reason, details, created_at) VALUES
+  ('a0000000-0000-4000-8000-000000000004', 'rumour_resolved', 'rumour', 'e0000000-0000-4000-8000-000000000003',
+   'Officieel bevestigd door de club', '{"outcome": "confirmed"}', now() - interval '15 days'),
+  ('a0000000-0000-4000-8000-000000000004', 'rumour_rejected', 'rumour', 'e0000000-0000-4000-8000-0000000000ff',
+   'Geen bron opgegeven', '{}', now() - interval '3 days');

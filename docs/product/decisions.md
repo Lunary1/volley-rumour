@@ -17,6 +17,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-008 | 2026-10-13 | Accepted | GitHub Flow: protected `main` is production; PRs with CI, squash merge |
 | D-009 | 2026-10-13 | Accepted | Coming-soon mode closes every route except the homepage and info pages |
 | D-010 | 2026-10-13 | Accepted | Vercel previews keep using the production database; no separate preview project |
+| D-011 | 2026-10-14 | Accepted | Staff audit log entries are kept 2 years, then deleted            |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -213,6 +214,26 @@ return before launch.
 
 **Revisit when** a second developer joins, moderators need a place to practise,
 or end-to-end tests need a deployed environment.
+
+## D-011 — Staff audit log retention: 2 years
+
+**Context.** Every staff action (approve, reject, remove, resolve, suspend,
+role change) is logged with who, what, when, target and reason (#64). Entries
+hold user ids of staff and of the people or content they acted on, so GDPR
+needs a retention period.
+
+**Decision.** Keep entries 2 years, then delete them. Until then nobody can
+edit or delete an entry, the service role included.
+`public.purge_expired_staff_actions()` is the only delete path, and only for
+expired rows.
+
+**Why 2 years.** Long enough to back up a moderation decision when a dispute,
+takedown or complaint comes back a season or two later; short enough to
+justify as a legitimate interest.
+
+**Consequences.** The purge must be scheduled before the first entries expire
+(October 2028). The privacy page should mention the log and its retention
+when it's updated (#77).
 
 ## O-001 — Rumour confirmation authority (Open)
 
