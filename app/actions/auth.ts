@@ -69,15 +69,27 @@ export const getCurrentUser = cache(async () => {
   }
 
   // Get user profile for additional info. Roles aren't readable through the
-  // API (#111); is_staff() answers for the caller only.
-  const [{ data: profile }, { data: isStaff }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("username, trust_score, avatar_url")
-      .eq("id", user.id)
-      .single(),
-    supabase.rpc("is_staff"),
-  ]);
+  // API (#111); is_staff() answers for the caller only. RLS shows a user only
+  // their own suspension (#80).
+  const [{ data: profile }, { data: isStaff }, { data: suspension }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("username, trust_score, avatar_url")
+        .eq("id", user.id)
+        .single(),
+      supabase.rpc("is_staff"),
+      supabase
+        .from("user_suspensions")
+        .select("suspended_until, reason")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
+
+  const suspended =
+    suspension !== null &&
+    (suspension.suspended_until === null ||
+      new Date(suspension.suspended_until) > new Date());
 
   const userData = {
     id: user.id,
@@ -87,6 +99,13 @@ export const getCurrentUser = cache(async () => {
     avatar_url: profile?.avatar_url,
     // Only shows the "Beheer" link; admin pages check is_staff() themselves.
     is_staff: isStaff === true,
+    // Shown as a notice on every page; the database refuses their writes.
+    suspension: suspended
+      ? {
+          until: suspension.suspended_until as string | null,
+          reason: suspension.reason as string,
+        }
+      : null,
   };
 
   return userData;

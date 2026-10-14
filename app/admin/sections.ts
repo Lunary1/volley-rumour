@@ -25,6 +25,7 @@ export const adminSections: AdminSection[] = [
   {
     label: "Gebruikers",
     description: "Gebruikers opzoeken, schorsen en rollen beheren.",
+    href: "/admin/gebruikers",
     issue: 80,
   },
   {

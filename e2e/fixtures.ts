@@ -18,6 +18,12 @@ export const seedUsers = {
   uitlogger: { email: "uitlog@example.test", username: "test_uitlogger" },
   // Already has 5 pending rumours, the most one author may have (#54).
   wachtrij: { email: "wachtrij@example.test", username: "volle_wachtrij" },
+  // Suspends users and manages badges and roles (#80, D-016).
+  admin: { email: "beheerder@example.test", username: "beheerder_vr" },
+  // Only the sanction tests use these two; global-setup.ts lifts the
+  // suspension and resets the badge and role before every run.
+  geschorst: { email: "geschorst@example.test", username: "test_geschorst" },
+  kandidaat: { email: "kandidaat@example.test", username: "test_kandidaat" },
 } as const;
 
 export type SeedUser = keyof typeof seedUsers;

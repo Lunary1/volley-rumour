@@ -13,6 +13,9 @@
 --   reset@example.test     test_reset       user       only for password-reset tests
 --   google@example.test    test_google      user       Google-only, no password
 --   wachtrij@example.test  volle_wachtrij   user       5 pending rumours: at the cap (#54)
+--   beheerder@example.test beheerder_vr     admin      suspends users, manages badges and roles (#80)
+--   geschorst@example.test test_geschorst   user       only for suspension tests (#80)
+--   kandidaat@example.test test_kandidaat   user       only for badge and role tests (#80)
 --
 -- Logging out ends every session of that user (Supabase's default global
 -- sign-out), so a test that logs out would break parallel tests using the
@@ -45,7 +48,10 @@ FROM (VALUES
   ('a0000000-0000-4000-8000-000000000004'::uuid, 'moderator@example.test', 'moderator_vr', 'Moderator VR',    interval '120 days'),
   ('a0000000-0000-4000-8000-000000000005'::uuid, 'uitlog@example.test',    'test_uitlogger', 'Test Uitlogger', interval '10 days'),
   ('a0000000-0000-4000-8000-000000000006'::uuid, 'reset@example.test',     'test_reset',   'Test Herstel',    interval '8 days'),
-  ('a0000000-0000-4000-8000-000000000008'::uuid, 'wachtrij@example.test',  'volle_wachtrij', 'Volle Wachtrij', interval '20 days')
+  ('a0000000-0000-4000-8000-000000000008'::uuid, 'wachtrij@example.test',  'volle_wachtrij', 'Volle Wachtrij', interval '20 days'),
+  ('a0000000-0000-4000-8000-000000000009'::uuid, 'beheerder@example.test', 'beheerder_vr', 'Beheerder VR',    interval '150 days'),
+  ('a0000000-0000-4000-8000-00000000000a'::uuid, 'geschorst@example.test', 'test_geschorst', 'Test Geschorst', interval '15 days'),
+  ('a0000000-0000-4000-8000-00000000000b'::uuid, 'kandidaat@example.test', 'test_kandidaat', 'Test Kandidaat', interval '12 days')
 ) AS u (id, email, username, full_name, age);
 
 INSERT INTO auth.identities (
@@ -82,6 +88,9 @@ INSERT INTO auth.identities (
 
 UPDATE public.profiles SET role = 'moderator'
 WHERE id = 'a0000000-0000-4000-8000-000000000004';
+
+UPDATE public.profiles SET role = 'admin'
+WHERE id = 'a0000000-0000-4000-8000-000000000009';
 
 UPDATE public.profiles
 SET is_verified_source = true, source_description = 'Fictieve clubaccount voor tests'

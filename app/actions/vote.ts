@@ -2,6 +2,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
+
+/** A refused vote, in Dutch. Suspended users can't vote (#80). */
+function voteError(error: { code?: string }) {
+  if (error.code === SUSPENDED_ERROR_CODE) return { error: SUSPENDED_MESSAGE };
+  console.error("[VOTE_ERROR] Failed to save vote:", error);
+  return { error: "Je stem kon niet opgeslagen worden" };
+}
 
 export async function getUserVoteOnRumour(rumourId: string) {
   const supabase = await createClient();
@@ -66,10 +74,12 @@ export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
 
     // Update vote type (convert to boolean: true = up, false = down)
     const isUpvote = voteType === "up";
-    await supabase
+    const { error: updateError } = await supabase
       .from("rumour_votes")
       .update({ vote_type: isUpvote })
       .eq("id", existingVote.id);
+
+    if (updateError) return voteError(updateError);
   } else {
     // Create new vote record (convert to boolean: true = up, false = down)
     const isUpvote = voteType === "up";
@@ -79,10 +89,7 @@ export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
       vote_type: isUpvote,
     });
 
-    if (insertError) {
-      console.error("[VOTE_ERROR] Failed to insert vote:", insertError);
-      return { error: `Fout bij opslaan van stem: ${insertError.message}` };
-    }
+    if (insertError) return voteError(insertError);
   }
 
   // The on_vote_change trigger recounts votes_true/votes_false (and the

@@ -5,6 +5,7 @@ import React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -166,7 +167,12 @@ export default function NewClassifiedPage() {
       .insert(classifiedData);
 
     if (insertError) {
-      setError("Er ging iets mis bij het plaatsen van je zoekertje");
+      // Suspended users can't post (#80).
+      setError(
+        insertError.code === SUSPENDED_ERROR_CODE
+          ? SUSPENDED_MESSAGE
+          : "Er ging iets mis bij het plaatsen van je zoekertje",
+      );
       setLoading(false);
       return;
     }

@@ -6,6 +6,7 @@ import "./globals.css";
 import { Header } from "@/components/header";
 import { HeaderSkeleton } from "@/components/header-skeleton";
 import { Footer } from "@/components/footer";
+import { SuspensionNotice } from "@/components/suspension-notice";
 import { ToasterProvider } from "@/components/toaster-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DatadogRumProvider } from "@/components/datadog-rum-provider";
@@ -52,6 +53,9 @@ export default function RootLayout({
         >
           <Suspense fallback={<HeaderSkeleton />}>
             <Header />
+          </Suspense>
+          <Suspense fallback={null}>
+            <SuspensionNotice />
           </Suspense>
           <main className="flex-1">{children}</main>
           <Footer />

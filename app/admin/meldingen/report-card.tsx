@@ -31,7 +31,7 @@ export interface ReportRow {
   decided_at: string | null;
   created_at: string;
   reporter: { username: string } | null;
-  reported_user: { username: string } | null;
+  reported_user: { id: string; username: string } | null;
   rumour: RumourSummaryRow | null;
   classified: {
     id: string;
@@ -42,7 +42,7 @@ export interface ReportRow {
   } | null;
 }
 
-export const REPORT_COLUMNS = `id, target_type, reason, explanation, status, decision_note, decided_at, created_at, reporter:reporter_id(username), reported_user:reported_user_id(username), rumour:rumour_id(${RUMOUR_SUMMARY_COLUMNS}), classified:classified_id(id, title, type, description, removed_at)`;
+export const REPORT_COLUMNS = `id, target_type, reason, explanation, status, decision_note, decided_at, created_at, reporter:reporter_id(username), reported_user:reported_user_id(id, username), rumour:rumour_id(${RUMOUR_SUMMARY_COLUMNS}), classified:classified_id(id, title, type, description, removed_at)`;
 
 function title(report: ReportRow) {
   switch (report.target_type) {
@@ -122,7 +122,18 @@ export function ReportCard({ report }: { report: ReportRow }) {
           <dt className="text-muted-foreground">
             {report.target_type === "conversation" ? "Over" : "Auteur"}
           </dt>
-          <dd>{report.reported_user?.username ?? "Verwijderd account"}</dd>
+          <dd>
+            {report.reported_user ? (
+              <Link
+                href={`/admin/gebruikers/${report.reported_user.id}`}
+                className="text-primary underline underline-offset-2"
+              >
+                {report.reported_user.username}
+              </Link>
+            ) : (
+              "Verwijderd account"
+            )}
+          </dd>
         </dl>
         {report.explanation && (
           <div className="space-y-1 text-sm">
