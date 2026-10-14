@@ -96,7 +96,7 @@ export async function confirmRumour(rumourId: string) {
   let adminClient;
   try {
     adminClient = createAdminClient();
-  } catch (err) {
+  } catch {
     return errorResponse("Administratorfout: kan gerucht niet bevestigen");
   }
 
@@ -154,21 +154,3 @@ export async function confirmRumour(rumourId: string) {
   return successResponse(null);
 }
 
-export async function getFirstRumourToConfirm() {
-  const supabase = await createClient();
-
-  const { data: rumour, error } = await supabase
-    .from("rumours")
-    .select("id, player_name, from_club_name, to_club_name")
-    .eq("status", "rumour")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error || !rumour) {
-    return errorResponse("Geen geruchten beschikbaar om te bevestigen");
-  }
-
-  // Confirm it
-  return confirmRumour(rumour.id);
-}

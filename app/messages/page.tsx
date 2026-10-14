@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getConversations } from "@/app/actions/messages";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Search } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 interface ConversationPreview {
   id: string;
@@ -40,7 +40,6 @@ const getInitials = (name: string): string => {
 };
 
 export default function MessagesPage() {
-  const router = useRouter();
   const pathname = usePathname();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [loading, setLoading] = useState(true);
