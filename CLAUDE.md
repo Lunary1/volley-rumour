@@ -35,7 +35,7 @@ Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
 | Lint | `npm run lint` (ESLint 9, `eslint-config-next`; warnings allowed, errors fail CI) |
 | Build | `npm run build` |
 | E2E tests | `npm run test:e2e` — builds the app against the local stack and runs Playwright on :3100 (needs `npm run db:start`; once: `npx playwright install chromium`) |
-| Local database | `npm run db:start` / `npm run db:stop` (needs Docker) |
+| Local database | `npm run db:start` / `npm run db:stop` (needs Docker). Starts the services the tests use, like CI; `npm run db:start:studio` adds Studio. **Stop it when you're not testing** — it uses a lot of RAM |
 | Rebuild local DB from migrations + seed | `npm run db:reset` |
 | Database tests (pgTAP) | `npm run db:test` |
 | New migration | `npm run db:new -- <snake_case_name>` |
