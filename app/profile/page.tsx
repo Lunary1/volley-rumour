@@ -11,7 +11,13 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
 
   const { data: profile } = user
-    ? await supabase.from("profiles").select("*").eq("id", user.id).single()
+    ? await supabase
+        .from("profiles")
+        .select(
+          "id, username, avatar_url, trust_score, is_verified_source, instagram_url, source_description",
+        )
+        .eq("id", user.id)
+        .single()
     : { data: null };
 
   if (!user || !profile) {

@@ -8,7 +8,6 @@ import { headers } from "next/headers";
 import { createHash } from "crypto";
 import { z } from "zod";
 import { isRecoverySession } from "@/lib/supabase/recovery";
-import { isStaffRole } from "@/lib/staff";
 import {
   errorResponse,
   successResponse,
@@ -68,12 +67,16 @@ export const getCurrentUser = cache(async () => {
     return null;
   }
 
-  // Get user profile for additional info
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username, trust_score, avatar_url, role")
-    .eq("id", user.id)
-    .single();
+  // Get user profile for additional info. Roles aren't readable through the
+  // API (#111); is_staff() answers for the caller only.
+  const [{ data: profile }, { data: isStaff }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("username, trust_score, avatar_url")
+      .eq("id", user.id)
+      .single(),
+    supabase.rpc("is_staff"),
+  ]);
 
   const userData = {
     id: user.id,
@@ -82,7 +85,7 @@ export const getCurrentUser = cache(async () => {
     trust_score: profile?.trust_score || 0,
     avatar_url: profile?.avatar_url,
     // Only shows the "Beheer" link; admin pages check is_staff() themselves.
-    is_staff: isStaffRole(profile?.role),
+    is_staff: isStaff === true,
   };
 
   return userData;
