@@ -25,6 +25,9 @@ test("messages list links to the conversation", async ({ page }) => {
 test("a message arrives live and the sender sees it was read", async ({
   browser,
 }) => {
+  // Two sessions that each log in: too slow for the default timeout when the
+  // whole suite runs in parallel.
+  test.slow();
   const janaContext = await browser.newContext();
   const clubContext = await browser.newContext();
   const jana = await janaContext.newPage();

@@ -12,6 +12,7 @@ export const adminSections: AdminSection[] = [
   {
     label: "Moderatiewachtrij",
     description: "Nieuwe geruchten goedkeuren of afwijzen.",
+    href: "/admin/wachtrij",
     issue: 66,
   },
   {

@@ -82,6 +82,9 @@ export type RecentRumour = {
   player_name: string;
   status: string;
   created_at: string;
+  // Set when a moderator rejected the rumour (#66); only the author sees it.
+  rejection_reason: string | null;
+  rejection_note: string | null;
 };
 
 export type RecentClassified = {
@@ -108,7 +111,9 @@ export async function getRecentActivity(): Promise<{
   const [rumoursRes, classifiedsRes] = await Promise.all([
     supabase
       .from("rumours")
-      .select("id, player_name, status, created_at")
+      .select(
+        "id, player_name, status, created_at, rejection_reason, rejection_note",
+      )
       .eq("creator_id", user.id)
       .order("created_at", { ascending: false })
       .limit(5),

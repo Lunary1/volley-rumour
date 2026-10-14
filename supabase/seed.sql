@@ -160,6 +160,11 @@ INSERT INTO public.rumours (
    'Volley Voorbeeld', NULL, 'Afgewezen door een moderator.',
    'player_retirement', 'rejected', now() - interval '4 days');
 
+-- Why Rik Retour was rejected; Tom sees it on his profile (#66).
+UPDATE public.rumours
+   SET rejection_reason = 'duplicate', rejection_note = 'Staat al online als ander gerucht.'
+ WHERE id = 'e0000000-0000-4000-8000-000000000007';
+
 -- Votes; the on_vote_change trigger fills the vote counts and trust scores.
 INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type) VALUES
   ('e0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002', true),
