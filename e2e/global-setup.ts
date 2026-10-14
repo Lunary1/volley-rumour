@@ -1,8 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase";
 
-// coach_tom in supabase/seed.sql
+// coach_tom and vc_testdorp in supabase/seed.sql
 const TOM_ID = "a0000000-0000-4000-8000-000000000002";
+const CLUB_ID = "a0000000-0000-4000-8000-000000000003";
+// Mila Meldtest, only used by the report tests (#69).
+const REPORT_RUMOUR_ID = "e0000000-0000-4000-8000-00000000000a";
 // Tim Terugtrek and Bram Bezwaar, only used by the takedown tests (#68).
 const TAKEDOWN_RUMOUR_IDS = [
   "e0000000-0000-4000-8000-000000000008",
@@ -17,6 +20,9 @@ const TAKEDOWN_RUMOUR_IDS = [
  *   test leftovers go.
  * - takedown requests about the two takedown-test rumours, and the removal
  *   of Tim Terugtrek. Requests count towards the daily limits (#68).
+ * - every report, the removal of Mila Meldtest and coach_tom's block of
+ *   vc_testdorp (#69). Reports count towards the daily limit, and a user may
+ *   have one open report per item.
  */
 export default async function globalSetup() {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -48,5 +54,29 @@ export default async function globalSetup() {
     throw new Error(
       `Restoring takedown-test rumours: ${restored.error.message}`,
     );
+  }
+
+  const reports = await admin.from("reports").delete().not("id", "is", null);
+  if (reports.error) {
+    throw new Error(`Cleaning up reports: ${reports.error.message}`);
+  }
+
+  const reportRumour = await admin
+    .from("rumours")
+    .update({ status: "denied", removal_note: null })
+    .eq("id", REPORT_RUMOUR_ID);
+  if (reportRumour.error) {
+    throw new Error(
+      `Restoring the report-test rumour: ${reportRumour.error.message}`,
+    );
+  }
+
+  const block = await admin
+    .from("blocked_users")
+    .delete()
+    .eq("blocker_id", TOM_ID)
+    .eq("blocked_id", CLUB_ID);
+  if (block.error) {
+    throw new Error(`Lifting the report-test block: ${block.error.message}`);
   }
 }

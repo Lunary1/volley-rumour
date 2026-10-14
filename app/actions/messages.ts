@@ -456,39 +456,6 @@ export async function archiveConversation(conversationId: string) {
 }
 
 /**
- * Report a conversation
- */
-export async function reportConversation(
-  conversationId: string,
-  reason: string,
-) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Must be logged in" };
-  }
-
-  if (!reason.trim()) {
-    return { error: "Reason is required" };
-  }
-
-  const { error } = await supabase.from("reported_conversations").insert({
-    conversation_id: conversationId,
-    reporter_id: user.id,
-    reason: reason.trim(),
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { success: true };
-}
-
-/**
  * Mark messages in a conversation as read (called from client when viewing)
  */
 export async function markAsRead(conversationId: string) {

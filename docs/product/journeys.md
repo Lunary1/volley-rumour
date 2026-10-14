@@ -437,6 +437,9 @@ takedown requests) and deal with abusive accounts.
   post, vote or message until the suspension ends; their existing content is
   unaffected unless I remove it separately.
 - **Given** any action, **then** it is recorded in the moderation audit log,
-  and the reporter (or takedown requester) is informed of the outcome.
+  and the takedown requester is informed of the outcome. A reporter gets a
+  confirmation only; outcomes follow by email once #53 lands (D-015).
+- **Given** a report, **then** the content stays visible until I decide, and
+  my decision answers every open report about the same item (D-015).
 - **Given** the admin area, **then** I can grant or revoke the verified badge
   (D-001) and the moderator role (admins only).

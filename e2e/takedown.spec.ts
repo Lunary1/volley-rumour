@@ -73,7 +73,7 @@ test("a visitor asks to remove a rumour and a moderator removes it", async ({
   ).toBeVisible();
   await expect(
     moderator
-      .getByRole("list", { name: "Behandelde verwijderverzoeken" })
+      .getByRole("list", { name: "Behandelde meldingen" })
       .getByRole("listitem")
       .filter({ hasText: reference }),
   ).toContainText("Gerucht verwijderd");

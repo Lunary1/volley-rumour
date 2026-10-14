@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatInterface, type Message } from "@/components/chat-interface";
+import { ReportDialog } from "@/components/report-dialog";
 import { getCurrentUser } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -192,6 +193,15 @@ export default async function ConversationPage({
                 </Link>
               </div>
             </div>
+
+            {/* A moderator may read the conversation through the report
+                only (#87, #69). */}
+            <ReportDialog
+              targetType="conversation"
+              targetId={conversationId}
+              otherUserName={otherUserData.username}
+              className="shrink-0"
+            />
           </div>
         </div>
       </div>

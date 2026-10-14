@@ -20,7 +20,6 @@ export const adminSections: AdminSection[] = [
     description:
       "Verwijderverzoeken en gemelde geruchten, zoekertjes en gesprekken behandelen.",
     href: "/admin/meldingen",
-    // Takedown requests landed with #68; user reports follow in #69.
     issue: 69,
   },
   {

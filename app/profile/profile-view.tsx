@@ -460,6 +460,7 @@ export function ProfileView({
                       {r.status === "removed" && (
                         <p className="mt-1 px-3 text-xs text-muted-foreground">
                           Een moderator heeft dit gerucht van de site gehaald.
+                          {r.removal_note && ` ${r.removal_note}`}
                         </p>
                       )}
                     </li>
@@ -484,13 +485,30 @@ export function ProfileView({
                           <span className="truncate font-medium text-foreground">
                             {c.title}
                           </span>
-                          <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                          {c.removed_at && (
+                            <Badge
+                              variant="outline"
+                              className="ml-auto shrink-0 text-xs"
+                            >
+                              Verwijderd
+                            </Badge>
+                          )}
+                          <span
+                            className={`${c.removed_at ? "" : "ml-auto "}shrink-0 text-xs text-muted-foreground`}
+                          >
                             {formatDistanceToNow(new Date(c.created_at), {
                               addSuffix: true,
                               locale: nl,
                             })}
                           </span>
                         </Link>
+                        {c.removed_at && (
+                          <p className="mt-1 px-3 text-xs text-muted-foreground">
+                            Een moderator heeft dit zoekertje van de site
+                            gehaald.
+                            {c.removal_note && ` ${c.removal_note}`}
+                          </p>
+                        )}
                       </li>
                     ))}
                   </ul>

@@ -1,27 +1,27 @@
-import { format, formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
-import { ArrowRight, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
-import {
-  RUMOUR_CATEGORY_LABELS,
-  RUMOUR_SOURCE_TYPES,
-  RUMOUR_STATUS_LABELS,
-  labelFor,
-  type RumourStatus,
-} from "@/lib/rumours";
 import {
   TAKEDOWN_RELATION_SHORT_LABELS,
   TAKEDOWN_STATUS_LABELS,
   type TakedownRelation,
   type TakedownStatus,
 } from "@/lib/takedown";
+import { REPORT_COLUMNS, ReportCard, type ReportRow } from "./report-card";
+import {
+  RUMOUR_SUMMARY_COLUMNS,
+  RumourSummary,
+  When,
+  type RumourSummaryRow,
+} from "./shared";
 import { TakedownActions } from "./takedown-actions";
 
-// Takedown requests (#68, D-014): open ones oldest first, then the latest
-// decisions. The admin layout already let only staff through; RLS shows the
-// requests to staff only. Reports from users (#69, #79, #87) join this page.
+// Everything users flag, in one list (J-15): takedown requests (#68, D-014)
+// first because they have priority, then reports of rumours, zoekertjes and
+// conversations (#69, D-015), oldest first. Below them, the latest decisions.
+// The admin layout already let only staff through; RLS shows both tables to
+// staff only.
 
 const OPEN_LIMIT = 50;
 const DECIDED_LIMIT = 20;
@@ -37,29 +37,14 @@ interface TakedownRequestRow {
   decision_note: string | null;
   decided_at: string | null;
   created_at: string;
-  rumour: {
-    player_name: string;
-    category: string;
-    from_club_name: string | null;
-    to_club_name: string | null;
-    description: string | null;
-    source_type: string | null;
-    source_url: string | null;
-    status: string;
-    creator: { username: string } | null;
-  } | null;
+  rumour: RumourSummaryRow | null;
 }
 
-const COLUMNS =
-  "id, reference, relation, requester_name, requester_email, explanation, status, decision_note, decided_at, created_at, rumour:rumour_id(player_name, category, from_club_name, to_club_name, description, source_type, source_url, status, creator:creator_id(username))";
+const TAKEDOWN_COLUMNS = `id, reference, relation, requester_name, requester_email, explanation, status, decision_note, decided_at, created_at, rumour:rumour_id(${RUMOUR_SUMMARY_COLUMNS})`;
 
-function when(date: string) {
-  return (
-    <span title={format(new Date(date), "d MMM yyyy HH:mm", { locale: nl })}>
-      {formatDistanceToNow(new Date(date), { addSuffix: true, locale: nl })}
-    </span>
-  );
-}
+type Item =
+  | { kind: "takedown"; row: TakedownRequestRow }
+  | { kind: "report"; row: ReportRow };
 
 function RequestCard({ request }: { request: TakedownRequestRow }) {
   const rumour = request.rumour;
@@ -73,17 +58,25 @@ function RequestCard({ request }: { request: TakedownRequestRow }) {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">Verwijderverzoek</Badge>
           <Badge variant="outline" className="font-mono">
             {request.reference}
           </Badge>
-          {request.status !== "open" && (
+          {request.status === "open" ? (
+            <Badge>Voorrang</Badge>
+          ) : (
             <Badge variant="secondary">
               {TAKEDOWN_STATUS_LABELS[request.status]}
             </Badge>
           )}
           <span className="text-xs text-muted-foreground">
-            Ingediend {when(request.created_at)}
-            {request.decided_at && <> · beslist {when(request.decided_at)}</>}
+            Ingediend <When date={request.created_at} />
+            {request.decided_at && (
+              <>
+                {" "}
+                · beslist <When date={request.decided_at} />
+              </>
+            )}
           </span>
         </div>
         <CardTitle className="text-lg">
@@ -91,55 +84,7 @@ function RequestCard({ request }: { request: TakedownRequestRow }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {rumour && (
-          <div className="space-y-2 rounded-md border bg-muted/20 p-3 text-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">
-                {RUMOUR_CATEGORY_LABELS[rumour.category] ?? rumour.category}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                {RUMOUR_STATUS_LABELS[rumour.status as RumourStatus] ??
-                  rumour.status}{" "}
-                · door {rumour.creator?.username ?? "een verwijderd account"}
-              </span>
-            </div>
-            {(rumour.from_club_name || rumour.to_club_name) && (
-              <p className="flex flex-wrap items-center gap-1.5">
-                {rumour.from_club_name && <span>{rumour.from_club_name}</span>}
-                {rumour.from_club_name && rumour.to_club_name && (
-                  <ArrowRight
-                    className="h-3.5 w-3.5 text-muted-foreground"
-                    aria-label="naar"
-                  />
-                )}
-                {rumour.to_club_name && <span>{rumour.to_club_name}</span>}
-              </p>
-            )}
-            <p className="text-muted-foreground">
-              Bron:{" "}
-              {labelFor(RUMOUR_SOURCE_TYPES, rumour.source_type) ??
-                "Geen bron opgegeven"}
-              {rumour.source_url && (
-                <>
-                  {" · "}
-                  <a
-                    href={rumour.source_url}
-                    target="_blank"
-                    rel="nofollow ugc noopener noreferrer"
-                    className="break-all text-primary underline underline-offset-2"
-                  >
-                    {rumour.source_url}
-                  </a>
-                </>
-              )}
-            </p>
-            {rumour.description && (
-              <p className="whitespace-pre-line text-muted-foreground">
-                {rumour.description}
-              </p>
-            )}
-          </div>
-        )}
+        {rumour && <RumourSummary rumour={rumour} />}
 
         <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
           <dt className="text-muted-foreground">Aanvrager</dt>
@@ -190,88 +135,130 @@ function RequestCard({ request }: { request: TakedownRequestRow }) {
   );
 }
 
+function ItemCard({ item }: { item: Item }) {
+  return item.kind === "takedown" ? (
+    <RequestCard request={item.row} />
+  ) : (
+    <ReportCard report={item.row} />
+  );
+}
+
 export default async function ReportsPage() {
   const supabase = await createClient();
-  const [open, decided] = await Promise.all([
-    supabase
-      .from("takedown_requests")
-      .select(COLUMNS, { count: "exact" })
-      .eq("status", "open")
-      .order("created_at", { ascending: true })
-      .limit(OPEN_LIMIT),
-    supabase
-      .from("takedown_requests")
-      .select(COLUMNS)
-      .neq("status", "open")
-      .order("decided_at", { ascending: false })
-      .limit(DECIDED_LIMIT),
-  ]);
-  const openRequests = (open.data ?? []) as unknown as TakedownRequestRow[];
-  const decidedRequests = (decided.data ??
-    []) as unknown as TakedownRequestRow[];
-  const count = open.count ?? openRequests.length;
+  const [openTakedowns, decidedTakedowns, openReports, decidedReports] =
+    await Promise.all([
+      supabase
+        .from("takedown_requests")
+        .select(TAKEDOWN_COLUMNS, { count: "exact" })
+        .eq("status", "open")
+        .order("created_at", { ascending: true })
+        .limit(OPEN_LIMIT),
+      supabase
+        .from("takedown_requests")
+        .select(TAKEDOWN_COLUMNS)
+        .neq("status", "open")
+        .order("decided_at", { ascending: false })
+        .limit(DECIDED_LIMIT),
+      supabase
+        .from("reports")
+        .select(REPORT_COLUMNS, { count: "exact" })
+        .eq("status", "open")
+        .order("created_at", { ascending: true })
+        .limit(OPEN_LIMIT),
+      supabase
+        .from("reports")
+        .select(REPORT_COLUMNS)
+        .neq("status", "open")
+        .order("decided_at", { ascending: false })
+        .limit(DECIDED_LIMIT),
+    ]);
+  const failed = [
+    openTakedowns,
+    decidedTakedowns,
+    openReports,
+    decidedReports,
+  ].some((result) => result.error);
+
+  const takedowns = (rows: unknown) =>
+    ((rows ?? []) as TakedownRequestRow[]).map((row): Item => ({
+      kind: "takedown",
+      row,
+    }));
+  const reports = (rows: unknown) =>
+    ((rows ?? []) as ReportRow[]).map((row): Item => ({ kind: "report", row }));
+
+  const openItems = [
+    ...takedowns(openTakedowns.data),
+    ...reports(openReports.data),
+  ];
+  const decidedItems = [
+    ...takedowns(decidedTakedowns.data),
+    ...reports(decidedReports.data),
+  ]
+    .sort((a, b) =>
+      (b.row.decided_at ?? "").localeCompare(a.row.decided_at ?? ""),
+    )
+    .slice(0, DECIDED_LIMIT);
+  const takedownCount = openTakedowns.count ?? 0;
+  const reportCount = openReports.count ?? 0;
+  const count = takedownCount + reportCount;
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-semibold">Meldingen</h2>
         <p className="text-sm text-muted-foreground">
-          Verwijderverzoeken van mensen over wie een gerucht gaat, oudste eerst.
-          Het gerucht blijft zichtbaar tot je beslist. De aanvrager leest je
-          beslissing en toelichting via de statuslink. Elke beslissing komt in
-          het logboek.
+          Verwijderverzoeken van mensen over wie een gerucht gaat krijgen
+          voorrang; daarna meldingen van gebruikers, oudste eerst. Alles blijft
+          zichtbaar tot je beslist. Een beslissing geldt voor alle open
+          meldingen over hetzelfde item en komt in het logboek.
         </p>
       </div>
 
-      {open.error || decided.error ? (
+      {failed ? (
         <p className="text-destructive">
           De meldingen konden niet geladen worden.
         </p>
       ) : (
         <>
-          <section className="space-y-4" aria-labelledby="open-verzoeken">
-            <h3 id="open-verzoeken" className="text-lg font-semibold">
-              Open verwijderverzoeken
+          <section className="space-y-4" aria-labelledby="open-meldingen">
+            <h3 id="open-meldingen" className="text-lg font-semibold">
+              Open
             </h3>
-            {openRequests.length === 0 ? (
-              <p className="text-muted-foreground">
-                Geen open verwijderverzoeken.
-              </p>
+            {openItems.length === 0 ? (
+              <p className="text-muted-foreground">Geen open meldingen.</p>
             ) : (
               <>
                 <p className="text-sm font-medium">
                   {count === 1
-                    ? "1 verzoek wacht op een beslissing."
-                    : `${count} verzoeken wachten op een beslissing.`}
+                    ? "1 melding wacht op een beslissing."
+                    : `${count} meldingen wachten op een beslissing.`}
                 </p>
-                <ul aria-label="Open verwijderverzoeken" className="space-y-4">
-                  {openRequests.map((request) => (
-                    <li key={request.id}>
-                      <RequestCard request={request} />
+                <ul aria-label="Open meldingen" className="space-y-4">
+                  {openItems.map((item) => (
+                    <li key={`${item.kind}-${item.row.id}`}>
+                      <ItemCard item={item} />
                     </li>
                   ))}
                 </ul>
-                {count > OPEN_LIMIT && (
+                {(takedownCount > OPEN_LIMIT || reportCount > OPEN_LIMIT) && (
                   <p className="text-xs text-muted-foreground">
-                    De oudste {OPEN_LIMIT} worden getoond.
+                    Van elke soort worden de oudste {OPEN_LIMIT} getoond.
                   </p>
                 )}
               </>
             )}
           </section>
 
-          {decidedRequests.length > 0 && (
+          {decidedItems.length > 0 && (
             <section className="space-y-4" aria-labelledby="behandeld">
               <h3 id="behandeld" className="text-lg font-semibold">
                 Recent behandeld
               </h3>
-              <ul
-                aria-label="Behandelde verwijderverzoeken"
-                className="space-y-4"
-              >
-                {decidedRequests.map((request) => (
-                  <li key={request.id}>
-                    <RequestCard request={request} />
+              <ul aria-label="Behandelde meldingen" className="space-y-4">
+                {decidedItems.map((item) => (
+                  <li key={`${item.kind}-${item.row.id}`}>
+                    <ItemCard item={item} />
                   </li>
                 ))}
               </ul>

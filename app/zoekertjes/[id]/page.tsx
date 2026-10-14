@@ -16,6 +16,7 @@ import {
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
+import { ReportDialog } from "@/components/report-dialog";
 
 /** Profile fragment returned with classified (from Supabase relation). */
 export interface ClassifiedProfile {
@@ -47,6 +48,8 @@ async function getClassified(id: string) {
     )
     .eq("id", id)
     .eq("is_active", true)
+    // RLS still shows removed ads to their author and staff (#69).
+    .is("removed_at", null)
     .single();
 
   if (error || !data) return null;
@@ -185,6 +188,12 @@ export default async function ClassifiedDetailPage({
                 variant="outline"
                 size="sm"
               />
+              {!isOwn && (
+                <ReportDialog
+                  targetType="classified"
+                  targetId={classified.id}
+                />
+              )}
             </div>
           </footer>
         </div>
