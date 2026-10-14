@@ -23,6 +23,11 @@ npm run db:start      # local Supabase stack with seeded test data
 npx supabase status   # prints the local API URL and keys
 ```
 
+`db:start` skips Studio and the logging services, like CI does. Use
+`npm run db:start:studio` when you want to browse the data in Studio
+(http://127.0.0.1:54323). The stack takes a lot of RAM, so run
+`npm run db:stop` when you're done testing.
+
 Create `.env.local` with the local values from `npx supabase status`:
 
 ```bash

@@ -57,8 +57,8 @@ jobs:
         run: npm ci
 
       - name: Start Supabase
-        # Services the tests don't use are left out to save time.
-        run: npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta
+        # Same services as locally: db:start leaves out what the tests don't use.
+        run: npm run db:start
 
       - name: Database tests
         run: npm run db:test
