@@ -22,6 +22,7 @@ import {
   DELETED_CREATOR_LABEL,
 } from "@/components/rumour-detail-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ReportDialog } from "@/components/report-dialog";
 import { RUMOUR_SOURCE_SHORT_LABELS, labelFor } from "@/lib/rumours";
 
 interface RumourCardProps {
@@ -389,10 +390,16 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
                 </span>
               </div>
             )}
+            <ReportDialog
+              targetType="rumour"
+              targetId={rumour.id}
+              takedownHref={`/verwijderverzoek?gerucht=${rumour.id}`}
+              className="ml-auto"
+            />
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto gap-1.5 text-primary hover:text-primary/90"
+              className="gap-1.5 text-primary hover:text-primary/90"
               onClick={() => setDetailOpen(true)}
             >
               <MessageSquare className="h-3.5 w-3.5" />

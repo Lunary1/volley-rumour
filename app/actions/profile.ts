@@ -85,6 +85,8 @@ export type RecentRumour = {
   // Set when a moderator rejected the rumour (#66); only the author sees it.
   rejection_reason: string | null;
   rejection_note: string | null;
+  // A moderator's note when they removed it after a report (#69).
+  removal_note: string | null;
 };
 
 export type RecentClassified = {
@@ -92,6 +94,10 @@ export type RecentClassified = {
   title: string;
   type: string;
   created_at: string;
+  // Set when a moderator removed it after a report (#69); only the author
+  // and staff can still read the row.
+  removed_at: string | null;
+  removal_note: string | null;
 };
 
 export async function getRecentActivity(): Promise<{
@@ -112,14 +118,14 @@ export async function getRecentActivity(): Promise<{
     supabase
       .from("rumours")
       .select(
-        "id, player_name, status, created_at, rejection_reason, rejection_note",
+        "id, player_name, status, created_at, rejection_reason, rejection_note, removal_note",
       )
       .eq("creator_id", user.id)
       .order("created_at", { ascending: false })
       .limit(5),
     supabase
       .from("classifieds")
-      .select("id, title, type, created_at")
+      .select("id, title, type, created_at, removed_at, removal_note")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(5),

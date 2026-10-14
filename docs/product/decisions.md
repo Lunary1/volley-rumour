@@ -21,6 +21,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-012 | 2026-10-14 | Accepted | Moderators may moderate their own rumours; the queue shows the username only |
 | D-013 | 2026-10-14 | Accepted | Rumours name a public source; at most 5 waiting per contributor   |
 | D-014 | 2026-10-14 | Accepted | Takedown requests: rumour stays up until a moderator decides; status link, no email; 12-month retention |
+| D-015 | 2026-10-14 | Accepted | User reports: content stays up until decided; reporter gets a confirmation only; conversation reports close with an outcome |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -307,6 +308,40 @@ and how long requests are kept.
 **Consequences.** Because nothing is hidden automatically, response time
 matters: set a review target with the moderator rota (#93). The anonymise
 function must be scheduled before October 2027. Copy is reviewed in #94.
+
+## D-015 — User reports
+
+**Context.** J-15, J-07, J-02: logged-in users must be able to report a
+rumour, a zoekertje or a conversation, and moderators handle every report in
+one inbox (#69, #79, #87). Open questions were the reasons offered, how the
+reporter hears the outcome without email (#53), what a moderator can do with a
+reported conversation, and whether reports hide content automatically.
+
+**Decision** (owner, 2026-10-14).
+- **Two fixed reason lists**, each ending in "Andere", which needs an
+  explanation. Rumour or zoekertje: Onjuist of misleidend · Beledigend of
+  haatdragend · Privé-informatie · Spam of oplichting · Mogelijk over een
+  minderjarige · Andere. Conversation: Intimidatie of ongewenst gedrag ·
+  Beledigend · Spam of oplichting · Ongepaste inhoud · Andere.
+- **The reporter gets a confirmation only.** Outcomes are stored, so email
+  (#53) can report them later.
+- **A conversation report closes with an outcome**: "Geen actie" or
+  "Maatregel genomen" with a note. Messages are never deleted; warnings and
+  suspensions come with #80.
+- **Reported content stays visible until a moderator decides**, as with
+  takedowns (D-014): reporting can't be used to suppress content.
+
+**Also decided while building** (agent calls, following D-014): one open
+report per user per item; at most 10 reports per user per day; no reporting
+your own content. A decision answers every open report about the same item,
+and removing a rumour also answers open takedown requests about it. Staff
+read a reported conversation only while its report is open, and every read is
+logged. The author of removed content sees "Verwijderd" and the moderator's
+optional note on their profile, not who reported it.
+
+**Consequences.** As with takedowns, response time matters (#93). Blocking
+in the same step (#87) writes the block, and the conversation page then hides
+the chat for both, but sending isn't blocked server-side until #73.
 
 ## O-001 — Rumour confirmation authority (Open)
 

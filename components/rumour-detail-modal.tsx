@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
+import { ReportDialog } from "@/components/report-dialog";
 import Link from "next/link";
 import { RUMOUR_SOURCE_TYPES, labelFor } from "@/lib/rumours";
 
@@ -275,16 +276,24 @@ export function RumourDetailModal({
             size="sm"
           />
 
-          {/* Takedown requests (#68): no account needed. */}
-          <p className="text-xs text-muted-foreground">
-            Gaat dit gerucht over jou?{" "}
-            <Link
-              href={`/verwijderverzoek?gerucht=${rumour.id}`}
-              className="text-primary underline underline-offset-2"
-            >
-              Vraag de verwijdering aan
-            </Link>
-          </p>
+          {/* Takedown requests (#68): no account needed. Reports (#79) need
+              a login. */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">
+              Gaat dit gerucht over jou?{" "}
+              <Link
+                href={`/verwijderverzoek?gerucht=${rumour.id}`}
+                className="text-primary underline underline-offset-2"
+              >
+                Vraag de verwijdering aan
+              </Link>
+            </p>
+            <ReportDialog
+              targetType="rumour"
+              targetId={rumour.id}
+              takedownHref={`/verwijderverzoek?gerucht=${rumour.id}`}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

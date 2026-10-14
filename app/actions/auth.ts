@@ -254,9 +254,9 @@ export async function deleteAccount(): Promise<{ error?: string }> {
   // query is scoped to the verified session's userId.
   const admin = createAdminClient();
 
-  // --- 1. Anonymize reported_conversations (retain moderation audit trail) ---
+  // --- 1. Anonymize reports (retain moderation audit trail) ---
   const { error: rcErr } = await admin
-    .from("reported_conversations")
+    .from("reports")
     .update({ reporter_id: null })
     .eq("reporter_id", userId);
   if (rcErr) return { error: "Kon meldingen niet verwerken." };

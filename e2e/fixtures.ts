@@ -85,6 +85,17 @@ export const seed = {
     statusPath:
       "/verwijderverzoek/status/seedtokenvoorlokaletestsVolleyRumours000001",
   },
+  // Reports (#69, #79, #87). Only report tests use these two;
+  // global-setup.ts deletes reports and undoes the removal and the block.
+  reportRumour: {
+    id: "e0000000-0000-4000-8000-00000000000a",
+    playerName: "Mila Meldtest",
+  },
+  // VC Testdorp (initiator) and coach_tom about Tom's ad.
+  reportConversation: {
+    id: "f0000000-0000-4000-8000-000000000002",
+    message: "Een jeugdploeg? Daar ben je veel te slecht voor.",
+  },
   // Audit log entries by moderator_vr (#64); the second one's rumour is gone.
   staffActions: [
     { label: "Gerucht afgesloten", reason: "Officieel bevestigd door de club" },

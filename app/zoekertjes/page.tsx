@@ -28,6 +28,8 @@ async function getClassifieds() {
     `,
     )
     .eq("is_active", true)
+    // RLS still shows removed ads to their author and staff (#69).
+    .is("removed_at", null)
     .order("created_at", { ascending: false });
 
   if (error) {

@@ -171,7 +171,13 @@ INSERT INTO public.rumours (
   ('e0000000-0000-4000-8000-000000000009', 'a0000000-0000-4000-8000-000000000003',
    'Bram Bezwaar', 'c0000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000001',
    'VBC Fictief', 'VC Testdorp', 'Gehoord op het tornooi.',
-   'transfer', 'denied', now() - interval '55 days');
+   'transfer', 'denied', now() - interval '55 days'),
+  -- Only the report tests use this one (#69): it gets reported and removed.
+  -- e2e/global-setup.ts puts it back.
+  ('e0000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-000000000003',
+   'Mila Meldtest', 'c0000000-0000-4000-8000-000000000002', 'c0000000-0000-4000-8000-000000000003',
+   'Volley Voorbeeld', 'VBC Fictief', 'Zou al getekend hebben.',
+   'transfer', 'denied', now() - interval '60 days');
 
 -- Why Rik Retour was rejected; Tom sees it on his profile (#66).
 UPDATE public.rumours
@@ -233,6 +239,18 @@ INSERT INTO public.messages (conversation_id, sender_id, content, is_read, creat
    'Hallo! Ik speel geen setter, maar ken iemand die interesse heeft.', true, now() - interval '1 day'),
   ('f0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000003',
    'Leuk, mag die persoon ons een berichtje sturen?', false, now() - interval '2 hours');
+
+-- VC Testdorp answers Tom's ad. Only the report tests use it (#87): Tom
+-- reports and blocks VC Testdorp; e2e/global-setup.ts lifts the block. Read,
+-- so unread counts in other tests don't change.
+INSERT INTO public.conversations (id, ad_id, ad_type, initiator_id, recipient_id, created_at, updated_at)
+VALUES ('f0000000-0000-4000-8000-000000000002', 'd0000000-0000-4000-8000-000000000003', 'classified',
+        'a0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000002',
+        now() - interval '3 days', now() - interval '3 days');
+
+INSERT INTO public.messages (conversation_id, sender_id, content, is_read, created_at) VALUES
+  ('f0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000003',
+   'Een jeugdploeg? Daar ben je veel te slecht voor.', true, now() - interval '3 days');
 
 -- ------------------------------------------------------- takedown request
 -- An open request about Lotte Lorem (#68), so the inbox isn't empty locally.

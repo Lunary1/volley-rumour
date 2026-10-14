@@ -52,7 +52,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-04    | Post "speler zoekt team"                 | **PARTIAL** | Browser-side insert without server validation; gender silently dropped      |
 | J-05    | Manage own zoekertjes                    | **MISSING** | No edit, deactivate or delete anywhere                                      |
 | J-06    | Coach contacts a club                    | **PARTIAL** | No notifications; message privacy rests entirely on unverified RLS         |
-| J-07    | Block / report                           | **MISSING** | Server actions exist, no UI; block isn't enforced when sending              |
+| J-07    | Block / report                           | **PARTIAL** | Report (+ block) in the conversation works (#87); no block list, block not enforced on send (#73) |
 | J-08    | Club recruits player/trainer             | **PARTIAL** | Team gender dropped; no diploma field; can't close an ad                    |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes aren't saved                     |
@@ -60,9 +60,9 @@ ran without Supabase credentials, which is what CI will face.
 | J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
 | J-13    | Pre-moderation queue                     | **PARTIAL** | Queue, approve/reject and audit log work (#66); no track record (#88) or email (#53) |
 | J-14    | Resolve a rumour                         | **MISSING** | `confirmRumour` removed in #65 (X-3); rebuilt with #70                        |
-| J-15    | Reports, takedowns, sanctions            | **MISSING** | Reports can be written to the database but nobody can read them            |
+| J-15    | Reports, takedowns, sanctions            | **PARTIAL** | One inbox, logged conversation reads, remove/close (#69, D-015); no suspensions, badges or roles (#80) |
 
-**Count:** 0 WORKS · 8 PARTIAL · 2 BROKEN · 5 MISSING.
+**Count:** 1 WORKS · 10 PARTIAL · 2 BROKEN · 2 MISSING.
 
 ---
 
@@ -108,7 +108,7 @@ items.
 | Card shows neutral belief %, author track record, no good/evil labels | PARTIAL | [rumour-card.tsx:184-212](../../components/rumour-card.tsx#L184-L212) | Shows the "Evil/Corrupt/Heroic/Legendary" karma label and trust points instead of a track record (D-005, proposed) |
 | Card renders for anonymised authors | **FIXED** (#57) | [rumour-card.tsx](../../components/rumour-card.tsx), [geruchten-deleted-creator.spec.ts](../../e2e/geruchten-deleted-creator.spec.ts) | Shows "Verwijderd account" without a trust score, in the card and the detail modal (X-2) |
 | Source type and link shown | MISSING | — | No source field exists |
-| "Melden" link on each card | MISSING | — | No report path for rumours |
+| "Melden" link on each card | **WORKS** | [rumour-card.tsx](../../components/rumour-card.tsx), [report-dialog.tsx](../../components/report-dialog.tsx), [reports.spec.ts](../../e2e/reports.spec.ts) | #79: "Melden" on every card and in the detail view; logged-out visitors go to login and back. The dialog also offers the takedown form (J-12) |
 | Transfer tabs show the right items with correct labels | **BROKEN** | [transfers/page.tsx:25-39](../../app/transfers/page.tsx#L25-L39), [transfer-card-interactive.tsx:32-62](../../components/transfer-card-interactive.tsx#L32-L62), [rumour.ts:104-118](../../app/actions/rumour.ts#L104-L118) | The filters use `player/coach/retirement`, the labels expect `player_male/…`, and the confirm path writes `category`, not `transfer_type`. Either the tabs are empty or labels show "Onbekend". It also only ever maps to *male* types (VERIFY data) |
 | No "Contact <author>" on transfers (D-004) | **BROKEN** | [transfer-card-interactive.tsx:158-171](../../components/transfer-card-interactive.tsx#L158-L171) | Button present; `creator_id` is never set by the confirm path |
 | Pagination, <1 s p95 | PARTIAL | [geruchten/page.tsx:43-46](../../app/geruchten/page.tsx#L43-L46) | Transfers are capped at 50; rumours are unpaginated with 4 full queries per request (X-9) |
@@ -156,12 +156,12 @@ items.
 | Inbox ordering, unread counts, header badge | WORKS | [messages.ts:244-362](../../app/actions/messages.ts#L244-L362), [user-menu.tsx:25-82](../../components/user-menu.tsx#L25-L82) | N+1 queries per conversation (X-9) |
 | Non-participants can never read, incl. Realtime | VERIFY | [chat-interface.tsx:102-109](../../components/chat-interface.tsx#L102-L109) | The app checks participation in its own queries; Realtime is unfiltered and leans on RLS (X-5) |
 
-### J-07 — Coach blocks or reports · MISSING
+### J-07 — Coach blocks or reports · PARTIAL
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Block stops new messages and conversations | **BROKEN** | [messages.ts:426-447](../../app/actions/messages.ts#L426-L447), [messages.ts:175-239](../../app/actions/messages.ts#L175-L239) | `blockUser` has no UI. `sendMessage` doesn't check blocks; only `createConversation` checks, and only one direction. The conversation page does hide the input when blocked ([page.tsx:189](../../app/messages/[conversationId]/page.tsx#L189)) |
-| Report conversation → moderator report | PARTIAL | [messages.ts:520-548](../../app/actions/messages.ts#L520-L548) | The action writes `reported_conversations`, but there's no UI and no reader (J-15) |
+| Report conversation → moderator report | **WORKS** | [messages/[conversationId]/page.tsx](../../app/messages/[conversationId]/page.tsx), [reports.ts](../../app/actions/reports.ts), [reports.spec.ts](../../e2e/reports.spec.ts) | #87: "Melden" in the conversation, with a reason and optionally blocking the other user; confirmation shown; lands in `/admin/meldingen` (D-015) |
 | Unblock from profile | MISSING | [messages.ts:452-474](../../app/actions/messages.ts#L452-L474) | Action exists, no UI |
 | Archive only for me | **BROKEN** | [messages.ts:504-507](../../app/actions/messages.ts#L504-L507) | `is_archived` sits on the shared conversation row, so it archives for both participants. No UI |
 
@@ -240,15 +240,15 @@ items.
 | Add transfer directly | MISSING | — | |
 | Correct or remove a transfer, audited | MISSING | — | |
 
-### J-15 — Reports, takedowns, sanctions · MISSING
+### J-15 — Reports, takedowns, sanctions · PARTIAL
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Open reports list incl. takedowns | MISSING | — | `reported_conversations` is written ([messages.ts:537](../../app/actions/messages.ts#L537)), never read |
-| Read reported conversation via report only, logged | MISSING | — | |
-| Remove content from all views, notify author | MISSING | — | |
+| Open reports list incl. takedowns | **WORKS** | [admin/meldingen/page.tsx](../../app/admin/meldingen/page.tsx) | #69: one list, takedown requests first ("Voorrang"), then reports oldest first, with type, reason, reporter and the content |
+| Read reported conversation via report only, logged | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [reports.test.sql](../../supabase/tests/database/reports.test.sql) | `get_reported_conversation()`: staff only, open reports only, every read logged as "Gemeld gesprek gelezen". No staff policy on messages |
+| Remove content from all views, notify author | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [profile-view.tsx](../../app/profile/profile-view.tsx) | Rumours get status `removed`, zoekertjes `removed_at` (RLS hides both); the author sees "Verwijderd" and the moderator's note on their profile. No email yet (#53) |
 | Suspend user (read-only) | MISSING | — | |
-| Audit log, reporter informed | MISSING | — | |
+| Audit log, reporter informed | PARTIAL | [staff_actions](../../supabase/migrations/20261014174640_user_reports.sql) | Every decision and conversation read is logged. The reporter only gets a confirmation (D-015); outcomes are stored for email (#53) |
 | Grant/revoke verified badge and moderator role | MISSING | — | `is_verified_source` is set by hand in the database |
 
 ---
