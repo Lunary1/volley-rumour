@@ -1,0 +1,24 @@
+# Prettier also skips everything in .gitignore.
+
+# Build output and caches
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Lockfiles
+package-lock.json
+
+# Supabase CLI state and generated files
+supabase/.branches/
+supabase/.temp/
+
+# Playwright output
+test-results/
+playwright-report/
+blob-report/
+
+# Markdown is written by hand: Prettier pads every table, so one new row
+# would rewrite the whole table.
+*.md

@@ -264,7 +264,9 @@ export default async function HomePage() {
               {transfersForDisplay.map((transfer) => (
                 <TransferCard
                   key={transfer.id}
-                  transfer={transfer as ComponentProps<typeof TransferCard>["transfer"]}
+                  transfer={
+                    transfer as ComponentProps<typeof TransferCard>["transfer"]
+                  }
                 />
               ))}
             </div>
