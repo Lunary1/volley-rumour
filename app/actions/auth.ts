@@ -39,7 +39,7 @@ export async function logout() {
 export async function login(email: string, password: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });

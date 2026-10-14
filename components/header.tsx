@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { Menu, X } from "lucide-react";
-import { UserMenu } from "@/components/user-menu";
 import { getCurrentUser } from "@/app/actions/auth";
 import { HeaderClient, type NavItem } from "@/components/header-client";
 import { isComingSoon, isOpenDuringComingSoon } from "@/lib/coming-soon";

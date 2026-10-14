@@ -3,28 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function getRumourData(rumourId: string) {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from("rumours")
-    .select(
-      "votes_true, votes_false, creator_id, creator:creator_id(username, trust_score)",
-    )
-    .eq("id", rumourId)
-    .single();
-
-  if (!data) {
-    return null;
-  }
-
-  return {
-    votes_true: data.votes_true,
-    votes_false: data.votes_false,
-    creator: data.creator,
-  };
-}
-
 export async function getUserVoteOnRumour(rumourId: string) {
   const supabase = await createClient();
 

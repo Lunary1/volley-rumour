@@ -46,7 +46,6 @@ export default async function GeruchtenPage(props: {
   const deniedRumours = await getRumours("denied");
 
   const displayRumours = allRumours;
-  const displayCount = displayRumours.length;
 
   return (
     <div className="min-h-screen py-8">

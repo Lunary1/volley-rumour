@@ -77,63 +77,6 @@ export async function updatePassword(
   return { success: true };
 }
 
-export async function getProfileStats() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) {
-    return null;
-  }
-
-  // Count user's rumours
-  const { count: rumourCount } = await supabase
-    .from("rumours")
-    .select("id", { count: "exact" })
-    .eq("creator_id", user.id);
-
-  // Count user's votes
-  const { count: voteCount } = await supabase
-    .from("rumour_votes")
-    .select("id", { count: "exact" })
-    .eq("user_id", user.id);
-
-  // Count confirmed rumours
-  const { count: confirmedCount } = await supabase
-    .from("rumours")
-    .select("id", { count: "exact" })
-    .eq("creator_id", user.id)
-    .eq("status", "confirmed");
-
-  // Count classifieds posted
-  const { count: classifiedCount } = await supabase
-    .from("classifieds")
-    .select("id", { count: "exact" })
-    .eq("user_id", user.id);
-
-  return {
-    profile,
-    stats: {
-      rumourCount: rumourCount || 0,
-      voteCount: voteCount || 0,
-      confirmedCount: confirmedCount || 0,
-      classifiedCount: classifiedCount || 0,
-    },
-  };
-}
-
 export type RecentRumour = {
   id: string;
   player_name: string;

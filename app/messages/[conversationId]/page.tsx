@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatInterface } from "@/components/chat-interface";
-import { getMessages } from "@/app/actions/messages";
 import { getCurrentUser } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft, ExternalLink } from "lucide-react";
