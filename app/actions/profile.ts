@@ -62,7 +62,7 @@ export async function updatePassword(
   });
 
   if (signInError) {
-    return { error: "Huidiig wachtwoord is onjuist" };
+    return { error: "Huidig wachtwoord is onjuist" };
   }
 
   // Update password

@@ -15,6 +15,13 @@ export const seedUsers = {
 
 export type SeedUser = keyof typeof seedUsers;
 
+// Accounts only the password-reset tests use, because those tests change the
+// password. `google` has no password at all, like a Google sign-up.
+export const resetUsers = {
+  reset: { email: "reset@example.test", username: "test_reset" },
+  google: { email: "google@example.test", username: "test_google" },
+} as const;
+
 // Rows from supabase/seed.sql that tests look for.
 export const seed = {
   activeAdCount: 4,

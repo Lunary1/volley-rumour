@@ -32,6 +32,8 @@ function getOAuthErrorMessage(code: string): string {
       return "Google login geannuleerd. Probeer het opnieuw.";
     case "oauth-provider-error":
       return "Google login is momenteel niet beschikbaar.";
+    case "reset-link-invalid":
+      return "Je herstellink is ongeldig of verlopen. Vraag een nieuwe aan en open hem in dezelfde browser.";
     default:
       return "Er ging iets mis. Probeer het opnieuw.";
   }

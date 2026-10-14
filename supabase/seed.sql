@@ -10,10 +10,17 @@
 --   club@example.test      vc_testdorp      user       club account, posts ads
 --   moderator@example.test moderator_vr     moderator  staff (D-006)
 --   uitlog@example.test    test_uitlogger   user       only for tests that log out
+--   reset@example.test     test_reset       user       only for password-reset tests
+--   google@example.test    test_google      user       Google-only, no password
 --
 -- Logging out ends every session of that user (Supabase's default global
 -- sign-out), so a test that logs out would break parallel tests using the
--- same account. Only logout tests use test_uitlogger.
+-- same account. Only logout tests use test_uitlogger. Password-reset tests
+-- change the password, so they have their own accounts too.
+--
+-- test_google is the one account without `test-wachtwoord`: like an account
+-- made with "Doorgaan met Google", it has a Google identity and no password
+-- until it sets one through the reset link (#58).
 
 -- ------------------------------------------------------------------ users
 -- Inserted into auth.users directly; the on_auth_user_created trigger creates
@@ -35,7 +42,8 @@ FROM (VALUES
   ('a0000000-0000-4000-8000-000000000002'::uuid, 'tom@example.test',       'coach_tom',    'Tom Testmans',    interval '45 days'),
   ('a0000000-0000-4000-8000-000000000003'::uuid, 'club@example.test',      'vc_testdorp',  'VC Testdorp',     interval '90 days'),
   ('a0000000-0000-4000-8000-000000000004'::uuid, 'moderator@example.test', 'moderator_vr', 'Moderator VR',    interval '120 days'),
-  ('a0000000-0000-4000-8000-000000000005'::uuid, 'uitlog@example.test',    'test_uitlogger', 'Test Uitlogger', interval '10 days')
+  ('a0000000-0000-4000-8000-000000000005'::uuid, 'uitlog@example.test',    'test_uitlogger', 'Test Uitlogger', interval '10 days'),
+  ('a0000000-0000-4000-8000-000000000006'::uuid, 'reset@example.test',     'test_reset',   'Test Herstel',    interval '8 days')
 ) AS u (id, email, username, full_name, age);
 
 INSERT INTO auth.identities (
@@ -47,6 +55,28 @@ SELECT
   now(), created_at, updated_at
 FROM auth.users
 WHERE email LIKE '%@example.test';
+
+-- The Google-only account: a Google identity and no password.
+INSERT INTO auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change
+) VALUES (
+  '00000000-0000-0000-0000-000000000000', 'a0000000-0000-4000-8000-000000000007',
+  'authenticated', 'authenticated', 'google@example.test', '', now(),
+  '{"provider": "google", "providers": ["google"]}',
+  '{"username": "test_google", "full_name": "Test Google"}',
+  now() - interval '7 days', now() - interval '7 days',
+  '', '', '', ''
+);
+
+INSERT INTO auth.identities (
+  id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at
+) VALUES (
+  gen_random_uuid(), 'a0000000-0000-4000-8000-000000000007', '100000000000000000007', 'google',
+  '{"sub": "100000000000000000007", "email": "google@example.test", "email_verified": true}',
+  now(), now() - interval '7 days', now() - interval '7 days'
+);
 
 UPDATE public.profiles SET role = 'moderator'
 WHERE id = 'a0000000-0000-4000-8000-000000000004';

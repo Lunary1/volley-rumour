@@ -14,6 +14,14 @@ export async function GET(request: NextRequest) {
     next = "/";
   }
 
+  // A password-reset link that is expired, already used or opened in another
+  // browser (#58). Supabase reports an expired link as access_denied too.
+  const isPasswordReset = next === "/auth/update-password";
+  const resetLinkInvalidUrl = `${origin}/auth/login?error=reset-link-invalid`;
+  if (isPasswordReset && errorParam) {
+    return NextResponse.redirect(resetLinkInvalidUrl);
+  }
+
   // Handle OAuth provider errors (e.g. user cancelled, access_denied)
   if (errorParam) {
     const loginUrl = new URL("/auth/login", origin);
@@ -83,7 +91,10 @@ export async function GET(request: NextRequest) {
       if (isLocalEnv) {
         redirectUrl = `${origin}${next}`;
       } else if (forwardedHost) {
-        redirectUrl = `https://${forwardedHost}${next}`;
+        // `next start` sets x-forwarded-* itself, over plain http locally.
+        const forwardedProto =
+          request.headers.get("x-forwarded-proto") ?? "https";
+        redirectUrl = `${forwardedProto}://${forwardedHost}${next}`;
       } else {
         redirectUrl = `${origin}${next}`;
       }
@@ -104,6 +115,10 @@ export async function GET(request: NextRequest) {
       );
       return response;
     }
+  }
+
+  if (isPasswordReset) {
+    return NextResponse.redirect(resetLinkInvalidUrl);
   }
 
   // return the user to an error page with instructions
