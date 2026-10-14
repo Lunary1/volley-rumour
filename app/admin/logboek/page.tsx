@@ -62,8 +62,8 @@ export default async function AuditLogPage() {
       <div>
         <h2 className="text-2xl font-semibold">Logboek</h2>
         <p className="text-sm text-muted-foreground">
-          Elke moderatieactie, wie ze deed en waarom. Items kunnen niet gewijzigd
-          worden en blijven 2 jaar bewaard.
+          Elke moderatieactie, wie ze deed en waarom. Items kunnen niet
+          gewijzigd worden en blijven 2 jaar bewaard.
         </p>
       </div>
 
@@ -76,11 +76,21 @@ export default async function AuditLogPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-left">
               <tr>
-                <th scope="col" className="px-3 py-2 font-medium">Wanneer</th>
-                <th scope="col" className="px-3 py-2 font-medium">Wie</th>
-                <th scope="col" className="px-3 py-2 font-medium">Actie</th>
-                <th scope="col" className="px-3 py-2 font-medium">Doel</th>
-                <th scope="col" className="px-3 py-2 font-medium">Reden</th>
+                <th scope="col" className="px-3 py-2 font-medium">
+                  Wanneer
+                </th>
+                <th scope="col" className="px-3 py-2 font-medium">
+                  Wie
+                </th>
+                <th scope="col" className="px-3 py-2 font-medium">
+                  Actie
+                </th>
+                <th scope="col" className="px-3 py-2 font-medium">
+                  Doel
+                </th>
+                <th scope="col" className="px-3 py-2 font-medium">
+                  Reden
+                </th>
               </tr>
             </thead>
             <tbody>

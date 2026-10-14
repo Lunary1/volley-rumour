@@ -75,4 +75,3 @@ export const sendMessageSchema = z.object({
     .min(1, "Bericht mag niet leeg zijn")
     .max(5000, "Bericht is te lang"),
 });
-

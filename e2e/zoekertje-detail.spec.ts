@@ -49,8 +49,6 @@ test("sharing a zoekertje uses the ad title", async ({ page }) => {
   );
   expect(opened).toHaveLength(1);
   const text = new URL(opened[0]).searchParams.get("text");
-  expect(text).toContain(
-    `Bekijk dit zoekertje op VolleyRumours: ${ad.title}`,
-  );
+  expect(text).toContain(`Bekijk dit zoekertje op VolleyRumours: ${ad.title}`);
   expect(text).toContain(`/zoekertjes/${ad.id}`);
 });

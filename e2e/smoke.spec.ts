@@ -3,12 +3,16 @@ import { test, expect, loginAs, seed, seedUsers } from "./fixtures";
 // Smoke tests: the main public pages render seeded data, and a seeded user
 // can log in and out (issue #56).
 
-test("homepage shows open rumours and confirmed transfers", async ({ page }) => {
+test("homepage shows open rumours and confirmed transfers", async ({
+  page,
+}) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", { level: 1, name: /transfer talk/i }),
   ).toBeVisible();
-  await expect(page.getByText(seed.openRumour.playerName).first()).toBeVisible();
+  await expect(
+    page.getByText(seed.openRumour.playerName).first(),
+  ).toBeVisible();
   await expect(
     page.getByText(seed.confirmedRumour.playerName).first(),
   ).toBeVisible();
@@ -19,7 +23,9 @@ test("zoekertjes list links to the detail page", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "Zoekertjes" }),
   ).toBeVisible();
-  await expect(page.getByText(`${seed.activeAdCount} zoekertjes`)).toBeVisible();
+  await expect(
+    page.getByText(`${seed.activeAdCount} zoekertjes`),
+  ).toBeVisible();
   await expect(
     page.locator(`a[href="/zoekertjes/${seed.inactiveAd.id}"]`),
   ).toHaveCount(0);
@@ -42,7 +48,9 @@ test("geruchten lists rumours and filters by status", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "Transfer Talk" }),
   ).toBeVisible();
-  await expect(page.getByText(seed.openRumour.playerName).first()).toBeVisible();
+  await expect(
+    page.getByText(seed.openRumour.playerName).first(),
+  ).toBeVisible();
 
   await page.goto("/geruchten?status=confirmed");
   await expect(

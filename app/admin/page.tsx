@@ -22,9 +22,7 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between gap-2 text-lg">
                   <h2>{section.label}</h2>
-                  {!section.href && (
-                    <Badge variant="outline">Binnenkort</Badge>
-                  )}
+                  {!section.href && <Badge variant="outline">Binnenkort</Badge>}
                 </CardTitle>
                 <CardDescription>{section.description}</CardDescription>
               </CardHeader>

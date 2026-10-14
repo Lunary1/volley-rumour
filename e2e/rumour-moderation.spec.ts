@@ -6,13 +6,19 @@ import { test, expect, loginAs, seed, submitRumour } from "./fixtures";
 
 const hidden = [seed.pendingRumour.playerName, seed.rejectedRumour.playerName];
 
-async function expectOnlyApprovedRumours(page: import("@playwright/test").Page) {
+async function expectOnlyApprovedRumours(
+  page: import("@playwright/test").Page,
+) {
   await page.goto("/geruchten");
-  await expect(page.getByText(seed.openRumour.playerName).first()).toBeVisible();
+  await expect(
+    page.getByText(seed.openRumour.playerName).first(),
+  ).toBeVisible();
   for (const name of hidden) await expect(page.getByText(name)).toHaveCount(0);
 
   await page.goto("/");
-  await expect(page.getByText(seed.openRumour.playerName).first()).toBeVisible();
+  await expect(
+    page.getByText(seed.openRumour.playerName).first(),
+  ).toBeVisible();
   for (const name of hidden) await expect(page.getByText(name)).toHaveCount(0);
 }
 
@@ -48,7 +54,9 @@ test("a submitted rumour waits for a moderator", async ({ page }) => {
   await submitRumour(page, lastName);
 
   await page.goto("/geruchten");
-  await expect(page.getByText(seed.openRumour.playerName).first()).toBeVisible();
+  await expect(
+    page.getByText(seed.openRumour.playerName).first(),
+  ).toBeVisible();
   await expect(page.getByText(lastName)).toHaveCount(0);
 
   await page.goto("/profile");

@@ -4,8 +4,7 @@
  */
 
 export type ActionResponse<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+  { success: true; data: T } | { success: false; error: string };
 
 /**
  * Create a success response

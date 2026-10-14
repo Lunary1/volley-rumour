@@ -2,14 +2,14 @@
 // only become public once a moderator approves them; RLS enforces this
 // (issue #65).
 export type RumourStatus =
-  | "pending"
-  | "rumour"
-  | "confirmed"
-  | "denied"
-  | "rejected";
+  "pending" | "rumour" | "confirmed" | "denied" | "rejected";
 
 /** Statuses everyone may see. Authors and staff can also read the others. */
-export const PUBLIC_RUMOUR_STATUSES = ["rumour", "confirmed", "denied"] as const;
+export const PUBLIC_RUMOUR_STATUSES = [
+  "rumour",
+  "confirmed",
+  "denied",
+] as const;
 
 export function isPublicRumourStatus(status: string): boolean {
   return (PUBLIC_RUMOUR_STATUSES as readonly string[]).includes(status);
