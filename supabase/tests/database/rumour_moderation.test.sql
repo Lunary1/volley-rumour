@@ -27,8 +27,10 @@ SELECT col_default_is('public', 'rumours', 'status', 'pending'::text,
 -- The author submits a rumour the way the app does: without a status.
 SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000065a');
 SELECT lives_ok(
-  $$INSERT INTO public.rumours (creator_id, player_name, from_club_name, category)
-    VALUES ('00000000-0000-0000-0000-00000000065a', 'Nieuw Gerucht', 'Club X', 'transfer')$$,
+  $$INSERT INTO public.rumours (creator_id, player_name, from_club_name, category,
+                                 source_type, declared_good_faith, declared_senior)
+    VALUES ('00000000-0000-0000-0000-00000000065a', 'Nieuw Gerucht', 'Club X', 'transfer',
+            'own_observation', true, true)$$,
   'a user can submit a rumour');
 SELECT is(
   (SELECT status FROM public.rumours WHERE player_name = 'Nieuw Gerucht'),

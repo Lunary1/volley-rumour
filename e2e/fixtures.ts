@@ -1,4 +1,9 @@
-import { test as base, expect, type Page } from "@playwright/test";
+import {
+  test as base,
+  expect,
+  type Browser,
+  type Page,
+} from "@playwright/test";
 
 // Accounts created by supabase/seed.sql. Keep the two in sync.
 export const SEED_PASSWORD = "test-wachtwoord";
@@ -11,6 +16,8 @@ export const seedUsers = {
   // Logging out ends every session of the user (global sign-out), which
   // would log out parallel tests on the same account. Only logout tests use it.
   uitlogger: { email: "uitlog@example.test", username: "test_uitlogger" },
+  // Already has 5 pending rumours, the most one author may have (#54).
+  wachtrij: { email: "wachtrij@example.test", username: "volle_wachtrij" },
 } as const;
 
 export type SeedUser = keyof typeof seedUsers;
@@ -38,7 +45,12 @@ export const seed = {
     title: "Hulptrainer beschikbaar in Gent",
     contactName: "Tom Testmans",
   },
-  openRumour: { playerName: "Pieter Proefspeler" },
+  openRumour: {
+    playerName: "Pieter Proefspeler",
+    sourceLabel: "Eigen waarneming",
+  },
+  // Submitted before rumours had a source (#67).
+  rumourWithoutSource: { playerName: "Sara Steekproef" },
   confirmedRumour: { playerName: "Koen Kladversie" },
   // creator_id is null, as after the creator deleted their account
   rumourWithoutCreator: { playerName: "Wout Weesgerucht" },
@@ -80,18 +92,50 @@ export async function loginAs(page: Page, user: SeedUser) {
  * waits for the confirmation. Use a unique last name per run, so reruns
  * against the same database don't collide.
  */
-export async function submitRumour(page: Page, lastName: string) {
+export async function submitRumour(
+  page: Page,
+  lastName: string,
+  source: { type?: string; url?: string } = {},
+) {
   await page.goto("/geruchten/nieuw");
   await page.getByRole("combobox").first().click();
   await page.getByRole("option", { name: "Trainer Stopt" }).click();
   await page.getByLabel(/Achternaam/).fill(lastName);
   await page.getByLabel(/Voornaam/).fill("Toon");
   await page.getByLabel(/Huidige Club/).fill("VC Testdorp");
+  await page.getByLabel(/Waar komt je gerucht vandaan/).click();
+  await page
+    .getByRole("option", { name: source.type ?? "Eigen waarneming" })
+    .click();
+  if (source.url) await page.getByLabel(/Link naar de bron/).fill(source.url);
+  await page.getByLabel(/seniorspeler of -trainer/).check();
+  await page.getByLabel(/te goeder trouw/).check();
   await page.getByRole("button", { name: "Gerucht Delen" }).click();
 
   await expect(
     page.getByRole("heading", { name: "Je gerucht wordt nagekeken" }),
   ).toBeVisible();
+}
+
+/**
+ * A second browser session, so e.g. an author and a moderator can act side by
+ * side. Logging in twice is slow when the suite runs in parallel, so tests
+ * that use it are marked slow.
+ */
+export async function pageFor(browser: Browser, user: SeedUser): Promise<Page> {
+  test.slow();
+  const context = await browser.newContext();
+  await context.route(/datadoghq\.eu/, (route) => route.abort());
+  const page = await context.newPage();
+  await loginAs(page, user);
+  return page;
+}
+
+/** A rumour's card in the moderation queue (/admin/wachtrij). */
+export function queueItem(page: Page, playerName: string) {
+  return page.getByRole("listitem").filter({
+    has: page.getByRole("heading", { name: playerName }),
+  });
 }
 
 export const test = base.extend<{ blockThirdParties: void }>({

@@ -132,6 +132,8 @@ export default async function GeruchtenPage(props: {
                   to_club_name: rumour.to_club_name,
                   category: rumour.category,
                   description: rumour.description,
+                  source_type: rumour.source_type,
+                  source_url: rumour.source_url,
                   votes_true: rumour.votes_true,
                   votes_false: rumour.votes_false,
                   created_at: rumour.created_at,

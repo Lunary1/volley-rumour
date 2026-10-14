@@ -12,6 +12,7 @@
 --   uitlog@example.test    test_uitlogger   user       only for tests that log out
 --   reset@example.test     test_reset       user       only for password-reset tests
 --   google@example.test    test_google      user       Google-only, no password
+--   wachtrij@example.test  volle_wachtrij   user       5 pending rumours: at the cap (#54)
 --
 -- Logging out ends every session of that user (Supabase's default global
 -- sign-out), so a test that logs out would break parallel tests using the
@@ -43,7 +44,8 @@ FROM (VALUES
   ('a0000000-0000-4000-8000-000000000003'::uuid, 'club@example.test',      'vc_testdorp',  'VC Testdorp',     interval '90 days'),
   ('a0000000-0000-4000-8000-000000000004'::uuid, 'moderator@example.test', 'moderator_vr', 'Moderator VR',    interval '120 days'),
   ('a0000000-0000-4000-8000-000000000005'::uuid, 'uitlog@example.test',    'test_uitlogger', 'Test Uitlogger', interval '10 days'),
-  ('a0000000-0000-4000-8000-000000000006'::uuid, 'reset@example.test',     'test_reset',   'Test Herstel',    interval '8 days')
+  ('a0000000-0000-4000-8000-000000000006'::uuid, 'reset@example.test',     'test_reset',   'Test Herstel',    interval '8 days'),
+  ('a0000000-0000-4000-8000-000000000008'::uuid, 'wachtrij@example.test',  'volle_wachtrij', 'Volle Wachtrij', interval '20 days')
 ) AS u (id, email, username, full_name, age);
 
 INSERT INTO auth.identities (
@@ -164,6 +166,33 @@ INSERT INTO public.rumours (
 UPDATE public.rumours
    SET rejection_reason = 'duplicate', rejection_note = 'Staat al online als ander gerucht.'
  WHERE id = 'e0000000-0000-4000-8000-000000000007';
+
+-- Sources and declarations (#67). Rumours from before #67 have none, like
+-- Sara Steekproef and Wout Weesgerucht; pages must still show them.
+UPDATE public.rumours
+   SET source_type = 'own_observation', declared_good_faith = true, declared_senior = true,
+       gender = 'male', from_division = 'nat2_heren', to_division = 'nat1_heren'
+ WHERE id = 'e0000000-0000-4000-8000-000000000001';
+UPDATE public.rumours
+   SET source_type = 'club', source_url = 'https://example.test/nieuws/nieuwe-hoofdtrainer',
+       declared_good_faith = true, declared_senior = true
+ WHERE id = 'e0000000-0000-4000-8000-000000000003';
+UPDATE public.rumours
+   SET source_type = 'media', source_url = 'https://example.test/sport/nina-nagekeken',
+       declared_good_faith = true, declared_senior = true,
+       gender = 'female', from_division = 'promo1_dames', to_division = 'nat3_dames'
+ WHERE id = 'e0000000-0000-4000-8000-000000000006';
+
+-- volle_wachtrij has 5 rumours waiting: the most one author may have (#54).
+-- Newer than Nina Nagekeken, which the queue test expects first.
+INSERT INTO public.rumours (
+  creator_id, player_name, from_club_name, description, category, status,
+  source_type, declared_good_faith, declared_senior, created_at
+)
+SELECT 'a0000000-0000-4000-8000-000000000008', 'Wachtende Trainer ' || n, 'VBC Fictief',
+       'Een van vijf wachtende geruchten.', 'trainer_retirement', 'pending',
+       'own_observation', true, true, now() - n * interval '10 minutes'
+FROM generate_series(1, 5) AS n;
 
 -- Votes; the on_vote_change trigger fills the vote counts and trust scores.
 INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type) VALUES

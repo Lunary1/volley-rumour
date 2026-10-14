@@ -24,30 +24,24 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Clock, Loader2, Info } from "lucide-react";
 import Link from "next/link";
+import {
+  MAX_PENDING_RUMOURS,
+  PENDING_LIMIT_MESSAGE,
+  RUMOUR_DIVISIONS,
+  RUMOUR_GENDERS,
+  RUMOUR_SOURCE_TYPES,
+  SOURCE_URL_MAX_LENGTH,
+} from "@/lib/rumours";
 
-const DIVISIONS = [
-  { value: "liga_heren", label: "LIGA HEREN" },
-  { value: "liga_dames", label: "LIGA DAMES" },
-  { value: "nat1_heren", label: "Nationale 1 Heren" },
-  { value: "nat2_heren", label: "Nationale 2 Heren" },
-  { value: "nat3_heren", label: "Nationale 3 Heren" },
-  { value: "nat1_dames", label: "Nationale 1 Dames" },
-  { value: "nat2_dames", label: "Nationale 2 Dames" },
-  { value: "nat3_dames", label: "Nationale 3 Dames" },
-  { value: "promo1_heren", label: "PROMO 1 Heren" },
-  { value: "promo2_heren", label: "PROMO 2 Heren" },
-  { value: "promo3_heren", label: "PROMO 3 Heren" },
-  { value: "promo4_heren", label: "PROMO 4 Heren" },
-  { value: "promo1_dames", label: "PROMO 1 Dames" },
-  { value: "promo2_dames", label: "PROMO 2 Dames" },
-  { value: "promo3_dames", label: "PROMO 3 Dames" },
-  { value: "promo4_dames", label: "PROMO 4 Dames" },
-];
+const toOptions = (labels: Record<string, string>) =>
+  Object.entries(labels).map(([value, label]) => ({ value, label }));
 
-const GENDERS = [
-  { value: "male", label: "Man" },
-  { value: "female", label: "Vrouw" },
-];
+const DIVISIONS = toOptions(RUMOUR_DIVISIONS);
+const GENDERS = toOptions(RUMOUR_GENDERS);
+const SOURCE_TYPES = toOptions(RUMOUR_SOURCE_TYPES);
+
+// Logged-out visitors log in and come back here (#67).
+const LOGIN_URL = "/auth/login?next=/geruchten/nieuw";
 
 const RUMOUR_CATEGORIES = [
   { value: "transfer", label: "Transfer Speler/Speelster" },
@@ -75,6 +69,8 @@ export default function NewRumourPage() {
   const [user, setUser] = useState<Record<string, unknown> | null>(null);
   const [descriptionLength, setDescriptionLength] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  // The database enforces the cap (#54); this only warns before typing.
+  const [atPendingLimit, setAtPendingLimit] = useState(false);
 
   // Derived booleans for conditional rendering
   const showGender = isPlayerCategory(selectedCategory);
@@ -91,16 +87,24 @@ export default function NewRumourPage() {
       } = await supabase.auth.getUser();
 
       if (!authUser) {
-        router.push("/auth/login");
+        router.push(LOGIN_URL);
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("email, username")
-        .eq("id", authUser.id)
-        .single();
+      const [{ data: profile }, { count: pendingCount }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("email, username")
+          .eq("id", authUser.id)
+          .single(),
+        supabase
+          .from("rumours")
+          .select("id", { count: "exact", head: true })
+          .eq("creator_id", authUser.id)
+          .eq("status", "pending"),
+      ]);
 
+      setAtPendingLimit((pendingCount ?? 0) >= MAX_PENDING_RUMOURS);
       setUser({ ...authUser, ...profile });
     };
     checkUser();
@@ -223,6 +227,15 @@ export default function NewRumourPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
+              {atPendingLimit && (
+                <div
+                  role="status"
+                  className="p-3 text-sm bg-muted/50 rounded-md border border-border"
+                >
+                  {PENDING_LIMIT_MESSAGE}
+                </div>
+              )}
+
               {error && (
                 <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20">
                   {error}
@@ -464,8 +477,8 @@ export default function NewRumourPage() {
                         </span>
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Voeg aanvullende details toe die je tip sterker maken —
-                        bronnen, geruchten, etc. Maximum 2000 tekens.
+                        Voeg details toe die je tip sterker maken. Maximum 2000
+                        tekens.
                       </p>
                       <Textarea
                         id="description"
@@ -485,6 +498,91 @@ export default function NewRumourPage() {
                     </div>
                   </div>
 
+                  {/* ── Source (#67) ─────────────────────────────────── */}
+                  <div className="space-y-4">
+                    <div className="pb-3 border-b border-primary/20">
+                      <h3 className="text-lg font-semibold text-primary">
+                        Bron
+                      </h3>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="sourceType">
+                          Waar komt je gerucht vandaan?{" "}
+                          <span className="text-destructive">*</span>
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Lezers en moderators zien de bron bij je gerucht
+                        </p>
+                        <Select name="sourceType" required>
+                          <SelectTrigger id="sourceType" className="w-full">
+                            <SelectValue placeholder="Selecteer bron" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SOURCE_TYPES.map((source) => (
+                              <SelectItem
+                                key={source.value}
+                                value={source.value}
+                              >
+                                {source.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sourceUrl">
+                          Link naar de bron{" "}
+                          <span className="text-muted-foreground">
+                            (optioneel)
+                          </span>
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Bijvoorbeeld een artikel of bericht van de club
+                        </p>
+                        <Input
+                          id="sourceUrl"
+                          name="sourceUrl"
+                          type="url"
+                          inputMode="url"
+                          placeholder="https://"
+                          maxLength={SOURCE_URL_MAX_LENGTH}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Declarations (#67, D-003) ─────────────────────── */}
+                  <fieldset className="space-y-3">
+                    <legend className="sr-only">Verklaringen</legend>
+                    <label className="flex items-start gap-3 text-sm">
+                      <input
+                        type="checkbox"
+                        name="declaredSenior"
+                        required
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                      />
+                      <span>
+                        Dit gerucht gaat over een seniorspeler of -trainer{" "}
+                        <span className="text-destructive">*</span>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 text-sm">
+                      <input
+                        type="checkbox"
+                        name="declaredGoodFaith"
+                        required
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                      />
+                      <span>
+                        Ik deel dit gerucht te goeder trouw: ik geloof dat het
+                        klopt en het bevat geen beledigingen of privézaken{" "}
+                        <span className="text-destructive">*</span>
+                      </span>
+                    </label>
+                  </fieldset>
+
                   {/* ── Form actions ──────────────────────────────────── */}
                   <div className="flex gap-3 pt-6 border-t border-border">
                     <Link href="/geruchten" className="flex-1">
@@ -499,7 +597,7 @@ export default function NewRumourPage() {
                     <Button
                       type="submit"
                       className="flex-1"
-                      disabled={isPending}
+                      disabled={isPending || atPendingLimit}
                     >
                       {isPending && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -59,8 +59,10 @@ SELECT throws_ok(
 
 -- ----------------------------------------------------------------- rumours
 SELECT lives_ok(
-  $$INSERT INTO public.rumours (creator_id, player_name, from_club_name, to_club_name, category, description)
-    VALUES ('00000000-0000-0000-0000-00000000000a', 'Test Speler', 'Club X', 'Club Y', 'transfer', 'test')$$,
+  $$INSERT INTO public.rumours (creator_id, player_name, from_club_name, to_club_name, category, description,
+                                 source_type, declared_good_faith, declared_senior)
+    VALUES ('00000000-0000-0000-0000-00000000000a', 'Test Speler', 'Club X', 'Club Y', 'transfer', 'test',
+            'club', true, true)$$,
   'users can create a rumour');
 SELECT throws_ok(
   $$INSERT INTO public.rumours (creator_id, player_name, category, status)

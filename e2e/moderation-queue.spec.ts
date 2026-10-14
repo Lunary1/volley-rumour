@@ -1,37 +1,17 @@
-import type { Browser, Page } from "@playwright/test";
 import {
   expect,
   loginAs,
+  pageFor,
+  queueItem,
   seed,
   seedUsers,
   submitRumour,
   test,
-  type SeedUser,
 } from "./fixtures";
 
 // Moderators approve or reject pending rumours from the queue in /admin
 // (issue #66, D-012). Every decision is logged, and the author sees a
 // rejection and its reason on their profile.
-
-/**
- * A second browser session, so the author and moderator can act side by side.
- * Logging in twice is slow when the suite runs in parallel, so tests that use
- * it are marked slow.
- */
-async function pageFor(browser: Browser, user: SeedUser): Promise<Page> {
-  test.slow();
-  const context = await browser.newContext();
-  await context.route(/datadoghq\.eu/, (route) => route.abort());
-  const page = await context.newPage();
-  await loginAs(page, user);
-  return page;
-}
-
-function queueItem(page: Page, playerName: string) {
-  return page.getByRole("listitem").filter({
-    has: page.getByRole("heading", { name: playerName }),
-  });
-}
 
 test("the queue lists pending rumours only, oldest first", async ({ page }) => {
   await loginAs(page, "moderator");
