@@ -60,7 +60,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
 | J-13    | Pre-moderation queue                     | **PARTIAL** | Queue, approve/reject and audit log work (#66); no track record (#88) or email (#53) |
 | J-14    | Resolve a rumour                         | **MISSING** | `confirmRumour` removed in #65 (X-3); rebuilt with #70                        |
-| J-15    | Reports, takedowns, sanctions            | **PARTIAL** | One inbox, logged conversation reads, remove/close (#69, D-015); no suspensions, badges or roles (#80) |
+| J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
 **Count:** 1 WORKS · 10 PARTIAL · 2 BROKEN · 2 MISSING.
 
@@ -247,9 +247,9 @@ items.
 | Open reports list incl. takedowns | **WORKS** | [admin/meldingen/page.tsx](../../app/admin/meldingen/page.tsx) | #69: one list, takedown requests first ("Voorrang"), then reports oldest first, with type, reason, reporter and the content |
 | Read reported conversation via report only, logged | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [reports.test.sql](../../supabase/tests/database/reports.test.sql) | `get_reported_conversation()`: staff only, open reports only, every read logged as "Gemeld gesprek gelezen". No staff policy on messages |
 | Remove content from all views, notify author | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [profile-view.tsx](../../app/profile/profile-view.tsx) | Rumours get status `removed`, zoekertjes `removed_at` (RLS hides both); the author sees "Verwijderd" and the moderator's note on their profile. No email yet (#53) |
-| Suspend user (read-only) | MISSING | — | |
+| Suspend user (read-only) | **WORKS** | [user_sanctions migration](../../supabase/migrations/20261014193846_user_sanctions.sql), [user_sanctions.test.sql](../../supabase/tests/database/user_sanctions.test.sql), [users.spec.ts](../../e2e/users.spec.ts) | #80: admins suspend until a date or indefinitely, with a reason; the database refuses the user's posts, votes, messages and profile edits (`VR005`); the user sees a notice on every page (D-016) |
 | Audit log, reporter informed | PARTIAL | [staff_actions](../../supabase/migrations/20261014174640_user_reports.sql) | Every decision and conversation read is logged. The reporter only gets a confirmation (D-015); outcomes are stored for email (#53) |
-| Grant/revoke verified badge and moderator role | MISSING | — | `is_verified_source` is set by hand in the database |
+| Grant/revoke verified badge and moderator role | **WORKS** | [/admin/gebruikers](../../app/admin/gebruikers/page.tsx), [user_sanctions migration](../../supabase/migrations/20261014193846_user_sanctions.sql) | #80: admins only, logged; moderators see the status. The admin role is set by the owner in SQL (D-016) |
 
 ---
 

@@ -22,6 +22,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-013 | 2026-10-14 | Accepted | Rumours name a public source; at most 5 waiting per contributor   |
 | D-014 | 2026-10-14 | Accepted | Takedown requests: rumour stays up until a moderator decides; status link, no email; 12-month retention |
 | D-015 | 2026-10-14 | Accepted | User reports: content stays up until decided; reporter gets a confirmation only; conversation reports close with an outcome |
+| D-016 | 2026-10-14 | Accepted | Suspensions, the verified badge and the moderator role are admin-only; suspended users are read-only |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -342,6 +343,41 @@ optional note on their profile, not who reported it.
 **Consequences.** As with takedowns, response time matters (#93). Blocking
 in the same step (#87) writes the block, and the conversation page then hides
 the chat for both, but sending isn't blocked server-side until #73.
+
+## D-016 — Sanctions: suspensions, badge and moderator role
+
+**Context.** J-15 and #80: staff must be able to suspend abusive accounts
+(read-only, with a reason the user sees), grant and revoke the verified badge
+(D-001) and the moderator role (D-006), without touching the database. Open
+questions were who may do each, how long a suspension can last, and what a
+suspended user may still do.
+
+**Decision** (owner, 2026-10-14).
+- **Admins only** suspend users, lift suspensions, grant or revoke the
+  verified badge and change the moderator role. Moderators see users, their
+  role, badge and suspension in `/admin/gebruikers`, but change nothing.
+- **A suspension lasts until a date, or indefinitely** until an admin lifts
+  it. The admin picks 7 days, 30 days, a date or "Onbepaalde tijd".
+- **A suspended user can log in and read.** They can't post rumours or
+  zoekertjes, edit zoekertjes, vote, start conversations, send messages or
+  edit their profile. They can still report, block, delete their own
+  zoekertjes and delete their account. Their existing content stays up unless
+  it is removed separately.
+
+**Also decided while building** (agent calls). The user sees the end date
+and the reason on every page, with a link to the contact page. Staff can't
+be suspended: take the moderator role away first. Admins can't change their
+own role or suspension, and the admin role itself is set by the owner in SQL,
+never through the site. A suspended user can't be made a moderator.
+Suspending someone who is already suspended replaces the end date and reason.
+Every change is logged; lifting and badge or role changes take an optional
+note. The database refuses a suspended user's writes (SQLSTATE `VR005`), so
+no page or action can forget the check.
+
+**Consequences.** Deleting the account also deletes the suspension (the log
+keeps the history), so a suspended user can delete their account and sign up
+again with the same email address. Revisit if that happens. The suspended
+user is not emailed (#53); they see the notice the next time they visit.
 
 ## O-001 — Rumour confirmation authority (Open)
 

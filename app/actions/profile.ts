@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
@@ -30,6 +31,9 @@ export async function updateProfile(formData: FormData) {
     .eq("id", user.id);
 
   if (error) {
+    // Suspended users can't edit their profile (#80).
+    if (error.code === SUSPENDED_ERROR_CODE)
+      return { error: SUSPENDED_MESSAGE };
     return { error: "Kon profiel niet bijwerken" };
   }
 

@@ -6,6 +6,9 @@ const TOM_ID = "a0000000-0000-4000-8000-000000000002";
 const CLUB_ID = "a0000000-0000-4000-8000-000000000003";
 // Mila Meldtest, only used by the report tests (#69).
 const REPORT_RUMOUR_ID = "e0000000-0000-4000-8000-00000000000a";
+// test_geschorst and test_kandidaat, only used by the sanction tests (#80).
+const SUSPENDED_ID = "a0000000-0000-4000-8000-00000000000a";
+const CANDIDATE_ID = "a0000000-0000-4000-8000-00000000000b";
 // Tim Terugtrek and Bram Bezwaar, only used by the takedown tests (#68).
 const TAKEDOWN_RUMOUR_IDS = [
   "e0000000-0000-4000-8000-000000000008",
@@ -23,6 +26,8 @@ const TAKEDOWN_RUMOUR_IDS = [
  * - every report, the removal of Mila Meldtest and coach_tom's block of
  *   vc_testdorp (#69). Reports count towards the daily limit, and a user may
  *   have one open report per item.
+ * - test_geschorst's suspension, and test_kandidaat's badge and moderator
+ *   role (#80).
  */
 export default async function globalSetup() {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -78,5 +83,25 @@ export default async function globalSetup() {
     .eq("blocked_id", CLUB_ID);
   if (block.error) {
     throw new Error(`Lifting the report-test block: ${block.error.message}`);
+  }
+
+  const suspension = await admin
+    .from("user_suspensions")
+    .delete()
+    .eq("user_id", SUSPENDED_ID);
+  if (suspension.error) {
+    throw new Error(
+      `Lifting the sanction-test suspension: ${suspension.error.message}`,
+    );
+  }
+
+  const candidate = await admin
+    .from("profiles")
+    .update({ role: "user", is_verified_source: false })
+    .eq("id", CANDIDATE_ID);
+  if (candidate.error) {
+    throw new Error(
+      `Resetting the sanction-test candidate: ${candidate.error.message}`,
+    );
   }
 }

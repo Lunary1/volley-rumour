@@ -442,4 +442,8 @@ takedown requests) and deal with abusive accounts.
 - **Given** a report, **then** the content stays visible until I decide, and
   my decision answers every open report about the same item (D-015).
 - **Given** the admin area, **then** I can grant or revoke the verified badge
-  (D-001) and the moderator role (admins only).
+  (D-001) and the moderator role, and suspend users or lift a suspension
+  (admins only, D-016). Moderators see the status but change nothing.
+- **Given** I am suspended, **then** every page tells me until when and why,
+  and I can still report, block, delete my own zoekertjes and delete my
+  account (D-016).

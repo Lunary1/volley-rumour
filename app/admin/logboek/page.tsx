@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/server";
@@ -19,6 +20,8 @@ const actionLabels: Record<string, string> = {
   user_suspended: "Gebruiker geschorst",
   user_unsuspended: "Schorsing opgeheven",
   role_changed: "Rol gewijzigd",
+  badge_granted: "Badge toegekend",
+  badge_revoked: "Badge ingetrokken",
 };
 
 const targetLabels: Record<string, string> = {
@@ -49,9 +52,15 @@ export default async function AuditLogPage() {
     .limit(PAGE_SIZE);
   const entries = (data ?? []) as StaffAction[];
 
-  // actor_id has no foreign key (the log outlives accounts), so usernames are
-  // looked up separately.
-  const actorIds = [...new Set(entries.map((e) => e.actor_id))];
+  // actor_id and target_id have no foreign key (the log outlives accounts),
+  // so usernames are looked up separately: actors, and users acted on (#80).
+  const actorIds = [
+    ...new Set(
+      entries.flatMap((e) =>
+        e.target_type === "user" ? [e.actor_id, e.target_id] : [e.actor_id],
+      ),
+    ),
+  ];
   const { data: actors } = actorIds.length
     ? await supabase.from("profiles").select("id, username").in("id", actorIds)
     : { data: [] };
@@ -114,9 +123,18 @@ export default async function AuditLogPage() {
                   </td>
                   <td className="px-3 py-2">
                     {targetLabels[entry.target_type] ?? entry.target_type}{" "}
-                    <code className="text-xs text-muted-foreground">
-                      {entry.target_id.slice(0, 8)}
-                    </code>
+                    {entry.target_type === "user" ? (
+                      <Link
+                        href={`/admin/gebruikers/${entry.target_id}`}
+                        className="text-primary underline underline-offset-2"
+                      >
+                        {usernames.get(entry.target_id) ?? "Verwijderd account"}
+                      </Link>
+                    ) : (
+                      <code className="text-xs text-muted-foreground">
+                        {entry.target_id.slice(0, 8)}
+                      </code>
+                    )}
                   </td>
                   <td className="px-3 py-2">{entry.reason ?? "—"}</td>
                 </tr>

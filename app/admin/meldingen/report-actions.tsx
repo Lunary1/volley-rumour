@@ -31,7 +31,7 @@ const DECISIONS: Record<
   },
   action: {
     explain:
-      "Noteer wat je deed, bijvoorbeeld een waarschuwing per e-mail. Schorsen kan later in het beheer (#80).",
+      "Noteer wat je deed, bijvoorbeeld een waarschuwing per e-mail of een schorsing. Een beheerder schorst via de gebruiker hierboven.",
     noteLabel: "Welke maatregel nam je?",
     confirm: "Maatregel bevestigen",
     success: "Melding afgesloten",

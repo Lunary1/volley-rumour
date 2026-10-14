@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -179,6 +180,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
           setLocalUpvotes(previousUpvotes);
           setLocalDownvotes(previousDownvotes);
           setLocalUserVote(previousUserVote);
+          toast.error(result.error);
         } else if (result?.success) {
           const supabase = await createClient();
           const { data } = await supabase

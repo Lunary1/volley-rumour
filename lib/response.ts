@@ -1,3 +1,5 @@
+import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
+
 /**
  * Standardized response format for server actions
  * All server actions should return responses in this format
@@ -43,6 +45,11 @@ export function extractErrorMessage(
   if (!error) return fallback;
 
   if (typeof error === "string") return error;
+
+  // A suspended user's write, refused by the database (#80).
+  if ((error as { code?: string }).code === SUSPENDED_ERROR_CODE) {
+    return SUSPENDED_MESSAGE;
+  }
 
   if (error instanceof Error) {
     // Check for Supabase specific error properties

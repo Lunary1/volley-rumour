@@ -160,6 +160,13 @@ to Dutch messages. On the client, `handleServerActionResponse()` from
   itself**, so an action never happens without its entry. That function isn't
   callable through the API; moderation actions are SECURITY DEFINER functions
   that call it. The log is append-only and kept 2 years (D-011).
+- Suspensions, the verified badge and the moderator role are admin-only
+  (D-016): their functions check `public.is_admin()`. Admins themselves are
+  set by the owner in SQL.
+- Suspended users are read-only. The `check_account_not_suspended` trigger
+  refuses their writes with SQLSTATE `VR005`, which `extractErrorMessage()`
+  turns into Dutch. **A new table users write to gets that trigger** in its
+  migration, unless suspended users may keep doing it (reports, blocks).
 
 ### Conversations
 Conversations are bidirectional (`initiator_id`, `recipient_id`, linked by
