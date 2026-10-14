@@ -46,6 +46,7 @@ top of [supabase/seed.sql](supabase/seed.sql).
 ```bash
 npm run typecheck
 npm run lint
+npm run format:check  # Prettier; npm run format fixes it
 npm run build
 npm run db:test       # pgTAP database tests
 npm run test:e2e      # Playwright, against the local stack

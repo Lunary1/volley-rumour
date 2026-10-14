@@ -10,7 +10,7 @@ Closes #
 
 ## Definition of Done
 - [ ] Acceptance criteria met, with evidence above
-- [ ] CI green (typecheck, lint, build, e2e)
+- [ ] CI green (typecheck, lint, format, build, e2e)
 - [ ] Playwright test in `e2e/` covers the key flow
 - [ ] Schema changes committed as migrations in `supabase/migrations/` — or none
 - [ ] UI copy is Dutch
