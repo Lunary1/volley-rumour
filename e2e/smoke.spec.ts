@@ -27,7 +27,7 @@ test("zoekertjes list links to the detail page", async ({ page }) => {
   await page.locator(`a[href="/zoekertjes/${seed.activeAd.id}"]`).click();
   await expect(page).toHaveURL(`/zoekertjes/${seed.activeAd.id}`);
   await expect(
-    page.getByRole("heading", { level: 1, name: seed.activeAd.contactName }),
+    page.getByRole("heading", { level: 1, name: seed.activeAd.title }),
   ).toBeVisible();
   await expect(page.getByText(seed.activeAd.description)).toBeVisible();
 });

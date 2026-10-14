@@ -27,6 +27,7 @@ export const seed = {
   activeAdCount: 4,
   activeAd: {
     id: "d0000000-0000-4000-8000-000000000001",
+    title: "VC Testdorp zoekt een setter",
     contactName: "VC Testdorp",
     description:
       "Ons herenteam in Nationale 2 zoekt een ervaren setter voor volgend seizoen. Training op dinsdag en donderdag.",

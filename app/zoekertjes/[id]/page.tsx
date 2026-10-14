@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, User } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { getCurrentUser } from "@/app/actions/auth";
@@ -66,8 +66,7 @@ export async function generateMetadata({
   const { id } = await params;
   const classified = await getClassified(id);
   if (!classified) return { title: "Zoekertje" };
-  const title = classified.contact_name || classified.title || "Zoekertje";
-  return { title: `${title} | Zoekertjes` };
+  return { title: `${classified.title || "Zoekertje"} | Zoekertjes` };
 }
 
 export default async function ClassifiedDetailPage({
@@ -82,6 +81,10 @@ export default async function ClassifiedDetailPage({
   if (!classified) notFound();
 
   const isOwn = user?.id === classified.user_id;
+  const title = classified.title || "Zoekertje";
+  // Team ads use the team name as contact name, already shown below the title.
+  const showContactName =
+    classified.contact_name && classified.contact_name !== classified.team_name;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -113,7 +116,7 @@ export default async function ClassifiedDetailPage({
 
           <header>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-              {classified.contact_name || classified.title || "Zoekertje"}
+              {title}
             </h1>
             {classified.position && (
               <p className="text-lg font-semibold text-primary mt-1">
@@ -126,6 +129,12 @@ export default async function ClassifiedDetailPage({
           </header>
 
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            {showContactName && (
+              <span className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                Contact: {classified.contact_name}
+              </span>
+            )}
             {classified.province && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
@@ -170,10 +179,8 @@ export default async function ClassifiedDetailPage({
                 />
               )}
               <ShareButton
-                title={
-                  classified.contact_name || classified.title || "Zoekertje"
-                }
-                shareText={`🏐 Bekijk dit zoekertje op VolleyRumours: ${classified.contact_name || classified.title || "Zoekertje"}`}
+                title={title}
+                shareText={`🏐 Bekijk dit zoekertje op VolleyRumours: ${title}`}
                 url={`/zoekertjes/${classified.id}`}
                 variant="outline"
                 size="sm"
