@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { createHash } from "crypto";
 import { z } from "zod";
 import { isRecoverySession } from "@/lib/supabase/recovery";
+import { isStaffRole } from "@/lib/staff";
 import {
   errorResponse,
   successResponse,
@@ -70,7 +71,7 @@ export const getCurrentUser = cache(async () => {
   // Get user profile for additional info
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, trust_score, avatar_url")
+    .select("username, trust_score, avatar_url, role")
     .eq("id", user.id)
     .single();
 
@@ -80,6 +81,8 @@ export const getCurrentUser = cache(async () => {
     username: profile?.username,
     trust_score: profile?.trust_score || 0,
     avatar_url: profile?.avatar_url,
+    // Only shows the "Beheer" link; admin pages check is_staff() themselves.
+    is_staff: isStaffRole(profile?.role),
   };
 
   return userData;
