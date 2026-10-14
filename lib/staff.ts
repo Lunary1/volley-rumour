@@ -3,14 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { errorResponse } from "@/lib/response";
 
 // Staff = profiles.role 'moderator' or 'admin' (D-006). The database decides,
-// through public.is_staff(); RLS policies use the same function.
-
-/** Roles that see the "Beheer" link. Only for UI; never use it to authorise. */
-export const STAFF_ROLES = ["moderator", "admin"] as const;
-
-export function isStaffRole(role: string | null | undefined): boolean {
-  return STAFF_ROLES.includes(role as (typeof STAFF_ROLES)[number]);
-}
+// through public.is_staff(); RLS policies use the same function. The role
+// column itself isn't readable through the API (#111).
 
 /**
  * The signed-in staff user, or null for visitors and non-staff. Admin pages

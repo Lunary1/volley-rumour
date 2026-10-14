@@ -54,6 +54,9 @@ a normal migration.
 - RLS is the security boundary. New tables enable RLS and ship their policies
   and grants in the same migration. Prefer column-level grants for anything a
   user must not change (roles, scores, statuses, flags).
+- `profiles` has column-level SELECT: `role` is hidden from the API (#111), so
+  never `select("*")` on it. A new column is unreadable until a migration adds
+  it to the grant.
 - SECURITY DEFINER functions: set `search_path = ''`, qualify every name, and
   revoke `EXECUTE` from `anon`/`authenticated` unless they must call it.
 - **Production is migrated by the owner, after merge**: `npx supabase db push`.
