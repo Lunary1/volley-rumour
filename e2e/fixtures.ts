@@ -50,6 +50,11 @@ export const seed = {
   // Jana's own rows, shown on her profile.
   janaRumour: { playerName: "Pieter Proefspeler" },
   janaAd: { title: "Libero zoekt nieuwe ploeg" },
+  // Audit log entries by moderator_vr (#64); the second one's rumour is gone.
+  staffActions: [
+    { label: "Gerucht afgesloten", reason: "Officieel bevestigd door de club" },
+    { label: "Gerucht afgewezen", reason: "Geen bron opgegeven" },
+  ],
 } as const;
 
 /** Logs in through the login form and waits for the header to show the user. */

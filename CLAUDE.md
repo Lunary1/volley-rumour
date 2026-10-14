@@ -145,6 +145,18 @@ to Dutch messages. On the client, `handleServerActionResponse()` from
   Server-only, use sparingly, and check authorisation yourself first.
 - Security lives in RLS. Any new table or policy change ships as a migration.
 
+### Staff and moderation
+- Staff = `profiles.role` `moderator` or `admin` (D-006); the database decides
+  with `public.is_staff()`. Admin pages live under `app/admin/`, whose layout
+  returns 404 for non-staff. Admin server actions start with
+  `const staff = await requireStaff(); if (!staff.ok) return staff.response;`
+  (`@/lib/staff`).
+- Every staff action writes an audit log entry with
+  `public.log_staff_action()`, **in the same database function as the action
+  itself**, so an action never happens without its entry. That function isn't
+  callable through the API; moderation actions are SECURITY DEFINER functions
+  that call it. The log is append-only and kept 2 years (D-011).
+
 ### Conversations
 Conversations are bidirectional (`initiator_id`, `recipient_id`, linked by
 `ad_id` + `ad_type`). Always query both directions with `or(and(…),and(…))`.
