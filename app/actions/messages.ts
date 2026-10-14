@@ -362,65 +362,6 @@ export async function getConversations() {
 }
 
 /**
- * Get messages for a specific conversation
- */
-export async function getMessages(
-  conversationId: string,
-  limit = 50,
-  offset = 0,
-) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { success: false, error: "Must be logged in" };
-  }
-
-  // Verify user is part of conversation
-  const { data: conversation } = await supabase
-    .from("conversations")
-    .select("id")
-    .eq("id", conversationId)
-    .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`)
-    .single();
-
-  if (!conversation) {
-    return { success: false, error: "Unauthorized" };
-  }
-
-  const { data: messages, error } = await supabase
-    .from("messages")
-    .select("*")
-    .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
-
-  // Mark messages as read (with read_at timestamp)
-  await supabase
-    .from("messages")
-    .update({ is_read: true, read_at: new Date().toISOString() })
-    .eq("conversation_id", conversationId)
-    .neq("sender_id", user.id)
-    .eq("is_read", false);
-
-  // Add is_from_me field to each message
-  const enrichedMessages =
-    messages?.map((msg) => ({
-      ...msg,
-      is_from_me: msg.sender_id === user.id,
-    })) || [];
-
-  revalidatePath(`/messages/${conversationId}`);
-  return { success: true, data: enrichedMessages.reverse() };
-}
-
-/**
  * Block a user
  */
 export async function blockUser(userId: string) {

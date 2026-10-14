@@ -50,7 +50,6 @@ export default function Page() {
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -63,16 +62,16 @@ function LoginPage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Error code set by /auth/callback on failure, read once on first render
+  const errorCode = searchParams.get("error");
+  const [error, setError] = useState<string | null>(() =>
+    errorCode ? getOAuthErrorMessage(errorCode) : null,
+  );
 
-  // Pick up error query param set by /auth/callback on failure
+  // Clean the URL so the message doesn't stick around on refresh
   useEffect(() => {
-    const errorCode = searchParams.get("error");
-    if (errorCode) {
-      setError(getOAuthErrorMessage(errorCode));
-      // Clean the URL so the message doesn't stick around on refresh
-      router.replace("/auth/login", { scroll: false });
-    }
-  }, [searchParams, router]);
+    if (errorCode) router.replace("/auth/login", { scroll: false });
+  }, [errorCode, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

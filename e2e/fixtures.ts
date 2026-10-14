@@ -41,6 +41,15 @@ export const seed = {
   confirmedRumour: { playerName: "Koen Kladversie" },
   // creator_id is null, as after the creator deleted their account
   rumourWithoutCreator: { playerName: "Wout Weesgerucht" },
+  // Jana (initiator) and VC Testdorp about activeAd.
+  conversation: {
+    id: "f0000000-0000-4000-8000-000000000001",
+    firstMessage:
+      "Hallo! Ik speel geen setter, maar ken iemand die interesse heeft.",
+  },
+  // Jana's own rows, shown on her profile.
+  janaRumour: { playerName: "Pieter Proefspeler" },
+  janaAd: { title: "Libero zoekt nieuwe ploeg" },
 } as const;
 
 /** Logs in through the login form and waits for the header to show the user. */
