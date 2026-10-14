@@ -56,7 +56,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-08    | Club recruits player/trainer             | **PARTIAL** | Team gender dropped; no diploma field; can't close an ad                    |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Goes live instantly (no pending state); no source field                     |
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes aren't saved                     |
-| J-11    | Account and personal data                | **BROKEN**  | Password reset lands on a non-existent page                                 |
+| J-11    | Account and personal data                | **BROKEN**  | Account deletion can leave a half-deleted state (password reset fixed in #58) |
 | J-12    | Takedown request by named person         | **MISSING** | No path at all; contact form "report" is only `console.log`                 |
 | J-13    | Pre-moderation queue                     | **MISSING** | No staff role, no admin area                                                |
 | J-14    | Resolve a rumour                         | **MISSING** | `confirmRumour` exists but has no auth check and no caller                  |
@@ -201,8 +201,8 @@ items.
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Password reset link → set new password | **BROKEN** | [auth.ts:97-99](../../app/actions/auth.ts#L97-L99) | Redirects to `/auth/update-password`, which doesn't exist (404) |
-| Google-only account can add a password | **BROKEN** | [profile.ts:58-66](../../app/actions/profile.ts#L58-L66) | The reset flow is broken, and "change password" requires a current password Google-only users don't have |
+| Password reset link → set new password | **FIXED** (#58) | [update-password/page.tsx](../../app/auth/update-password/page.tsx), [password-reset.spec.ts](../../e2e/password-reset.spec.ts) | The link opens "Nieuw wachtwoord instellen"; only a session from a reset link may set a password there, and an expired or used link gets a Dutch message. The link works in the browser that requested it (PKCE) |
+| Google-only account can add a password | **FIXED** (#58) | [auth.ts](../../app/actions/auth.ts) (`sendPasswordSetupLink`), [password-reset.spec.ts](../../e2e/password-reset.spec.ts) | Through the same reset link, from "Wachtwoord vergeten?" or the profile's "Stuur me een link". Covered by a seeded Google-only account (password login after; Google login itself isn't testable locally) |
 | Avatar upload with type/size limits | MISSING | [profile/page.tsx:227-231](../../app/profile/page.tsx#L227-L231) | Free-text avatar **URL** (an arbitrary external image URL) |
 | Account deletion removes or anonymises per spec | PARTIAL | [auth.ts:145-268](../../app/actions/auth.ts#L145-L268) | Thorough, but zoekertjes keep the real name in `title` and stay public (the crash on anonymised rumours, X-2, is fixed in #57) |
 | No half-deleted state on failure | **BROKEN** | [auth.ts:160-255](../../app/actions/auth.ts#L160-L255) | 11 sequential writes with early returns; e.g. if auth-user deletion fails, the profile is already gone |

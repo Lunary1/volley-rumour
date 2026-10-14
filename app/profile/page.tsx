@@ -9,7 +9,8 @@ import {
   type RecentRumour,
   type RecentClassified,
 } from "@/app/actions/profile";
-import { deleteAccount } from "@/app/actions/auth";
+import { deleteAccount, sendPasswordSetupLink } from "@/app/actions/auth";
+import { handleServerActionResponse } from "@/lib/client-utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -146,6 +147,7 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [setupLinkSending, setSetupLinkSending] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
@@ -640,6 +642,30 @@ export default function ProfilePage() {
                 {submitting ? "Bezig..." : "Wachtwoord wijzigen"}
               </Button>
             </form>
+            {/* #58 – Google-only accounts have no current password to fill in */}
+            <div className="mt-6 border-t border-border pt-4">
+              <p className="text-sm text-muted-foreground">
+                Via Google aangemeld en nog geen wachtwoord, of je huidige
+                wachtwoord vergeten? Dan sturen we je een link om een nieuw
+                wachtwoord in te stellen.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-3"
+                disabled={setupLinkSending}
+                onClick={async () => {
+                  setSetupLinkSending(true);
+                  handleServerActionResponse(await sendPasswordSetupLink(), {
+                    successMessage:
+                      "Check je mailbox voor de link om je wachtwoord in te stellen.",
+                  });
+                  setSetupLinkSending(false);
+                }}
+              >
+                {setupLinkSending ? "Bezig..." : "Stuur me een link"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

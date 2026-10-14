@@ -6,6 +6,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createHash } from "crypto";
+import { z } from "zod";
+import { isRecoverySession } from "@/lib/supabase/recovery";
+import {
+  errorResponse,
+  successResponse,
+  type ActionResponse,
+} from "@/lib/response";
 
 export async function logout() {
   const supabase = await createClient();
@@ -100,6 +107,78 @@ export async function requestPasswordReset(email: string) {
 
   // Always return the same message to avoid leaking account existence.
   return { success: true };
+}
+
+const newPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Wachtwoord moet minimaal 8 tekens zijn"),
+    confirmPassword: z.string(),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Wachtwoorden komen niet overeen",
+  });
+
+/**
+ * #58 – Sets a new password from the reset link (/auth/update-password).
+ *
+ * The link signs the user in with a recovery session, so no current password
+ * is asked. That is also how a Google-only account adds a password. Only a
+ * recovery session may use this; a normal session changes its password on
+ * the profile page, which asks for the current one.
+ */
+export async function setNewPassword(
+  password: string,
+  confirmPassword: string,
+): Promise<ActionResponse> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || !(await isRecoverySession(supabase))) {
+    return errorResponse(
+      "Je herstellink is ongeldig of verlopen. Vraag een nieuwe aan.",
+    );
+  }
+
+  const parsed = newPasswordSchema.safeParse({ password, confirmPassword });
+  if (!parsed.success) {
+    return errorResponse(parsed.error.issues[0].message);
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    if (error.code === "same_password") {
+      return errorResponse("Kies een ander wachtwoord dan je huidige.");
+    }
+    return errorResponse("Kon wachtwoord niet instellen. Probeer het opnieuw.");
+  }
+
+  revalidatePath("/", "layout");
+  return successResponse(undefined);
+}
+
+/**
+ * #58 – Sends the logged-in user a link to set a password. For Google-only
+ * accounts, which have no current password to fill in on the profile page.
+ * Always goes to the session's own address.
+ */
+export async function sendPasswordSetupLink(): Promise<ActionResponse> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) return errorResponse("Je moet ingelogd zijn");
+
+  const origin = (await headers()).get("origin") || "";
+  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+  });
+  if (error) {
+    return errorResponse(
+      "Kon de e-mail niet versturen. Probeer het later opnieuw.",
+    );
+  }
+  return successResponse(undefined);
 }
 
 export async function signInWithGoogle() {
