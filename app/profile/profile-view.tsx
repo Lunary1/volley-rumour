@@ -44,6 +44,7 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { RUMOUR_STATUS_LABELS, type RumourStatus } from "@/lib/rumours";
 
 const TRUST_TIERS = [
   { min: 100, label: "Legende", color: "bg-yellow-500 text-yellow-950" },
@@ -430,7 +431,8 @@ export function ProfileView({
                           variant="outline"
                           className="ml-auto shrink-0 text-xs"
                         >
-                          {r.status}
+                          {RUMOUR_STATUS_LABELS[r.status as RumourStatus] ??
+                            r.status}
                         </Badge>
                         <span className="shrink-0 text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(r.created_at), {

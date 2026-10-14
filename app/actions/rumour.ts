@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { createRumourSchema, isTransferCategory } from "@/lib/schemas";
 import {
@@ -65,92 +65,8 @@ export async function createRumour(formData: FormData) {
     return errorResponse(message);
   }
 
-  revalidatePath("/geruchten");
-  revalidatePath("/");
+  // The rumour starts pending (#65): it only shows on the author's profile
+  // until a moderator approves it.
+  revalidatePath("/profile");
   return successResponse(null);
 }
-
-export async function confirmRumour(rumourId: string) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return errorResponse("Je moet ingelogd zijn");
-  }
-
-  // Get the rumour
-  const { data: rumour, error: rumourError } = await supabase
-    .from("rumours")
-    .select("*")
-    .eq("id", rumourId)
-    .single();
-
-  if (rumourError || !rumour) {
-    return errorResponse("Gerucht niet gevonden");
-  }
-
-  // Create a transfer from the confirmed rumour using admin client to bypass RLS
-  let adminClient;
-  try {
-    adminClient = createAdminClient();
-  } catch {
-    return errorResponse("Administratorfout: kan gerucht niet bevestigen");
-  }
-
-  // Map rumour category to transfer category
-  const categoryMap: Record<string, string> = {
-    transfer: "player_male",
-    trainer_transfer: "trainer_male",
-    player_retirement: "player_retirement",
-    trainer_retirement: "trainer_retirement",
-  };
-
-  const { error: transferError } = await adminClient.from("transfers").insert({
-    player_name: rumour.player_name,
-    from_club: rumour.from_club_name,
-    to_club: rumour.to_club_name,
-    category: categoryMap[rumour.category] || "player_male",
-    confirmed_at: new Date().toISOString(),
-    source_rumour_id: rumour.id,
-  });
-
-  if (transferError) {
-    const message = extractErrorMessage(
-      transferError,
-      "Fout bij bevestiging van transfer",
-    );
-    return errorResponse(message);
-  }
-
-  // Update the rumour status
-  const { error: updateError } = await supabase
-    .from("rumours")
-    .update({ status: "confirmed" })
-    .eq("id", rumourId);
-
-  if (updateError) {
-    return errorResponse("Fout bij bijwerken van gerucht");
-  }
-
-  // Award trust points to the creator
-  if (rumour.creator_id) {
-    const { error: rpcError } = await supabase.rpc("increment_trust_score", {
-      profile_uuid: rumour.creator_id,
-      points_to_add: 5,
-    });
-
-    if (rpcError) {
-      // Log but don't fail the confirmation
-      console.error("[CONFIRM] Trust score error:", rpcError);
-    }
-  }
-
-  revalidatePath("/geruchten");
-  revalidatePath("/transfers");
-  revalidatePath("/");
-  return successResponse(null);
-}
-

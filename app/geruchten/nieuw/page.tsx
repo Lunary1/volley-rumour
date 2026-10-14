@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Info } from "lucide-react";
+import { ArrowLeft, Clock, Loader2, Info } from "lucide-react";
 import Link from "next/link";
 
 const DIVISIONS = [
@@ -71,6 +71,7 @@ export default function NewRumourPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [user, setUser] = useState<Record<string, unknown> | null>(null);
   const [descriptionLength, setDescriptionLength] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -125,8 +126,9 @@ export default function NewRumourPage() {
         return;
       }
 
-      router.push("/geruchten");
-      router.refresh();
+      // New rumours stay pending until a moderator approves them (#65), so
+      // Transfer Talk wouldn't show it yet.
+      setSubmitted(true);
     });
   }
 
@@ -139,6 +141,37 @@ export default function NewRumourPage() {
           <div className="flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Submitted ──────────────────────────────────────────────────────────────
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen py-8">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+          <Card className="bg-card border-border">
+            <CardContent className="py-12 text-center">
+              <Clock className="h-12 w-12 mx-auto mb-4 text-primary" />
+              <h1 className="text-2xl font-bold mb-2">
+                Je gerucht wordt nagekeken
+              </h1>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Een moderator bekijkt je gerucht voor het op Transfer Talk
+                verschijnt. Tot dan zie je het alleen zelf, op je profiel.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link href="/profile">
+                  <Button>Naar mijn profiel</Button>
+                </Link>
+                <Link href="/geruchten">
+                  <Button variant="outline">Terug naar Transfer Talk</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -182,6 +215,9 @@ export default function NewRumourPage() {
                   <strong>+5 punten</strong>. Hoe sneller en nauwkeuriger je
                   tip, hoe groter je impact op het klassement. Klim naar de top
                   van de leaderboard en word dé transferinsider van België!
+                </p>
+                <p className="mt-2">
+                  Een moderator kijkt elk gerucht na voor het online komt.
                 </p>
               </div>
             </div>

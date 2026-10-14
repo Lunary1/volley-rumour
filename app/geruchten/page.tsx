@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
+import { PUBLIC_RUMOUR_STATUSES, isPublicRumourStatus } from "@/lib/rumours";
 
 // Cache transfer talk for 60 seconds - frequent updates
 export const revalidate = 60;
 
+// Authors and staff can read pending and rejected rumours through RLS, but
+// Transfer Talk only ever lists approved ones (#65).
 async function getRumours(status?: string) {
   const supabase = await createClient();
   let query = supabase
@@ -19,6 +22,7 @@ async function getRumours(status?: string) {
       creator:creator_id(username, trust_score, is_verified_source)
     `,
     )
+    .in("status", PUBLIC_RUMOUR_STATUSES)
     .order("created_at", { ascending: false });
 
   if (status) {
@@ -37,7 +41,10 @@ export default async function GeruchtenPage(props: {
   searchParams?: Promise<SearchParams>;
 }) {
   const searchParams = await props.searchParams;
-  const status = searchParams?.status;
+  const status =
+    searchParams?.status && isPublicRumourStatus(searchParams.status)
+      ? searchParams.status
+      : undefined;
 
   // Fetch only the rumours we need based on status filter
   const allRumours = await getRumours(status);
