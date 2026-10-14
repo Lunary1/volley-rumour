@@ -35,7 +35,7 @@ test("search works with an ad without a description", async ({ page }) => {
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: seed.adWithoutDescription.contactName,
+      name: seed.adWithoutDescription.title,
     }),
   ).toBeVisible();
 
