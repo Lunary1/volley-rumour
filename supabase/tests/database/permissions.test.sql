@@ -128,6 +128,12 @@ SELECT is(
   1, 'recipients can mark a message as read');
 
 -- ------------------------------------------------------------------- votes
+-- New rumours are pending (#65); a moderator approves this one so others can
+-- see it and vote.
+RESET ROLE;
+UPDATE public.rumours SET status = 'rumour' WHERE player_name = 'Test Speler';
+SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
+
 SELECT lives_ok(
   $$INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type)
     SELECT id, '00000000-0000-0000-0000-00000000000b', true FROM public.rumours WHERE player_name = 'Test Speler'$$,

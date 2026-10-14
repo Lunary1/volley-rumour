@@ -149,7 +149,16 @@ INSERT INTO public.rumours (
   ('e0000000-0000-4000-8000-000000000005', NULL,
    'Wout Weesgerucht', 'c0000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000002',
    'VBC Fictief', 'Volley Voorbeeld', 'Gepost door een account dat intussen verwijderd is.',
-   'transfer', 'rumour', now() - interval '6 days');
+   'transfer', 'rumour', now() - interval '6 days'),
+  -- Not approved: only the author and staff may see these (#65).
+  ('e0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000001',
+   'Nina Nagekeken', 'c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000003',
+   'VC Testdorp', 'VBC Fictief', 'Wacht nog op een moderator.',
+   'transfer', 'pending', now() - interval '2 hours'),
+  ('e0000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000002',
+   'Rik Retour', 'c0000000-0000-4000-8000-000000000002', NULL,
+   'Volley Voorbeeld', NULL, 'Afgewezen door een moderator.',
+   'player_retirement', 'rejected', now() - interval '4 days');
 
 -- Votes; the on_vote_change trigger fills the vote counts and trust scores.
 INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type) VALUES
