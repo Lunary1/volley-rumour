@@ -23,3 +23,29 @@ export const RUMOUR_STATUS_LABELS: Record<RumourStatus, string> = {
   denied: "Ontkracht",
   rejected: "Afgewezen",
 };
+
+/**
+ * Why a moderator rejected a rumour (Moderation Policy, #66). The author sees
+ * the label. Keep in sync with reject_rumour() in the migrations, which writes
+ * the same labels to the audit log.
+ */
+export const REJECTION_REASONS = {
+  no_source: "Geen of onvoldoende bron",
+  minor_or_not_senior: "Mogelijk minderjarige of geen senior niveau",
+  offensive_or_personal: "Beledigend of persoonlijk",
+  duplicate: "Dubbel gerucht",
+  incomplete: "Onvolledig of onduidelijk",
+  other: "Andere",
+} as const;
+
+export type RejectionReason = keyof typeof REJECTION_REASONS;
+
+export const REJECTION_NOTE_MAX_LENGTH = 500;
+
+/** Rumour categories as the site shows them. */
+export const RUMOUR_CATEGORY_LABELS: Record<string, string> = {
+  transfer: "Transfer",
+  trainer_transfer: "Trainer Transfer",
+  player_retirement: "Speler Stopt",
+  trainer_retirement: "Trainer Stopt",
+};

@@ -1,4 +1,4 @@
-import { test, expect, loginAs, seed } from "./fixtures";
+import { test, expect, loginAs, seed, submitRumour } from "./fixtures";
 
 // New rumours stay pending until a moderator approves them (issue #65).
 // Pending and rejected rumours never appear on Transfer Talk or the homepage,
@@ -45,17 +45,7 @@ test("a submitted rumour waits for a moderator", async ({ page }) => {
   const lastName = `Wachtrij${Date.now()}`;
 
   await loginAs(page, "tom");
-  await page.goto("/geruchten/nieuw");
-  await page.getByRole("combobox").first().click();
-  await page.getByRole("option", { name: "Trainer Stopt" }).click();
-  await page.getByLabel(/Achternaam/).fill(lastName);
-  await page.getByLabel(/Voornaam/).fill("Toon");
-  await page.getByLabel(/Huidige Club/).fill("VC Testdorp");
-  await page.getByRole("button", { name: "Gerucht Delen" }).click();
-
-  await expect(
-    page.getByRole("heading", { name: "Je gerucht wordt nagekeken" }),
-  ).toBeVisible();
+  await submitRumour(page, lastName);
 
   await page.goto("/geruchten");
   await expect(page.getByText(seed.openRumour.playerName).first()).toBeVisible();

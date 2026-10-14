@@ -44,7 +44,12 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
-import { RUMOUR_STATUS_LABELS, type RumourStatus } from "@/lib/rumours";
+import {
+  REJECTION_REASONS,
+  RUMOUR_STATUS_LABELS,
+  type RejectionReason,
+  type RumourStatus,
+} from "@/lib/rumours";
 
 const TRUST_TIERS = [
   { min: 100, label: "Legende", color: "bg-yellow-500 text-yellow-950" },
@@ -441,6 +446,15 @@ export function ProfileView({
                           })}
                         </span>
                       </Link>
+                      {r.status === "rejected" && r.rejection_reason && (
+                        <p className="mt-1 px-3 text-xs text-muted-foreground">
+                          Reden:{" "}
+                          {REJECTION_REASONS[
+                            r.rejection_reason as RejectionReason
+                          ] ?? r.rejection_reason}
+                          {r.rejection_note && ` — ${r.rejection_note}`}
+                        </p>
+                      )}
                     </li>
                   ))}
                 </ul>

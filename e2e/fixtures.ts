@@ -74,6 +74,25 @@ export async function loginAs(page: Page, user: SeedUser) {
   await expect(page.getByRole("banner").getByText(username)).toBeVisible();
 }
 
+/**
+ * Submits a "Trainer Stopt" rumour through the form as the logged-in user and
+ * waits for the confirmation. Use a unique last name per run, so reruns
+ * against the same database don't collide.
+ */
+export async function submitRumour(page: Page, lastName: string) {
+  await page.goto("/geruchten/nieuw");
+  await page.getByRole("combobox").first().click();
+  await page.getByRole("option", { name: "Trainer Stopt" }).click();
+  await page.getByLabel(/Achternaam/).fill(lastName);
+  await page.getByLabel(/Voornaam/).fill("Toon");
+  await page.getByLabel(/Huidige Club/).fill("VC Testdorp");
+  await page.getByRole("button", { name: "Gerucht Delen" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Je gerucht wordt nagekeken" }),
+  ).toBeVisible();
+}
+
 export const test = base.extend<{ blockThirdParties: void }>({
   // A production build sends Datadog RUM sessions to the production app;
   // tests must never end up in its analytics.

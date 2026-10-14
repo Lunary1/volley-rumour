@@ -18,6 +18,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-009 | 2026-10-13 | Accepted | Coming-soon mode closes every route except the homepage and info pages |
 | D-010 | 2026-10-13 | Accepted | Vercel previews keep using the production database; no separate preview project |
 | D-011 | 2026-10-14 | Accepted | Staff audit log entries are kept 2 years, then deleted            |
+| D-012 | 2026-10-14 | Accepted | Moderators may moderate their own rumours; the queue shows the username only |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -234,6 +235,26 @@ justify as a legitimate interest.
 **Consequences.** The purge must be scheduled before the first entries expire
 (October 2028). The privacy page should mention the log and its retention
 when it's updated (#77).
+
+## D-012 — Moderation queue: who moderates and what they see
+
+**Context.** The moderation queue (#66) needs two answers the policy left
+open: may a moderator decide on their own rumour, and what does the queue show
+about the author while the track record (D-005, #88) isn't built?
+
+**Decision.**
+- **Moderators may approve or reject their own rumours.** The audit log
+  records who decided (#64), so it stays traceable. This works with a single
+  moderator.
+- **The queue shows the author's username only** until #88 brings the track
+  record. No vote-based trust score, since D-005 isn't signed off.
+- **Rejection reasons are a fixed list** (Moderation Policy), stored as a code
+  with an optional note; "Andere" requires the note. The author sees the
+  reason and note on their profile. The audit log keeps the reason as the
+  author read it.
+
+**Consequences.** Revisit self-moderation when there are more moderators. The
+queue gets the source field with #67 and the track record with #88.
 
 ## O-001 — Rumour confirmation authority (Open)
 

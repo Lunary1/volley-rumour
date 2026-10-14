@@ -58,11 +58,11 @@ ran without Supabase credentials, which is what CI will face.
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes aren't saved                     |
 | J-11    | Account and personal data                | **BROKEN**  | Account deletion can leave a half-deleted state (password reset fixed in #58) |
 | J-12    | Takedown request by named person         | **MISSING** | No path at all; contact form "report" is only `console.log`                 |
-| J-13    | Pre-moderation queue                     | **MISSING** | No staff role, no admin area                                                |
+| J-13    | Pre-moderation queue                     | **PARTIAL** | Queue, approve/reject and audit log work (#66); no track record (#88) or email (#53) |
 | J-14    | Resolve a rumour                         | **MISSING** | `confirmRumour` removed in #65 (X-3); rebuilt with #70                        |
 | J-15    | Reports, takedowns, sanctions            | **MISSING** | Reports can be written to the database but nobody can read them            |
 
-**Count:** 0 WORKS · 7 PARTIAL · 2 BROKEN · 6 MISSING.
+**Count:** 0 WORKS · 8 PARTIAL · 2 BROKEN · 5 MISSING.
 
 ---
 
@@ -104,7 +104,7 @@ items.
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Only moderator-approved rumours visible | **WORKS** | [geruchten/page.tsx:12-30](../../app/geruchten/page.tsx#L12-L30), [rumour.ts:47-58](../../app/actions/rumour.ts#L47-L58) | Fixed in #65: RLS hides pending and rejected rumours; Transfer Talk lists approved statuses only. Approving comes with #66 |
+| Only moderator-approved rumours visible | **WORKS** | [geruchten/page.tsx:12-30](../../app/geruchten/page.tsx#L12-L30), [rumour.ts:47-58](../../app/actions/rumour.ts#L47-L58) | Fixed in #65: RLS hides pending and rejected rumours; Transfer Talk lists approved statuses only. Moderators approve in the queue (#66) |
 | Card shows neutral belief %, author track record, no good/evil labels | PARTIAL | [rumour-card.tsx:184-212](../../components/rumour-card.tsx#L184-L212) | Shows the "Evil/Corrupt/Heroic/Legendary" karma label and trust points instead of a track record (D-005, proposed) |
 | Card renders for anonymised authors | **FIXED** (#57) | [rumour-card.tsx](../../components/rumour-card.tsx), [geruchten-deleted-creator.spec.ts](../../e2e/geruchten-deleted-creator.spec.ts) | Shows "Verwijderd account" without a trust score, in the card and the detail modal (X-2) |
 | Source type and link shown | MISSING | — | No source field exists |
@@ -219,15 +219,15 @@ items.
 | Outcome emailed | MISSING | — | |
 | Requests visible only to moderators, retention defined | MISSING | — | |
 
-### J-13 — Pre-moderation queue · MISSING
+### J-13 — Pre-moderation queue · PARTIAL
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Non-staff get 404/403 on `/admin` and admin actions | MISSING | — | No staff role anywhere in code (D-006) |
-| Pending list oldest first with track record | MISSING | — | |
-| Approve → live, author notified | MISSING | — | |
-| Reject with reason | MISSING | — | |
-| Audit log | MISSING | — | Only `deletion_audit_log` exists |
+| Non-staff get 404/403 on `/admin` and admin actions | **WORKS** | [admin/layout.tsx](../../app/admin/layout.tsx), [staff.ts](../../lib/staff.ts) | #63: the layout 404s for non-staff; admin actions use `requireStaff()`, and the moderation functions check `is_staff()` again |
+| Pending list oldest first with track record | **PARTIAL** | [admin/wachtrij/page.tsx](../../app/admin/wachtrij/page.tsx) | #66: oldest first with the author's username. Track record waits for #88 (D-012); the source field for #67 |
+| Approve → live, author notified | **PARTIAL** | [moderation.ts](../../app/actions/moderation.ts), `approve_rumour()` | #66: approved rumours go live and the author's profile shows "Lopend". Email notification waits on #53 |
+| Reject with reason | **WORKS** | `reject_rumour()`, [profile-view.tsx](../../app/profile/profile-view.tsx) | #66: fixed list of reasons (note required for "Andere"); the author sees the reason on their profile |
+| Audit log | **WORKS** | `log_staff_action()`, [admin/logboek](../../app/admin/logboek/page.tsx) | #64, #66: approve and reject log in the same transaction as the decision |
 
 ### J-14 — Resolve a rumour · MISSING
 
