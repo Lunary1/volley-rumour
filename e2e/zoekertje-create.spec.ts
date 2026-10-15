@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Page } from "@playwright/test";
 import { expect, loginAs, seedUsers, SEED_PASSWORD, test } from "./fixtures";
-import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase";
+import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
 
 // Posting a zoekertje goes through a validated server action and stores every
 // field, including gender and diploma (issue #71, J-04, J-08).
