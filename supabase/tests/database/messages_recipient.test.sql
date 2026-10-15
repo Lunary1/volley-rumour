@@ -32,23 +32,23 @@ SELECT ok(
 
 -- The initiator writes: the ad owner receives it.
 SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000074b');
-INSERT INTO public.messages (id, conversation_id, sender_id, content) VALUES
-  ('00000000-0000-0000-0000-0000000074d1', '00000000-0000-0000-0000-0000000074c1',
+INSERT INTO public.messages (conversation_id, sender_id, content) VALUES
+  ('00000000-0000-0000-0000-0000000074c1',
    '00000000-0000-0000-0000-00000000074b', 'Is de plaats nog vrij?');
 RESET ROLE;
 SELECT is(
-  (SELECT recipient_id FROM public.messages WHERE id = '00000000-0000-0000-0000-0000000074d1'),
+  (SELECT recipient_id FROM public.messages WHERE content = 'Is de plaats nog vrij?'),
   '00000000-0000-0000-0000-00000000074a'::uuid,
   'a message from the initiator goes to the ad owner');
 
 -- The ad owner answers: the initiator receives it.
 SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000074a');
-INSERT INTO public.messages (id, conversation_id, sender_id, content) VALUES
-  ('00000000-0000-0000-0000-0000000074d2', '00000000-0000-0000-0000-0000000074c1',
+INSERT INTO public.messages (conversation_id, sender_id, content) VALUES
+  ('00000000-0000-0000-0000-0000000074c1',
    '00000000-0000-0000-0000-00000000074a', 'Ja, kom gerust eens langs.');
 RESET ROLE;
 SELECT is(
-  (SELECT recipient_id FROM public.messages WHERE id = '00000000-0000-0000-0000-0000000074d2'),
+  (SELECT recipient_id FROM public.messages WHERE content = 'Ja, kom gerust eens langs.'),
   '00000000-0000-0000-0000-00000000074b'::uuid,
   'an answer from the ad owner goes to the initiator');
 

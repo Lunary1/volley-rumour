@@ -27,16 +27,21 @@ const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
 
-// Jana and volle_wachtrij, about the seed ad. Each test has its own
-// conversation, so exact counts hold while the suite runs in parallel.
-async function freshConversation(id: string) {
+// One conversation per test, each about its own ad (one per ad and pair).
+// Only the badge test messages volle_wachtrij, so its count is exact.
+async function freshConversation(
+  id: string,
+  adId: string,
+  initiator: keyof typeof ids,
+  recipient: keyof typeof ids,
+) {
   await admin.from("conversations").delete().eq("id", id);
   const { error } = await admin.from("conversations").insert({
     id,
-    ad_id: seed.activeAd.id,
+    ad_id: adId,
     ad_type: "classified",
-    initiator_id: ids.jana,
-    recipient_id: ids.wachtrij,
+    initiator_id: ids[initiator],
+    recipient_id: ids[recipient],
   });
   expect(error).toBeNull();
 }
@@ -81,7 +86,7 @@ test("the unread badge counts a new message without a reload", async ({
   page,
 }) => {
   const conversationId = "f0000000-0000-4000-8000-00000000074a";
-  await freshConversation(conversationId);
+  await freshConversation(conversationId, seed.activeAd.id, "jana", "wachtrij");
 
   await loginAs(page, "wachtrij");
   const messagesLink = page
@@ -109,29 +114,25 @@ test("the unread badge counts a new message without a reload", async ({
 
 test("a third user receives no Realtime events for someone else's conversation", async () => {
   const conversationId = "f0000000-0000-4000-8000-00000000074b";
-  await freshConversation(conversationId);
-
-  // The recipient, as the badge subscribes: the control that events flow.
-  const wachtrij = await signIn("wachtrij");
-  const received: unknown[] = [];
-  await listen(
-    wachtrij,
-    "recipient",
-    `recipient_id=eq.${ids.wachtrij}`,
-    received,
+  await freshConversation(
+    conversationId,
+    seed.adWithoutDescription.id,
+    "wachtrij",
+    "jana",
   );
+
+  // Jana, the recipient, listens as the badge does: the control that events
+  // flow.
+  const jana = await signIn("jana");
+  const received: unknown[] = [];
+  await listen(jana, "recipient", `recipient_id=eq.${ids.jana}`, received);
 
   // Tom tries everything a modified client could: no filter at all, the
   // recipient's filter, and the conversation's filter.
   const tom = await signIn("tom");
   const leaked: unknown[] = [];
   await listen(tom, "all", undefined, leaked);
-  await listen(
-    tom,
-    "spoof-recipient",
-    `recipient_id=eq.${ids.wachtrij}`,
-    leaked,
-  );
+  await listen(tom, "spoof-recipient", `recipient_id=eq.${ids.jana}`, leaked);
   await listen(
     tom,
     "spoof-conversation",
@@ -139,11 +140,11 @@ test("a third user receives no Realtime events for someone else's conversation",
     leaked,
   );
 
-  const jana = await signIn("jana");
+  const wachtrij = await signIn("wachtrij");
   const content = `Privébericht ${Date.now()}`;
-  const { error } = await jana.from("messages").insert({
+  const { error } = await wachtrij.from("messages").insert({
     conversation_id: conversationId,
-    sender_id: ids.jana,
+    sender_id: ids.wachtrij,
     content,
   });
   expect(error).toBeNull();
