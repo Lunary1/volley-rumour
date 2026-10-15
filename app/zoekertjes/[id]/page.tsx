@@ -10,6 +10,7 @@ import {
   User,
   Users,
   GraduationCap,
+  Pencil,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -54,13 +55,13 @@ async function getClassified(id: string) {
       trainer_diploma,
       created_at,
       user_id,
+      is_active,
       is_featured,
       featured_until,
       profiles(username, is_verified_source)
     `,
     )
     .eq("id", id)
-    .eq("is_active", true)
     // RLS still shows removed ads to their author and staff (#69).
     .is("removed_at", null)
     .single();
@@ -81,7 +82,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const classified = await getClassified(id);
-  if (!classified) return { title: "Zoekertje" };
+  if (!classified?.is_active) return { title: "Zoekertje" };
   return { title: `${classified.title || "Zoekertje"} | Zoekertjes` };
 }
 
@@ -97,6 +98,8 @@ export default async function ClassifiedDetailPage({
   if (!classified) notFound();
 
   const isOwn = user?.id === classified.user_id;
+  // An ad marked "gevonden" is gone for everyone but its owner (#72).
+  if (!classified.is_active && !isOwn) notFound();
   const title = classified.title || "Zoekertje";
   // Team ads use the team name as contact name, already shown below the title.
   const showContactName =
@@ -112,6 +115,27 @@ export default async function ClassifiedDetailPage({
           Terug naar zoekertjes
         </Link>
       </Button>
+
+      {isOwn && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 p-3 text-sm text-muted-foreground">
+          <p>
+            {classified.is_active
+              ? "Dit is jouw zoekertje."
+              : "Je hebt dit zoekertje als gevonden gemarkeerd. Het staat niet meer in de lijst."}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/zoekertjes/${classified.id}/bewerken`}>
+                <Pencil className="h-3.5 w-3.5" aria-hidden />
+                Bewerken
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/zoekertjes/mijn">Mijn zoekertjes</Link>
+            </Button>
+          </div>
+        </div>
+      )}
 
       <article className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 space-y-6">

@@ -50,10 +50,10 @@ ran without Supabase credentials, which is what CI will face.
 | J-02    | Read Transfer Talk / transfers           | **BROKEN**  | Unmoderated rumours are public; crash on anonymised rumours fixed in #57     |
 | J-03    | Create an account                        | **PARTIAL** | No 16+ / terms confirmation; raw English errors                             |
 | J-04    | Post "speler zoekt team"                 | **PARTIAL** | Server action, gender stored, login first, public notice (#71); expiry left (#84) |
-| J-05    | Manage own zoekertjes                    | **MISSING** | No edit, deactivate or delete anywhere                                      |
+| J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status waits on #84 |
 | J-06    | Coach contacts a club                    | **PARTIAL** | No notifications; message privacy rests entirely on unverified RLS         |
 | J-07    | Block / report                           | **PARTIAL** | Block, unblock and report work (#73, #87); archiving still hides the conversation for both (#91) |
-| J-08    | Club recruits player/trainer             | **PARTIAL** | Gender and diploma stored and shown (#71); can't close an ad yet (#72)      |
+| J-08    | Club recruits player/trainer             | **WORKS**   | Gender and diploma stored and shown (#71); ads closed as gevonden (#72)   |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes aren't saved                     |
 | J-11    | Account and personal data                | **BROKEN**  | Account deletion can leave a half-deleted state (password reset fixed in #58) |
@@ -131,19 +131,19 @@ items.
 | Logged-out → redirect to login and back | **WORKS** | [zoekertjes/nieuw/page.tsx](../../app/zoekertjes/nieuw/page.tsx), [zoekertje-create.spec.ts](../../e2e/zoekertje-create.spec.ts) | Fixed in #71: the page sends logged-out visitors to `/auth/login?next=/zoekertjes/nieuw` before they fill anything in |
 | Senior divisions only | **WORKS** | [classifieds-utils.ts](../../lib/classifieds-utils.ts), [classified_gender_and_diploma.sql](../../supabase/migrations/20261015093039_classified_gender_and_diploma.sql) | Same list as rumours (`promo4_heren` now labelled); checked by the server action and, for new or changed rows, by the database (#71) |
 | Server-side validation, Dutch messages, all fields stored | **WORKS** | [classifieds.ts](../../app/actions/classifieds.ts), [schemas.ts](../../lib/schemas.ts) | Fixed in #71: `createClassified` validates with `createClassifiedSchema` (Dutch messages); gender and diploma have their own columns and are shown on the ad (D-019) |
-| Lands on new ad's detail page with toast | **WORKS** | [classified-form.tsx](../../app/zoekertjes/nieuw/classified-form.tsx) | Fixed in #71: "Je zoekertje staat online" on the new ad |
+| Lands on new ad's detail page with toast | **WORKS** | [classified-form.tsx](../../components/classified-form.tsx) | Fixed in #71: "Je zoekertje staat online" on the new ad |
 | Expiry date set and shown | MISSING | — | #84 |
-| Notice that name and club will be public | **WORKS** | [classified-form.tsx](../../app/zoekertjes/nieuw/classified-form.tsx) | Fixed in #71: "Je zoekertje is openbaar: …" above the submit button |
+| Notice that name and club will be public | **WORKS** | [classified-form.tsx](../../components/classified-form.tsx) | Fixed in #71: "Je zoekertje is openbaar: …" above the submit button |
 
-### J-05 — Player manages own zoekertjes · MISSING
+### J-05 — Player manages own zoekertjes · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| "Mijn zoekertjes" with status | PARTIAL | [profile.ts:151-184](../../app/actions/profile.ts#L151-L184) | The profile shows the 5 most recent, each linking to the generic `/zoekertjes` list |
-| Edit | MISSING | — | |
-| Mark "gevonden" (deactivate) | MISSING | — | `is_active` is only ever set to `true` |
-| Delete with confirmation | MISSING | — | |
-| Non-owners refused by RLS and server | VERIFY | — | No server path exists; depends entirely on RLS |
+| "Mijn zoekertjes" with status | **WORKS** | [zoekertjes/mijn/page.tsx](../../app/zoekertjes/mijn/page.tsx), [zoekertjes-mijn.spec.ts](../../e2e/zoekertjes-mijn.spec.ts) | #72: `/zoekertjes/mijn`, linked from the profile, lists every ad as Online, Gevonden or "Verwijderd door een moderator". There is no expired status until ads expire (#84) |
+| Edit | **WORKS** | [classifieds.ts](../../app/actions/classifieds.ts), [bewerken/page.tsx](../../app/zoekertjes/[id]/bewerken/page.tsx) | #72: `updateClassified` uses the create schema; the change shows at once in the list and on the detail page. The type stays fixed (owners can't update it); an ad a moderator removed can't be edited |
+| Mark "gevonden" (deactivate) | **WORKS** | [my-classified-actions.tsx](../../components/my-classified-actions.tsx) | #72: leaves the list and returns 404 for others; the owner still sees it and can put it back online. Conversations stay |
+| Delete with confirmation | **WORKS** | [my-classified-actions.tsx](../../components/my-classified-actions.tsx) | #72: confirmation dialog; conversations stay and show "Verwijderd zoekertje"; reports about the ad go with it (D-015). Suspended users can delete but not edit (D-016) |
+| Non-owners refused by RLS and server | **WORKS** | [classified_owner_updates migration](../../supabase/migrations/20261015112454_classified_owner_updates.sql), [classifieds_owner.test.sql](../../supabase/tests/database/classifieds_owner.test.sql) | #72: every action filters on the user; RLS limits UPDATE and DELETE to the owner (pgTAP); the edit page returns 404 to others |
 
 ### J-06 — Coach contacts a club · PARTIAL
 
@@ -165,13 +165,13 @@ items.
 | Unblock from profile | **WORKS** | [blocked-users-card.tsx](../../app/profile/blocked-users-card.tsx), [messages.ts:400](../../app/actions/messages.ts#L400) | #73: "Geblokkeerde gebruikers" on the profile page with "Deblokkeren"; also from the conversation |
 | Archive only for me | **BROKEN** | [messages.ts:460](../../app/actions/messages.ts#L460) | `is_archived` sits on the shared conversation row, so it archives for both participants. No UI |
 
-### J-08 — Club recruits player/trainer · PARTIAL
+### J-08 — Club recruits player/trainer · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Team gender, division, province, position/diploma stored and shown | **WORKS** | [classifieds.ts](../../app/actions/classifieds.ts), [zoekertjes/[id]/page.tsx](../../app/zoekertjes/[id]/page.tsx) | Fixed in #71: "Dames/Heren" matches the division, optional minimum diploma for teams (D-019); positions and diplomas shown with their labels |
 | One conversation per candidate, labelled with ad | WORKS | [messages.ts:117-152](../../app/actions/messages.ts#L117-L152) | |
-| Close the ad, conversations remain | MISSING | — | See J-05 |
+| Close the ad, conversations remain | **WORKS** | [my-classified-actions.tsx](../../components/my-classified-actions.tsx) | #72: "Gevonden" in "Mijn zoekertjes"; see J-05 |
 | Verified badge on ads | WORKS | [classifieds-list.tsx:455-457](../../components/classifieds-list.tsx#L455-L457) | Badge is granted manually in the database (no admin UI) |
 
 ### J-09 — Contributor submits a sourced rumour · PARTIAL
