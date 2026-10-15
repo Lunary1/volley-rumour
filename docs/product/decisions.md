@@ -23,6 +23,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-014 | 2026-10-14 | Accepted | Takedown requests: rumour stays up until a moderator decides; status link, no email; 12-month retention |
 | D-015 | 2026-10-14 | Accepted | User reports: content stays up until decided; reporter gets a confirmation only; conversation reports close with an outcome |
 | D-016 | 2026-10-14 | Accepted | Suspensions, the verified badge and the moderator role are admin-only; suspended users are read-only |
+| D-017 | 2026-10-15 | Accepted | Contact messages: own staff page for moderators and admins; wiped 12 months after handling; abuse goes through Melden and takedowns |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -378,6 +379,44 @@ no page or action can forget the check.
 keeps the history), so a suspended user can delete their account and sign up
 again with the same email address. Revisit if that happens. The suspended
 user is not emailed (#53); they see the notice the next time they visit.
+
+## D-017 — Contact messages
+
+**Context.** #81: the contact form showed "Bedankt" but only logged the
+submission on the server, so nobody received it. This happened on
+production, where the contact page is open in coming-soon mode. The
+suspension notice (D-016) and the privacy page ("Contacteer ons voor een
+kopie van je gegevens") both send people there. Open questions were where
+staff read the messages, how long they are kept and what the form's subjects
+should be.
+
+**Decision** (owner, 2026-10-15).
+- **Own page, all staff.** Messages are handled at `/admin/contact`, next to
+  Meldingen, by moderators and admins alike. Partnership and privacy
+  questions stay apart from abuse reports.
+- **Kept 12 months after handling.** Name, email, message, account link,
+  internal note and IP hash are wiped 12 months after a staff member marks
+  the message handled. Open messages are never wiped.
+- **New subjects, abuse elsewhere.** "Vraag of feedback", "Mijn account of
+  schorsing", "Privacy en mijn gegevens", "Samenwerking of pers", "Iets
+  anders". "Rapporteer Misbruik" is gone: the page points to "Melden" on the
+  content (J-15) and to the takedown form (J-12).
+
+**Also decided while building** (agent calls, following D-014). No login is
+needed. Bot protection is the same as for takedowns: a honeypot, and at most 5
+messages per IP and 3 per email per day. For a logged-in sender, the
+account is stored from the session, so staff can see who appeals a
+suspension, and the email field is filled in. Suspended users can still send
+messages: it is how they appeal (D-016). Staff answer by email, by hand,
+then mark the message "Afgehandeld" with an optional internal note the
+sender never sees; that is logged as "Contactbericht afgehandeld". There is
+no reference or status link: the answer comes by email. In coming-soon mode
+the pointer to "Melden" and the takedown form is hidden, because neither is
+reachable then.
+
+**Consequences.** Messages are not forwarded by email; staff have to look at
+`/admin/contact`. Automatic notification comes with #53. The anonymisation
+function must be scheduled before October 2027, with the takedown one.
 
 ## O-001 — Rumour confirmation authority (Open)
 

@@ -9,6 +9,8 @@ const REPORT_RUMOUR_ID = "e0000000-0000-4000-8000-00000000000a";
 // test_geschorst and test_kandidaat, only used by the sanction tests (#80).
 const SUSPENDED_ID = "a0000000-0000-4000-8000-00000000000a";
 const CANDIDATE_ID = "a0000000-0000-4000-8000-00000000000b";
+// The seeded contact message (#81); messages tests send are deleted.
+const SEED_CONTACT_MESSAGE_ID = "c0000000-0000-4000-8000-000000000001";
 // Tim Terugtrek and Bram Bezwaar, only used by the takedown tests (#68).
 const TAKEDOWN_RUMOUR_IDS = [
   "e0000000-0000-4000-8000-000000000008",
@@ -28,6 +30,8 @@ const TAKEDOWN_RUMOUR_IDS = [
  *   have one open report per item.
  * - test_geschorst's suspension, and test_kandidaat's badge and moderator
  *   role (#80).
+ * - contact messages sent by tests, which count towards the daily limits
+ *   (#81).
  */
 export default async function globalSetup() {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -103,5 +107,13 @@ export default async function globalSetup() {
     throw new Error(
       `Resetting the sanction-test candidate: ${candidate.error.message}`,
     );
+  }
+
+  const contact = await admin
+    .from("contact_messages")
+    .delete()
+    .neq("id", SEED_CONTACT_MESSAGE_ID);
+  if (contact.error) {
+    throw new Error(`Cleaning up contact messages: ${contact.error.message}`);
   }
 }

@@ -215,7 +215,7 @@ items.
 | -- | ------ | -------- | ------ |
 | File without login, bot-protected | **WORKS** (#68) | [verwijderverzoek/page.tsx](../../app/verwijderverzoek/page.tsx), [takedown.ts](../../app/actions/takedown.ts), `submit_takedown_request()` | From the rumour detail view, the footer and the privacy page; honeypot plus 5 per IP and 3 per email per day |
 | Rumour hidden immediately pending review | **CHANGED** (D-014) | — | The owner decided the rumour stays visible until a moderator decides |
-| Acknowledgement with reference | **WORKS** (#68) | [takedown-form.tsx](../../app/verwijderverzoek/takedown-form.tsx) | Reference and private status link on screen; no email until #53. The contact form itself (#81) still only logs |
+| Acknowledgement with reference | **WORKS** (#68) | [takedown-form.tsx](../../app/verwijderverzoek/takedown-form.tsx) | Reference and private status link on screen; no email until #53. The contact form stores messages for staff since #81 (D-017) |
 | Outcome communicated | **WORKS** (#68) | [status page](../../app/verwijderverzoek/status/[token]/page.tsx), `remove_rumour_for_takedown()`, `reject_takedown_request()` | The status link shows the decision and the moderator's note; email waits on #53 |
 | Requests visible only to moderators, retention defined | **WORKS** (#68) | [admin/meldingen](../../app/admin/meldingen/page.tsx), `anonymise_expired_takedown_requests()` | RLS: staff only, hashes never readable. Personal fields wiped after 12 months (D-014); the function still has to be scheduled |
 
@@ -249,6 +249,7 @@ items.
 | Remove content from all views, notify author | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [profile-view.tsx](../../app/profile/profile-view.tsx) | Rumours get status `removed`, zoekertjes `removed_at` (RLS hides both); the author sees "Verwijderd" and the moderator's note on their profile. No email yet (#53) |
 | Suspend user (read-only) | **WORKS** | [user_sanctions migration](../../supabase/migrations/20261014193846_user_sanctions.sql), [user_sanctions.test.sql](../../supabase/tests/database/user_sanctions.test.sql), [users.spec.ts](../../e2e/users.spec.ts) | #80: admins suspend until a date or indefinitely, with a reason; the database refuses the user's posts, votes, messages and profile edits (`VR005`); the user sees a notice on every page (D-016) |
 | Audit log, reporter informed | PARTIAL | [staff_actions](../../supabase/migrations/20261014174640_user_reports.sql) | Every decision and conversation read is logged. The reporter only gets a confirmation (D-015); outcomes are stored for email (#53) |
+| Contact form reaches staff | **WORKS** | [contact_messages migration](../../supabase/migrations/20261015072309_contact_messages.sql), [/admin/contact](../../app/admin/contact/page.tsx), [contact.spec.ts](../../e2e/contact.spec.ts) | #81: messages stored (honeypot, daily limits), read and marked handled by staff, logged; wiped 12 months after handling (D-017). No email forwarding (#53) |
 | Grant/revoke verified badge and moderator role | **WORKS** | [/admin/gebruikers](../../app/admin/gebruikers/page.tsx), [user_sanctions migration](../../supabase/migrations/20261014193846_user_sanctions.sql) | #80: admins only, logged; moderators see the status. The admin role is set by the owner in SQL (D-016) |
 
 ---

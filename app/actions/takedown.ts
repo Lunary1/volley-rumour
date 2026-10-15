@@ -1,9 +1,9 @@
 "use server";
 
-import { createHash, createHmac, randomBytes } from "node:crypto";
-import { headers } from "next/headers";
+import { createHash, randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { dailyIpHash } from "@/lib/ip-hash";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/staff";
 import {
@@ -67,23 +67,6 @@ export type TakedownRequestInput = z.input<typeof requestSchema>;
 
 function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
-}
-
-/**
- * The visitor's IP address as an HMAC whose key changes every day (UTC), for
- * the rate limit only: hashes from different days can't be linked. Vercel
- * sets x-forwarded-for itself. Null when there is no address (local runs).
- */
-async function dailyIpHash() {
-  const headerList = await headers();
-  const ip =
-    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    headerList.get("x-real-ip")?.trim();
-  if (!ip) return null;
-  const day = new Date().toISOString().slice(0, 10);
-  return createHmac("sha256", `${process.env.SUPABASE_SERVICE_ROLE_KEY}:${day}`)
-    .update(ip)
-    .digest("hex");
 }
 
 export async function requestTakedown(

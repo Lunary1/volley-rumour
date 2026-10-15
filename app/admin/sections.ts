@@ -23,6 +23,12 @@ export const adminSections: AdminSection[] = [
     issue: 69,
   },
   {
+    label: "Contact",
+    description: "Berichten uit het contactformulier lezen en afhandelen.",
+    href: "/admin/contact",
+    issue: 81,
+  },
+  {
     label: "Gebruikers",
     description: "Gebruikers opzoeken, schorsen en rollen beheren.",
     href: "/admin/gebruikers",
