@@ -194,3 +194,32 @@ test("the inbox shows the requester's details to a moderator", async ({
   await expect(item).toContainText(requesterEmail);
   await expect(item).toContainText("De persoon zelf");
 });
+
+test.describe("before the page has hydrated", () => {
+  // Without JavaScript the page stays as it was server-rendered, which is
+  // what an early click on a slow connection hits (#127).
+  test.use({ javaScriptEnabled: false });
+
+  test("the form can't be sent, so nothing reaches the URL", async ({
+    page,
+  }) => {
+    const { id } = seed.takedownRejectRumour;
+    await page.goto(`/verwijderverzoek?gerucht=${id}`);
+
+    await page.getByLabel("Het gerucht gaat over mij", { exact: true }).check();
+    await page.getByLabel("Je naam").fill("Vroege Klikker");
+    await page.getByLabel("Je e-mailadres").fill("vroeg@example.test");
+    await page
+      .getByLabel("Waarom moet dit gerucht weg?")
+      .fill("Ik klik voor de pagina klaar is met laden.");
+
+    const send = page.getByRole("button", { name: "Verzoek versturen" });
+    await expect(send).toBeDisabled();
+    // Enter in a field would submit natively, unless the button is disabled.
+    await page.getByLabel("Je naam").press("Enter");
+
+    await expect(page).toHaveURL(`/verwijderverzoek?gerucht=${id}`);
+    expect(page.url()).not.toContain("vroeg");
+    await expect(page.getByLabel("Je naam")).toHaveValue("Vroege Klikker");
+  });
+});

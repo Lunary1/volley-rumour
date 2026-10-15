@@ -20,6 +20,7 @@ import {
   TAKEDOWN_RELATIONS,
   type TakedownRelation,
 } from "@/lib/takedown";
+import { useIsClient } from "@/lib/use-is-client";
 
 const relations = Object.entries(TAKEDOWN_RELATIONS) as [
   TakedownRelation,
@@ -30,6 +31,9 @@ const relations = Object.entries(TAKEDOWN_RELATIONS) as [
 export function TakedownForm({ rumourId }: { rumourId: string }) {
   const id = useId();
   const [pending, startTransition] = useTransition();
+  // Until hydration, a click would make the browser submit the form itself,
+  // as a GET with the requester's name, email and explanation in the URL.
+  const hydrated = useIsClient();
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<{
     reference: string;
@@ -204,7 +208,7 @@ export function TakedownForm({ rumourId }: { rumourId: string }) {
             </p>
           )}
 
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || !hydrated}>
             {pending && (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
             )}

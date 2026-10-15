@@ -124,6 +124,10 @@ Rules:
 - Mutations go through **Server Actions** in `app/actions/<domain>.ts`
   (`"use server"`). Don't insert or update from the browser.
 - Add `"use client"` only for forms, interactivity and Realtime subscriptions.
+- A client form with `onSubmit` and named fields renders its submit button
+  `disabled={!useIsClient()}` (`@/lib/use-is-client`). Otherwise a click before
+  hydration submits it natively as a GET, with the fields in the URL (#127).
+  Forms with `action={fn}` are safe: React blocks and replays that submit.
 - Call `revalidatePath()` for affected routes after a mutation.
 
 ### Server Action shape
