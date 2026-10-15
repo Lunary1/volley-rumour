@@ -20,9 +20,10 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   // CI stays on 2 workers. The 4-CPU runner also runs Supabase, the app and
   // the browsers: 3 workers took 264 s and 4 took 291 s with failures,
-  // against a median of ~220 s on 2 (#132). Locally Playwright uses half the
-  // cores.
-  workers: process.env.CI ? 2 : undefined,
+  // against a median of ~220 s on 2 (#132). Locally 4: Playwright's default
+  // of half the cores (8 on 16) overloads the app and the Supabase stack, and
+  // server actions time out in unrelated specs (#135).
+  workers: process.env.CI ? 2 : 4,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: E2E_BASE_URL,
