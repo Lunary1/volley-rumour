@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { RumourCard } from "@/components/rumour-card";
+import { voteOnRumour } from "@/app/actions/vote";
+import { getUserVotes } from "@/lib/votes";
 import { TransferCard } from "@/components/transfer-card";
 import { LeaderboardPeek } from "@/components/leaderboard-peek";
 import { Button } from "@/components/ui/button";
@@ -96,6 +98,7 @@ export default async function HomePage() {
       getTopContributors(),
       getSiteCounts(),
     ]);
+  const userVotes = await getUserVotes(featuredRumours.map((r) => r.id));
 
   // Normalise transfer date for TransferCard (DB may use confirmed_at or transfer_date)
   const transfersForDisplay = latestTransfers.map(
@@ -214,7 +217,12 @@ export default async function HomePage() {
           {featuredRumours.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {featuredRumours.map((rumour) => (
-                <RumourCard key={rumour.id} rumour={rumour} />
+                <RumourCard
+                  key={rumour.id}
+                  rumour={rumour}
+                  onVote={voteOnRumour}
+                  userVote={userVotes[rumour.id] ?? null}
+                />
               ))}
             </div>
           ) : (

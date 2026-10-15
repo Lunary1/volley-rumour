@@ -81,7 +81,6 @@ interface RumourDetailModalProps {
   votes: { up: number; down: number };
   userVote: "up" | "down" | null;
   onVote: (rumourId: string, voteType: "up" | "down") => Promise<unknown>;
-  isLoading?: boolean;
   isVoting?: boolean;
 }
 
@@ -92,7 +91,6 @@ export function RumourDetailModal({
   votes,
   userVote,
   onVote,
-  isLoading = false,
   isVoting = false,
 }: RumourDetailModalProps) {
   const total = votes.up + votes.down;
@@ -219,7 +217,8 @@ export function RumourDetailModal({
               variant="ghost"
               size="sm"
               onClick={() => handleVote("up")}
-              disabled={isLoading || isVoting}
+              disabled={isVoting}
+              aria-pressed={userVote === "up"}
               className={`gap-2 ${
                 userVote === "up"
                   ? "text-blue-600 bg-blue-600/10 hover:bg-blue-600/20 dark:text-blue-400"
@@ -227,6 +226,7 @@ export function RumourDetailModal({
               }`}
             >
               <ThumbsUp className="h-5 w-5" />
+              <span className="sr-only">Waar</span>
               <span className="font-semibold">{votes.up}</span>
             </Button>
             <span className="text-sm text-muted-foreground">
@@ -236,7 +236,8 @@ export function RumourDetailModal({
               variant="ghost"
               size="sm"
               onClick={() => handleVote("down")}
-              disabled={isLoading || isVoting}
+              disabled={isVoting}
+              aria-pressed={userVote === "down"}
               className={`gap-2 ${
                 userVote === "down"
                   ? "text-red-600 bg-red-600/10 hover:bg-red-600/20 dark:text-red-400"
@@ -244,6 +245,7 @@ export function RumourDetailModal({
               }`}
             >
               <ThumbsDown className="h-5 w-5" />
+              <span className="sr-only">Niet waar</span>
               <span className="font-semibold">{votes.down}</span>
             </Button>
           </div>
