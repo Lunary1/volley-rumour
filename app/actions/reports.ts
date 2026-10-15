@@ -125,6 +125,7 @@ export async function reportContent(
       if (blocked) {
         revalidatePath("/messages");
         revalidatePath(`/messages/${targetId}`);
+        revalidatePath("/profile");
       }
     }
   }

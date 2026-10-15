@@ -24,6 +24,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-015 | 2026-10-14 | Accepted | User reports: content stays up until decided; reporter gets a confirmation only; conversation reports close with an outcome |
 | D-016 | 2026-10-14 | Accepted | Suspensions, the verified badge and the moderator role are admin-only; suspended users are read-only |
 | D-017 | 2026-10-15 | Accepted | Contact messages: own staff page for moderators and admins; wiped 12 months after handling; abuse goes through Melden and takedowns |
+| D-018 | 2026-10-15 | Accepted | Blocks are enforced by the database in both directions; history stays readable; messaging only, not logged |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -417,6 +418,39 @@ reachable then.
 **Consequences.** Messages are not forwarded by email; staff have to look at
 `/admin/contact`. Automatic notification comes with #53. The anonymisation
 function must be scheduled before October 2027, with the takedown one.
+
+## D-018 — Blocking
+
+**Context.** #73: `blockUser` existed without a UI, and nothing stopped a
+blocked user from writing. The only check sat in `createConversation` and
+could never fire, because RLS shows a block only to the user who made it.
+J-07 already says what a block does; these are the calls made while building
+it (agent calls, following D-014 and D-017).
+
+**Decision** (2026-10-15).
+- **The database enforces it.** A trigger on `messages` and `conversations`
+  refuses inserts between two users when either one blocked the other
+  (SQLSTATE `VR008`). No server action or API call can skip it.
+- **Both directions.** The blocker can't message the blocked user either.
+  Unblocking lifts it for both.
+- **History stays.** Earlier messages stay readable for both users; only the
+  message box is replaced by a notice. Reports can still quote them (D-015).
+- **The blocked user sees a neutral notice.** "Je kan deze gebruiker geen
+  berichten sturen", without saying who blocked whom, and gets no message
+  when they're blocked. The blocker sees "Je hebt … geblokkeerd" with
+  "Deblokkeren".
+- **Messaging only.** A block doesn't hide the other user's zoekertjes,
+  rumours or profile.
+- **Not a moderation step.** Blocking isn't logged and staff don't see blocks.
+  Suspended users may still block and unblock (D-016).
+- **Confirm, then block.** "Blokkeren" in the conversation asks first; the
+  "Melden" dialog can still block in the same step (#87). Unblocking is one
+  click, from the profile page ("Geblokkeerde gebruikers") or the
+  conversation.
+
+**Consequences.** `blocked_users` is no longer readable or writable by
+visitors, and a block can't be edited, only lifted. A blocked user can tell
+they were blocked, as J-07 accepts.
 
 ## O-001 — Rumour confirmation authority (Open)
 

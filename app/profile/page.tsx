@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getRecentActivity } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";
 import { ProfileView } from "./profile-view";
+import type { BlockedUser } from "./blocked-users-card";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -33,7 +34,7 @@ export default async function ProfilePage() {
     );
   }
 
-  const [rumours, votes, confirmed, classifieds, recentActivity] =
+  const [rumours, votes, confirmed, classifieds, recentActivity, blocks] =
     await Promise.all([
       supabase
         .from("rumours")
@@ -53,7 +54,26 @@ export default async function ProfilePage() {
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id),
       getRecentActivity(),
+      // Users I blocked (#73), newest first.
+      supabase
+        .from("blocked_users")
+        .select(
+          "blocked_id, created_at, blocked:profiles!blocked_users_blocked_id_fkey(username)",
+        )
+        .eq("blocker_id", user.id)
+        .order("created_at", { ascending: false }),
     ]);
+
+  const blockedUsers: BlockedUser[] = (blocks.data ?? []).map((block) => {
+    // Many-to-one, so one profile; without generated types the client
+    // types it as a list.
+    const blocked = block.blocked as unknown as { username: string } | null;
+    return {
+      id: block.blocked_id,
+      username: blocked?.username ?? "Gebruiker",
+      blockedAt: block.created_at,
+    };
+  });
 
   return (
     <ProfileView
@@ -65,6 +85,7 @@ export default async function ProfilePage() {
         classifiedCount: classifieds.count || 0,
       }}
       recentActivity={recentActivity}
+      blockedUsers={blockedUsers}
     />
   );
 }

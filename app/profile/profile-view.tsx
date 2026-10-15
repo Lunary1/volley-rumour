@@ -44,6 +44,7 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { BlockedUsersCard, type BlockedUser } from "./blocked-users-card";
 import {
   REJECTION_REASONS,
   RUMOUR_STATUS_LABELS,
@@ -140,12 +141,14 @@ interface ProfileViewProps {
     rumours: RecentRumour[];
     classifieds: RecentClassified[];
   } | null;
+  blockedUsers: BlockedUser[];
 }
 
 export function ProfileView({
   initialProfile,
   stats,
   recentActivity,
+  blockedUsers,
 }: ProfileViewProps) {
   const [profile, setProfile] = useState(initialProfile);
   const [error, setError] = useState<string | null>(null);
@@ -539,6 +542,8 @@ export function ProfileView({
             </CardContent>
           </Card>
         )}
+
+        <BlockedUsersCard users={blockedUsers} />
 
         {/* Security / Password */}
         <Card className="mb-6 border-border bg-card">

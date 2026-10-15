@@ -1,3 +1,4 @@
+import { BLOCKED_ERROR_CODE, BLOCKED_MESSAGE } from "@/lib/blocks";
 import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
 
 /**
@@ -49,6 +50,11 @@ export function extractErrorMessage(
   // A suspended user's write, refused by the database (#80).
   if ((error as { code?: string }).code === SUSPENDED_ERROR_CODE) {
     return SUSPENDED_MESSAGE;
+  }
+
+  // A message or conversation across a block, refused by the database (#73).
+  if ((error as { code?: string }).code === BLOCKED_ERROR_CODE) {
+    return BLOCKED_MESSAGE;
   }
 
   if (error instanceof Error) {

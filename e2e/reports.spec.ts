@@ -159,8 +159,8 @@ test("a user reports and blocks in a conversation; a moderator reads it through 
   );
   await dialog.getByRole("button", { name: "Sluiten" }).first().click();
   await expect(
-    page.getByText("Deze conversatie is geblokkeerd."),
-  ).toBeVisible();
+    page.getByRole("status").filter({ hasText: "Jullie kunnen elkaar" }),
+  ).toContainText(`Je hebt ${club} geblokkeerd.`);
 
   const moderator = await pageFor(browser, "moderator");
   await moderator.goto("/admin/meldingen");

@@ -102,6 +102,12 @@ export const seed = {
     id: "f0000000-0000-4000-8000-000000000002",
     message: "Een jeugdploeg? Daar ben je veel te slecht voor.",
   },
+  // Jana (initiator) and coach_tom about Tom's "Hulptrainer" ad. Only block
+  // tests use it; global-setup.ts lifts the block and deletes sent messages.
+  blockConversation: {
+    id: "f0000000-0000-4000-8000-000000000003",
+    message: "Dag Tom, zoek je nog iemand voor de jeugdtrainingen?",
+  },
   // An open contact message from Jana (#81). Tests read it, never handle it.
   contactMessage: {
     senderName: "Jana Voorbeeld",

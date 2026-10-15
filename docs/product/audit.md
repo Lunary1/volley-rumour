@@ -52,7 +52,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-04    | Post "speler zoekt team"                 | **PARTIAL** | Browser-side insert without server validation; gender silently dropped      |
 | J-05    | Manage own zoekertjes                    | **MISSING** | No edit, deactivate or delete anywhere                                      |
 | J-06    | Coach contacts a club                    | **PARTIAL** | No notifications; message privacy rests entirely on unverified RLS         |
-| J-07    | Block / report                           | **PARTIAL** | Report (+ block) in the conversation works (#87); no block list, block not enforced on send (#73) |
+| J-07    | Block / report                           | **PARTIAL** | Block, unblock and report work (#73, #87); archiving still hides the conversation for both (#91) |
 | J-08    | Club recruits player/trainer             | **PARTIAL** | Team gender dropped; no diploma field; can't close an ad                    |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes aren't saved                     |
@@ -160,10 +160,10 @@ items.
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Block stops new messages and conversations | **BROKEN** | [messages.ts:426-447](../../app/actions/messages.ts#L426-L447), [messages.ts:175-239](../../app/actions/messages.ts#L175-L239) | `blockUser` has no UI. `sendMessage` doesn't check blocks; only `createConversation` checks, and only one direction. The conversation page does hide the input when blocked ([page.tsx:189](../../app/messages/[conversationId]/page.tsx#L189)) |
+| Block stops new messages and conversations | **WORKS** | [block_users migration](../../supabase/migrations/20261015080113_block_users.sql), [page.tsx](../../app/messages/[conversationId]/page.tsx), [blocks.spec.ts](../../e2e/blocks.spec.ts) | #73: "Blokkeren" in the conversation with a confirmation. A database trigger refuses messages and new conversations in both directions (`VR008`), so no code path can skip it; the other user sees "Je kan deze gebruiker geen berichten sturen". Earlier messages stay readable (D-018) |
 | Report conversation → moderator report | **WORKS** | [messages/[conversationId]/page.tsx](../../app/messages/[conversationId]/page.tsx), [reports.ts](../../app/actions/reports.ts), [reports.spec.ts](../../e2e/reports.spec.ts) | #87: "Melden" in the conversation, with a reason and optionally blocking the other user; confirmation shown; lands in `/admin/meldingen` (D-015) |
-| Unblock from profile | MISSING | [messages.ts:452-474](../../app/actions/messages.ts#L452-L474) | Action exists, no UI |
-| Archive only for me | **BROKEN** | [messages.ts:504-507](../../app/actions/messages.ts#L504-L507) | `is_archived` sits on the shared conversation row, so it archives for both participants. No UI |
+| Unblock from profile | **WORKS** | [blocked-users-card.tsx](../../app/profile/blocked-users-card.tsx), [messages.ts:400](../../app/actions/messages.ts#L400) | #73: "Geblokkeerde gebruikers" on the profile page with "Deblokkeren"; also from the conversation |
+| Archive only for me | **BROKEN** | [messages.ts:460](../../app/actions/messages.ts#L460) | `is_archived` sits on the shared conversation row, so it archives for both participants. No UI |
 
 ### J-08 — Club recruits player/trainer · PARTIAL
 
