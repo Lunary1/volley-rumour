@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
-import { getUserVoteOnRumour } from "@/app/actions/vote";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
@@ -52,6 +51,7 @@ interface RumourCardProps {
     rumourId: string,
     voteType: "up" | "down",
   ) => Promise<{ success?: boolean; error?: string } | void>;
+  // The logged-in user's vote, loaded by the page with getUserVotes() (#129)
   userVote?: "up" | "down" | null;
 }
 
@@ -91,7 +91,6 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
   const [localUserVote, setLocalUserVote] = useState<"up" | "down" | null>(
     userVote || null,
   );
-  const [isLoading, setIsLoading] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const votesRef = useRef({ up: rumour.votes_true, down: rumour.votes_false });
@@ -100,16 +99,6 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
   useEffect(() => {
     votesRef.current = { up: localUpvotes, down: localDownvotes };
   }, [localUpvotes, localDownvotes]);
-
-  // Fetch persistent user vote on mount
-  useEffect(() => {
-    async function loadUserVote() {
-      const vote = await getUserVoteOnRumour(rumour.id);
-      setLocalUserVote(vote);
-      setIsLoading(false);
-    }
-    loadUserVote();
-  }, [rumour.id]);
 
   // Subscribe to real-time updates for this rumour's vote counts
   useEffect(() => {
@@ -342,7 +331,8 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => handleVote("up")}
-              disabled={isLoading || isVoting}
+              disabled={isVoting}
+              aria-pressed={localUserVote === "up"}
               className={`gap-2 ${
                 localUserVote === "up"
                   ? "text-blue-600 bg-blue-600/10 hover:bg-blue-600/20"
@@ -350,18 +340,20 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
               }`}
             >
               <ThumbsUp className="h-5 w-5" />
+              <span className="sr-only">Waar</span>
               <span className="font-semibold">{localUpvotes}</span>
             </Button>
             <div className="text-muted-foreground text-sm font-medium">
               {localUpvotes + localDownvotes > 0
-                ? `${localUpvotes + localDownvotes} total votes`
+                ? `${localUpvotes + localDownvotes} stemmen`
                 : "Wees eerst"}
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleVote("down")}
-              disabled={isLoading || isVoting}
+              disabled={isVoting}
+              aria-pressed={localUserVote === "down"}
               className={`gap-2 ${
                 localUserVote === "down"
                   ? "text-red-600 bg-red-600/10 hover:bg-red-600/20"
@@ -369,6 +361,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
               }`}
             >
               <ThumbsDown className="h-5 w-5" />
+              <span className="sr-only">Niet waar</span>
               <span className="font-semibold">{localDownvotes}</span>
             </Button>
           </div>
@@ -430,7 +423,6 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
         votes={{ up: localUpvotes, down: localDownvotes }}
         userVote={localUserVote}
         onVote={(_id, voteType) => handleVote(voteType)}
-        isLoading={isLoading}
         isVoting={isVoting}
       />
     </>

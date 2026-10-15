@@ -16,7 +16,8 @@ export const seedUsers = {
   // Logging out ends every session of the user (global sign-out), which
   // would log out parallel tests on the same account. Only logout tests use it.
   uitlogger: { email: "uitlog@example.test", username: "test_uitlogger" },
-  // Already has 5 pending rumours, the most one author may have (#54).
+  // Already has 5 pending rumours, the most one author may have (#54). The
+  // vote tests vote as them; global-setup.ts removes those votes (#129).
   wachtrij: { email: "wachtrij@example.test", username: "volle_wachtrij" },
   // Suspends users and manages badges and roles (#80, D-016).
   admin: { email: "beheerder@example.test", username: "beheerder_vr" },

@@ -11,29 +11,6 @@ function voteError(error: { code?: string }) {
   return { error: "Je stem kon niet opgeslagen worden" };
 }
 
-export async function getUserVoteOnRumour(rumourId: string) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
-
-  const { data } = await supabase
-    .from("rumour_votes")
-    .select("vote_type")
-    .eq("rumour_id", rumourId)
-    .eq("user_id", user.id)
-    .single();
-
-  // vote_type is boolean: true = "up", false = "down"
-  if (!data) return null;
-  return data.vote_type === true ? "up" : "down";
-}
-
 export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
   const supabase = await createClient();
 

@@ -1,14 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { RumourCard } from "@/components/rumour-card";
 import { voteOnRumour } from "@/app/actions/vote";
+import { getUserVotes } from "@/lib/votes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
 import { PUBLIC_RUMOUR_STATUSES, isPublicRumourStatus } from "@/lib/rumours";
 
-// Cache transfer talk for 60 seconds - frequent updates
-export const revalidate = 60;
+// Rendered per request: the cards show the user's own votes, and a cached
+// query showed vote counts up to a minute old (#129).
+export const dynamic = "force-dynamic";
 
 // Authors and staff can read pending and rejected rumours through RLS, but
 // Transfer Talk only ever lists approved ones (#65).
@@ -47,12 +49,16 @@ export default async function GeruchtenPage(props: {
       : undefined;
 
   // Fetch only the rumours we need based on status filter
-  const allRumours = await getRumours(status);
-  const pendingRumours = await getRumours("rumour");
-  const confirmedRumours = await getRumours("confirmed");
-  const deniedRumours = await getRumours("denied");
+  const [allRumours, pendingRumours, confirmedRumours, deniedRumours] =
+    await Promise.all([
+      getRumours(status),
+      getRumours("rumour"),
+      getRumours("confirmed"),
+      getRumours("denied"),
+    ]);
 
   const displayRumours = allRumours;
+  const userVotes = await getUserVotes(displayRumours.map((r) => r.id));
 
   return (
     <div className="min-h-screen py-8">
@@ -141,6 +147,7 @@ export default async function GeruchtenPage(props: {
                   creator: rumour.creator,
                 }}
                 onVote={voteOnRumour}
+                userVote={userVotes[rumour.id] ?? null}
               />
             ))}
           </div>
