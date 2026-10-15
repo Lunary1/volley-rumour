@@ -399,13 +399,16 @@ export function ProfileView({
                 </p>
                 <p className="text-xs text-muted-foreground">Bevestigd</p>
               </div>
-              <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
+              <Link
+                href="/zoekertjes/mijn"
+                className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4 transition-colors hover:bg-muted/40"
+              >
                 <ShoppingBag className="mb-2 h-6 w-6 text-purple-500" />
                 <p className="text-2xl font-bold text-foreground">
                   {stats?.classifiedCount ?? 0}
                 </p>
                 <p className="text-xs text-muted-foreground">Zoekertjes</p>
-              </div>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -418,6 +421,15 @@ export function ProfileView({
               Recente activiteit
             </CardTitle>
           </CardHeader>
+          {/* Profile → "Mijn zoekertjes" (#72, J-05). */}
+          <div className="px-6 pb-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/zoekertjes/mijn">
+                <ShoppingBag className="h-4 w-4" aria-hidden />
+                Mijn zoekertjes
+              </Link>
+            </Button>
+          </div>
           <CardContent className="space-y-4">
             {recentActivity?.rumours && recentActivity.rumours.length > 0 && (
               <div>
@@ -481,7 +493,7 @@ export function ProfileView({
                     {recentActivity.classifieds.map((c) => (
                       <li key={c.id}>
                         <Link
-                          href="/zoekertjes"
+                          href="/zoekertjes/mijn"
                           className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40"
                         >
                           <ShoppingBag className="h-4 w-4 text-purple-500" />

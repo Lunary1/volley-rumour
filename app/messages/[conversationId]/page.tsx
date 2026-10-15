@@ -192,13 +192,24 @@ export default async function ConversationPage({
                 >
                   {adTypeBadge}
                 </Badge>
-                <Link
-                  href={adLink}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors truncate flex items-center gap-1"
-                >
-                  <span className="truncate">{adData?.title || "Gesprek"}</span>
-                  <ExternalLink className="h-3 w-3 shrink-0" />
-                </Link>
+                {adData ? (
+                  <Link
+                    href={adLink}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors truncate flex items-center gap-1"
+                  >
+                    <span className="truncate">
+                      {adData.title || "Gesprek"}
+                    </span>
+                    <ExternalLink className="h-3 w-3 shrink-0" />
+                  </Link>
+                ) : (
+                  // Its author deleted the ad; the conversation stays (#72).
+                  <span className="text-xs text-muted-foreground truncate">
+                    {conversation.ad_type === "transfer"
+                      ? "Gesprek"
+                      : "Verwijderd zoekertje"}
+                  </span>
+                )}
               </div>
             </div>
 

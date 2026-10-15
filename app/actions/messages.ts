@@ -348,7 +348,10 @@ export async function getConversations() {
 
   // Add ad titles to enriched conversations
   enriched?.forEach((conv) => {
-    conv.ad_title = adTitles.get(`${conv.ad_type}-${conv.ad_id}`) || "Ad";
+    // A deleted zoekertje keeps its conversations (#72).
+    conv.ad_title =
+      adTitles.get(`${conv.ad_type}-${conv.ad_id}`) ||
+      (conv.ad_type === "transfer" ? "Gesprek" : "Verwijderd zoekertje");
   });
 
   return { success: true, data: enriched || [] };

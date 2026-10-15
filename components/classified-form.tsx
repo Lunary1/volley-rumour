@@ -3,8 +3,8 @@
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Info, Send } from "lucide-react";
-import { createClassified } from "@/app/actions/classifieds";
+import { Info, Save, Send } from "lucide-react";
+import { createClassified, updateClassified } from "@/app/actions/classifieds";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import {
   CLASSIFIED_DESCRIPTION_MAX_LENGTH,
   CLASSIFIED_GENDERS,
   CLASSIFIED_TYPES,
+  CLASSIFIED_TYPE_LABELS,
   DIVISION_LABELS,
   POSITION_LABELS,
   PROVINCE_LABELS,
@@ -42,6 +43,22 @@ const PROVINCES = toOptions(PROVINCE_LABELS);
 
 const inputClass = "bg-input border-border text-foreground";
 
+/** An ad's current values, to fill in the form when editing it (#72). */
+export interface ClassifiedFormValues {
+  id: string;
+  type: string;
+  firstName?: string;
+  lastName?: string;
+  teamName?: string;
+  club?: string;
+  gender?: string;
+  division?: string;
+  position?: string;
+  diploma?: string;
+  province?: string;
+  description?: string;
+}
+
 function Required() {
   return <span className="text-destructive">*</span>;
 }
@@ -53,6 +70,7 @@ function SelectField({
   options,
   required = false,
   disabled = false,
+  defaultValue,
   onValueChange,
 }: {
   name: string;
@@ -61,6 +79,7 @@ function SelectField({
   options: { value: string; label: string }[];
   required?: boolean;
   disabled?: boolean;
+  defaultValue?: string;
   onValueChange?: (value: string) => void;
 }) {
   return (
@@ -70,6 +89,7 @@ function SelectField({
         name={name}
         required={required}
         disabled={disabled}
+        defaultValue={defaultValue}
         onValueChange={onValueChange}
       >
         <SelectTrigger id={name} className={`${inputClass} w-full`}>
@@ -92,11 +112,13 @@ function TextField({
   label,
   placeholder,
   required = false,
+  defaultValue,
 }: {
   name: string;
   label: React.ReactNode;
   placeholder: string;
   required?: boolean;
+  defaultValue?: string;
 }) {
   return (
     <div className="space-y-2">
@@ -106,6 +128,7 @@ function TextField({
         name={name}
         placeholder={placeholder}
         required={required}
+        defaultValue={defaultValue}
         maxLength={200}
         className={inputClass}
       />
@@ -113,14 +136,25 @@ function TextField({
   );
 }
 
-export function ClassifiedForm() {
+/**
+ * Posts a new zoekertje (#71), or edits one when `classified` is given (#72).
+ * An ad keeps its type: to look for something else, the user posts a new one.
+ */
+export function ClassifiedForm({
+  classified,
+}: {
+  classified?: ClassifiedFormValues;
+}) {
   const router = useRouter();
   const hydrated = useIsClient();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [type, setType] = useState<string | null>(null);
-  const [gender, setGender] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(classified?.type ?? null);
+  const [gender, setGender] = useState<string | null>(
+    classified?.gender ?? null,
+  );
 
+  const isEdit = !!classified;
   const isPerson = type ? isPersonAd(type) : false;
   // Every senior division is heren or dames (#71).
   const divisions = gender
@@ -133,26 +167,40 @@ export function ClassifiedForm() {
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const result = await createClassified(formData);
+      const result = classified
+        ? await updateClassified(classified.id, formData)
+        : await createClassified(formData);
       if (!result.success) {
         setError(result.error);
         return;
       }
-      toast.success("Je zoekertje staat online");
+      toast.success(
+        classified ? "Je zoekertje is bijgewerkt" : "Je zoekertje staat online",
+      );
       router.push(`/zoekertjes/${result.data.id}`);
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <SelectField
-        name="type"
-        label="Type zoekertje"
-        placeholder="Selecteer type"
-        options={TYPES}
-        required
-        onValueChange={setType}
-      />
+      {classified ? (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Type zoekertje</p>
+          <p className="text-sm text-muted-foreground">
+            {CLASSIFIED_TYPE_LABELS[classified.type] ?? classified.type}. Zoek
+            je iets anders? Plaats dan een nieuw zoekertje.
+          </p>
+        </div>
+      ) : (
+        <SelectField
+          name="type"
+          label="Type zoekertje"
+          placeholder="Selecteer type"
+          options={TYPES}
+          required
+          onValueChange={setType}
+        />
+      )}
 
       {type && (
         <>
@@ -167,6 +215,7 @@ export function ClassifiedForm() {
                 }
                 placeholder="Bijv. Jan"
                 required
+                defaultValue={classified?.firstName}
               />
               <TextField
                 name="lastName"
@@ -177,6 +226,7 @@ export function ClassifiedForm() {
                 }
                 placeholder="Bijv. Janssen"
                 required
+                defaultValue={classified?.lastName}
               />
             </div>
           ) : (
@@ -189,6 +239,7 @@ export function ClassifiedForm() {
               }
               placeholder="Bijv. Caruur Gent Volley"
               required
+              defaultValue={classified?.teamName}
             />
           )}
 
@@ -202,6 +253,7 @@ export function ClassifiedForm() {
               }
               placeholder="Bijv. Knack Roeselare"
               required
+              defaultValue={classified?.club}
             />
           )}
           {type === "trainer_seeks_team" && (
@@ -209,6 +261,7 @@ export function ClassifiedForm() {
               name="club"
               label="Huidige clubnaam (optioneel)"
               placeholder="Bijv. Knack Roeselare"
+              defaultValue={classified?.club}
             />
           )}
 
@@ -223,6 +276,7 @@ export function ClassifiedForm() {
               placeholder="Selecteer"
               options={GENDERS}
               required
+              defaultValue={classified?.gender}
               onValueChange={setGender}
             />
             {/* Remounts empty when Dames/Heren changes. */}
@@ -240,6 +294,11 @@ export function ClassifiedForm() {
               options={divisions}
               required
               disabled={!gender}
+              defaultValue={
+                gender && gender === classified?.gender
+                  ? classified.division
+                  : undefined
+              }
             />
           </div>
 
@@ -254,6 +313,7 @@ export function ClassifiedForm() {
               placeholder="Selecteer positie"
               options={POSITIONS}
               required
+              defaultValue={classified?.position}
             />
           )}
           {type === "trainer_seeks_team" && (
@@ -267,6 +327,7 @@ export function ClassifiedForm() {
               placeholder="Selecteer diploma"
               options={DIPLOMAS}
               required
+              defaultValue={classified?.diploma}
             />
           )}
           {type === "team_seeks_trainer" && (
@@ -275,6 +336,7 @@ export function ClassifiedForm() {
               label="Minimaal diploma (optioneel)"
               placeholder="Selecteer diploma"
               options={DIPLOMAS}
+              defaultValue={classified?.diploma}
             />
           )}
 
@@ -288,6 +350,7 @@ export function ClassifiedForm() {
             placeholder="Selecteer provincie"
             options={PROVINCES}
             required
+            defaultValue={classified?.province}
           />
 
           <div className="space-y-2">
@@ -306,6 +369,7 @@ export function ClassifiedForm() {
               }
               rows={4}
               maxLength={CLASSIFIED_DESCRIPTION_MAX_LENGTH}
+              defaultValue={classified?.description}
               className={inputClass}
             />
           </div>
@@ -336,7 +400,16 @@ export function ClassifiedForm() {
         disabled={pending || !type || !hydrated}
         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
       >
-        {pending ? (
+        {isEdit ? (
+          pending ? (
+            "Bezig met bewaren..."
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Wijzigingen bewaren
+            </>
+          )
+        ) : pending ? (
           "Bezig met plaatsen..."
         ) : (
           <>

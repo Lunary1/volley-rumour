@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ClassifiedForm } from "./classified-form";
+import { ClassifiedForm } from "@/components/classified-form";
 
 export const metadata: Metadata = { title: "Nieuw zoekertje" };
 
