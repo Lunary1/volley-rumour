@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase";
+import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
 
 // speler_jana, coach_tom and vc_testdorp in supabase/seed.sql
 const JANA_ID = "a0000000-0000-4000-8000-000000000001";

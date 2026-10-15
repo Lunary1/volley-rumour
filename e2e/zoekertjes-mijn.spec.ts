@@ -8,7 +8,7 @@ import {
   test,
   type SeedUser,
 } from "./fixtures";
-import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase";
+import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
 
 // "Mijn zoekertjes": owners edit, close ("gevonden") and delete their own ads
 // (issue #72, J-05, J-08). Every test makes its own ads and deletes them again.

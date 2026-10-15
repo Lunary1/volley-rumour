@@ -12,6 +12,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
+    "test:e2e:server": "node e2e/serve.mjs",
     "db:start": "supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta",
     "db:start:studio": "supabase start",
     "db:stop": "supabase stop",

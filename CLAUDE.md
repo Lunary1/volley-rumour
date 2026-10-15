@@ -36,6 +36,7 @@ Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
 | Format | `npm run format` (Prettier, writes) / `npm run format:check` (CI) |
 | Build | `npm run build` |
 | E2E tests | `npm run test:e2e` — builds the app against the local stack and runs Playwright on :3100 (needs `npm run db:start`; once: `npx playwright install chromium`) |
+| E2E, build once | `npm run test:e2e:server` builds the app the same way and serves it on :3100 until you stop it. In another terminal, rerun specs without rebuilding: `E2E_REUSE_SERVER=1 npx playwright test e2e/<name>.spec.ts`. Restart it after changing app code |
 | Local database | `npm run db:start` / `npm run db:stop` (needs Docker). Starts the services the tests use, like CI; `npm run db:start:studio` adds Studio. **Stop it when you're not testing** — it uses a lot of RAM |
 | Rebuild local DB from migrations + seed | `npm run db:reset` |
 | Database tests (pgTAP) | `npm run db:test` |
