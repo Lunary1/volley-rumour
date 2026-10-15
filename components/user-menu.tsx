@@ -38,54 +38,35 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
 
     const supabase = createClient();
 
-    // Initial count
+    // Messages addressed to me that I haven't read. The database sets
+    // `recipient_id` (#74), so no conversation lookup is needed.
     async function getUnreadCount() {
-      const { data } = await supabase
-        .from("conversations")
-        .select("id")
-        .or(`initiator_id.eq.${userId},recipient_id.eq.${userId}`);
-
-      if (data) {
-        // Get unread messages for these conversations
-        const conversationIds = data.map((c) => c.id);
-        const { data: unreadMessages } = await supabase
-          .from("messages")
-          .select("conversation_id")
-          .in("conversation_id", conversationIds)
-          .eq("is_read", false)
-          .neq("sender_id", userId);
-
-        const unreadMap = new Map();
-        unreadMessages?.forEach((msg: { conversation_id: string }) => {
-          unreadMap.set(
-            msg.conversation_id,
-            (unreadMap.get(msg.conversation_id) || 0) + 1,
-          );
-        });
-
-        const total = Array.from(unreadMap.values()).reduce(
-          (sum: number, count: number) => sum + count,
-          0,
-        );
-        setUnreadCount(total);
-      }
+      const { count } = await supabase
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_id", userId)
+        .eq("is_read", false);
+      setUnreadCount(count ?? 0);
     }
 
     getUnreadCount();
 
-    // Subscribe to changes on messages table
-    const channel = supabase.channel("messages-unread").on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "messages",
-      },
-      async () => {
-        // Recalculate unread count when messages change
-        await getUnreadCount();
-      },
-    );
+    // Only my own incoming messages: a new one raises the count, marking one
+    // read lowers it. Realtime applies the filter on the server, so other
+    // messages never reach this browser (#74).
+    const filter = `recipient_id=eq.${userId}`;
+    const channel = supabase
+      .channel(`unread-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter },
+        () => getUnreadCount(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter },
+        () => getUnreadCount(),
+      );
 
     // Join with the user's token, not as anon (see ChatInterface)
     let cancelled = false;
