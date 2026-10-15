@@ -1,20 +1,7 @@
-export const DIVISION_LABELS: Record<string, string> = {
-  liga_heren: "LIGA HEREN",
-  liga_dames: "LIGA DAMES",
-  nat1_heren: "Nationale 1 Heren",
-  nat2_heren: "Nationale 2 Heren",
-  nat3_heren: "Nationale 3 Heren",
-  nat1_dames: "Nationale 1 Dames",
-  nat2_dames: "Nationale 2 Dames",
-  nat3_dames: "Nationale 3 Dames",
-  promo1_heren: "PROMO 1 Heren",
-  promo2_heren: "PROMO 2 Heren",
-  promo3_heren: "PROMO 3 Heren",
-  promo1_dames: "PROMO 1 Dames",
-  promo2_dames: "PROMO 2 Dames",
-  promo3_dames: "PROMO 3 Dames",
-  promo4_dames: "PROMO 4 Dames",
-};
+import { RUMOUR_DIVISIONS, labelFor } from "@/lib/rumours";
+
+/** Senior divisions only (D-003), the same list as rumours. */
+export const DIVISION_LABELS: Record<string, string> = RUMOUR_DIVISIONS;
 
 export const CLASSIFIED_TYPE_LABELS: Record<string, string> = {
   player_seeks_team: "Speler zoekt team",
@@ -30,7 +17,67 @@ export const CLASSIFIED_TYPE_COLORS: Record<string, string> = {
   team_seeks_trainer: "bg-chart-4/20 text-chart-4 border-chart-4/30",
 };
 
-export const PROVINCE_LABELS: Record<string, string> = {
+/** The four kinds of zoekertje, as the create form offers them. */
+export const CLASSIFIED_TYPES = {
+  player_seeks_team: "Speler/speelster zoekt team",
+  team_seeks_player: "Team zoekt speler/speelster",
+  trainer_seeks_team: "Trainer/trainster zoekt team",
+  team_seeks_trainer: "Team zoekt trainer/trainster",
+} as const;
+
+export type ClassifiedType = keyof typeof CLASSIFIED_TYPES;
+
+/** Ads posted by a person rather than a team. */
+export function isPersonAd(type: string): boolean {
+  return type === "player_seeks_team" || type === "trainer_seeks_team";
+}
+
+/** Ads about a player, which name a position. */
+export function isPlayerAd(type: string): boolean {
+  return type === "player_seeks_team" || type === "team_seeks_player";
+}
+
+/**
+ * Heren or dames (#71). Every senior division is one or the other, so the
+ * database refuses a gender that doesn't match the division.
+ */
+export const CLASSIFIED_GENDERS = {
+  heren: "Heren",
+  dames: "Dames",
+} as const;
+
+export type ClassifiedGender = keyof typeof CLASSIFIED_GENDERS;
+
+/** Whether a division ('nat2_dames') belongs to a gender ('dames'). */
+export function divisionMatchesGender(
+  division: string,
+  gender: string,
+): boolean {
+  return division.split("_")[1] === gender;
+}
+
+export const POSITION_LABELS = {
+  setter: "Setter",
+  libero: "Libero",
+  receptiehoek: "Receptie/hoek",
+  middenaanvaller: "Middenaanvaller",
+  opposite: "Opposite",
+} as const;
+
+export type ClassifiedPosition = keyof typeof POSITION_LABELS;
+
+/** Keep in sync with classifieds_trainer_diploma_check in the migrations. */
+export const TRAINER_DIPLOMA_LABELS = {
+  initiator: "Initiator",
+  instructeur: "Instructeur",
+  trainer_c: "Trainer C",
+  trainer_b: "Trainer B",
+  trainer_a: "Trainer A",
+} as const;
+
+export type TrainerDiploma = keyof typeof TRAINER_DIPLOMA_LABELS;
+
+export const PROVINCE_LABELS = {
   antwerpen: "Antwerpen",
   limburg: "Limburg",
   oost_vlaanderen: "Oost-Vlaanderen",
@@ -45,7 +92,11 @@ export const PROVINCE_LABELS: Record<string, string> = {
   zwitserland: "Zwitserland",
   turkije: "Turkije",
   nederland: "Nederland",
-};
+} as const;
+
+export type ClassifiedProvince = keyof typeof PROVINCE_LABELS;
+
+export const CLASSIFIED_DESCRIPTION_MAX_LENGTH = 2000;
 
 export function getDivisionLabel(value: string | null): string {
   if (!value) return "";
@@ -53,6 +104,10 @@ export function getDivisionLabel(value: string | null): string {
 }
 
 export function getProvinceLabel(value: string | null): string {
-  if (!value) return "";
-  return PROVINCE_LABELS[value] || value;
+  return labelFor(PROVINCE_LABELS, value) ?? value ?? "";
+}
+
+/** Older ads may hold a free-text position; show it as is. */
+export function getPositionLabel(value: string | null): string {
+  return labelFor(POSITION_LABELS, value) ?? value ?? "";
 }

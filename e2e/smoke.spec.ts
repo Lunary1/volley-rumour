@@ -23,9 +23,9 @@ test("zoekertjes list links to the detail page", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "Zoekertjes" }),
   ).toBeVisible();
-  await expect(
-    page.getByText(`${seed.activeAdCount} zoekertjes`),
-  ).toBeVisible();
+  // Tests that post an ad delete it again, but may run alongside this one.
+  const count = await page.getByText(/\d+ zoekertjes •/).textContent();
+  expect(parseInt(count ?? "", 10)).toBeGreaterThanOrEqual(seed.activeAdCount);
   await expect(
     page.locator(`a[href="/zoekertjes/${seed.inactiveAd.id}"]`),
   ).toHaveCount(0);

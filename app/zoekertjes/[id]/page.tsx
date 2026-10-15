@@ -3,16 +3,27 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Calendar, User } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  User,
+  Users,
+  GraduationCap,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 import { getCurrentUser } from "@/app/actions/auth";
 import {
   getDivisionLabel,
   getProvinceLabel,
+  getPositionLabel,
+  CLASSIFIED_GENDERS,
   CLASSIFIED_TYPE_LABELS,
   CLASSIFIED_TYPE_COLORS,
+  TRAINER_DIPLOMA_LABELS,
 } from "@/lib/classifieds-utils";
+import { labelFor } from "@/lib/rumours";
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
@@ -39,6 +50,8 @@ async function getClassified(id: string) {
       team_name,
       contact_name,
       division,
+      gender,
+      trainer_diploma,
       created_at,
       user_id,
       is_featured,
@@ -88,6 +101,8 @@ export default async function ClassifiedDetailPage({
   // Team ads use the team name as contact name, already shown below the title.
   const showContactName =
     classified.contact_name && classified.contact_name !== classified.team_name;
+  const gender = labelFor(CLASSIFIED_GENDERS, classified.gender);
+  const diploma = labelFor(TRAINER_DIPLOMA_LABELS, classified.trainer_diploma);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -123,7 +138,15 @@ export default async function ClassifiedDetailPage({
             </h1>
             {classified.position && (
               <p className="text-lg font-semibold text-primary mt-1">
-                {classified.position}
+                {getPositionLabel(classified.position)}
+              </p>
+            )}
+            {diploma && (
+              <p className="text-lg font-semibold text-primary mt-1 flex items-center gap-2">
+                <GraduationCap className="h-5 w-5" />
+                {classified.type === "team_seeks_trainer"
+                  ? `Minimaal diploma: ${diploma}`
+                  : `Diploma: ${diploma}`}
               </p>
             )}
             {classified.team_name && (
@@ -136,6 +159,12 @@ export default async function ClassifiedDetailPage({
               <span className="flex items-center gap-1">
                 <User className="h-4 w-4" />
                 Contact: {classified.contact_name}
+              </span>
+            )}
+            {gender && (
+              <span className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                {gender}
               </span>
             )}
             {classified.province && (

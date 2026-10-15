@@ -49,11 +49,11 @@ ran without Supabase credentials, which is what CI will face.
 | J-01    | Find a matching zoekertje                | **PARTIAL** | Logged-out contact dead-ends (search crash fixed in #59)    |
 | J-02    | Read Transfer Talk / transfers           | **BROKEN**  | Unmoderated rumours are public; crash on anonymised rumours fixed in #57     |
 | J-03    | Create an account                        | **PARTIAL** | No 16+ / terms confirmation; raw English errors                             |
-| J-04    | Post "speler zoekt team"                 | **PARTIAL** | Browser-side insert without server validation; gender silently dropped      |
+| J-04    | Post "speler zoekt team"                 | **PARTIAL** | Server action, gender stored, login first, public notice (#71); expiry left (#84) |
 | J-05    | Manage own zoekertjes                    | **MISSING** | No edit, deactivate or delete anywhere                                      |
 | J-06    | Coach contacts a club                    | **PARTIAL** | No notifications; message privacy rests entirely on unverified RLS         |
 | J-07    | Block / report                           | **PARTIAL** | Block, unblock and report work (#73, #87); archiving still hides the conversation for both (#91) |
-| J-08    | Club recruits player/trainer             | **PARTIAL** | Team gender dropped; no diploma field; can't close an ad                    |
+| J-08    | Club recruits player/trainer             | **PARTIAL** | Gender and diploma stored and shown (#71); can't close an ad yet (#72)      |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes aren't saved                     |
 | J-11    | Account and personal data                | **BROKEN**  | Account deletion can leave a half-deleted state (password reset fixed in #58) |
@@ -128,12 +128,12 @@ items.
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Logged-out → redirect to login and back | **BROKEN** | [zoekertjes/nieuw/page.tsx:100-109](../../app/zoekertjes/nieuw/page.tsx#L100-L109) | No guard on load; the user fills in the whole form and only gets an error on submit |
-| Senior divisions only | WORKS | [zoekertjes/nieuw/page.tsx:45-62](../../app/zoekertjes/nieuw/page.tsx#L45-L62) | Only Liga/Nationale/Promo. `promo4_heren` has no label in [classifieds-utils.ts:1-17](../../lib/classifieds-utils.ts#L1-L17) |
-| Server-side validation, Dutch messages, all fields stored | **BROKEN** | [zoekertjes/nieuw/page.tsx:93-172](../../app/zoekertjes/nieuw/page.tsx#L93-L172) | The browser inserts directly into `classifieds` (RLS is the only guard, VERIFY); no server action or schema; `geslacht` is required but never stored |
-| Lands on new ad's detail page with toast | PARTIAL | [zoekertjes/nieuw/page.tsx:174](../../app/zoekertjes/nieuw/page.tsx#L174) | Redirects to the list without confirmation |
-| Expiry date set and shown | MISSING | — | |
-| Notice that name and club will be public | MISSING | — | |
+| Logged-out → redirect to login and back | **WORKS** | [zoekertjes/nieuw/page.tsx](../../app/zoekertjes/nieuw/page.tsx), [zoekertje-create.spec.ts](../../e2e/zoekertje-create.spec.ts) | Fixed in #71: the page sends logged-out visitors to `/auth/login?next=/zoekertjes/nieuw` before they fill anything in |
+| Senior divisions only | **WORKS** | [classifieds-utils.ts](../../lib/classifieds-utils.ts), [classified_gender_and_diploma.sql](../../supabase/migrations/20261015093039_classified_gender_and_diploma.sql) | Same list as rumours (`promo4_heren` now labelled); checked by the server action and, for new or changed rows, by the database (#71) |
+| Server-side validation, Dutch messages, all fields stored | **WORKS** | [classifieds.ts](../../app/actions/classifieds.ts), [schemas.ts](../../lib/schemas.ts) | Fixed in #71: `createClassified` validates with `createClassifiedSchema` (Dutch messages); gender and diploma have their own columns and are shown on the ad (D-019) |
+| Lands on new ad's detail page with toast | **WORKS** | [classified-form.tsx](../../app/zoekertjes/nieuw/classified-form.tsx) | Fixed in #71: "Je zoekertje staat online" on the new ad |
+| Expiry date set and shown | MISSING | — | #84 |
+| Notice that name and club will be public | **WORKS** | [classified-form.tsx](../../app/zoekertjes/nieuw/classified-form.tsx) | Fixed in #71: "Je zoekertje is openbaar: …" above the submit button |
 
 ### J-05 — Player manages own zoekertjes · MISSING
 
@@ -169,7 +169,7 @@ items.
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Team gender, division, province, position/diploma stored and shown | **BROKEN** | [zoekertjes/nieuw/page.tsx:130-162](../../app/zoekertjes/nieuw/page.tsx#L130-L162) | "Dames/Heren" is required but never stored; "team zoekt trainer" has no diploma field; position is stored as a raw slug |
+| Team gender, division, province, position/diploma stored and shown | **WORKS** | [classifieds.ts](../../app/actions/classifieds.ts), [zoekertjes/[id]/page.tsx](../../app/zoekertjes/[id]/page.tsx) | Fixed in #71: "Dames/Heren" matches the division, optional minimum diploma for teams (D-019); positions and diplomas shown with their labels |
 | One conversation per candidate, labelled with ad | WORKS | [messages.ts:117-152](../../app/actions/messages.ts#L117-L152) | |
 | Close the ad, conversations remain | MISSING | — | See J-05 |
 | Verified badge on ads | WORKS | [classifieds-list.tsx:455-457](../../components/classifieds-list.tsx#L455-L457) | Badge is granted manually in the database (no admin UI) |
