@@ -81,13 +81,11 @@ async function createConversation(
     .select("id")
     .single();
   if (error) throw error;
-  await admin
-    .from("messages")
-    .insert({
-      conversation_id: data.id,
-      sender_id: initiator,
-      content: message,
-    });
+  await admin.from("messages").insert({
+    conversation_id: data.id,
+    sender_id: initiator,
+    content: message,
+  });
   return data.id;
 }
 
