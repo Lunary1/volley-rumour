@@ -245,6 +245,30 @@ export default function PrivacyPage() {
           </div>
         </div>
 
+        {/* Contact form (#81, D-017). Copy to be reviewed in #94. */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            Berichten via het contactformulier
+          </h2>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground">
+            <li>
+              <strong>Wat we bewaren:</strong> je naam, e-mailadres, onderwerp
+              en bericht, en je account als je ingelogd was. Alleen moderators
+              en beheerders lezen ze, om je te antwoorden.
+            </li>
+            <li>
+              <strong>Misbruik voorkomen:</strong> om te veel berichten te
+              beperken bewaren we een versleutelde code van je IP-adres die elke
+              dag verandert.
+            </li>
+            <li>
+              <strong>Hoe lang:</strong> 12 maanden nadat we je bericht
+              afgehandeld hebben, wissen we je naam, e-mailadres, bericht en die
+              code.
+            </li>
+          </ul>
+        </div>
+
         {/* User Rights */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">

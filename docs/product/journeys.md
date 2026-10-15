@@ -447,3 +447,8 @@ takedown requests) and deal with abusive accounts.
 - **Given** I am suspended, **then** every page tells me until when and why,
   and I can still report, block, delete my own zoekertjes and delete my
   account (D-016).
+- **Given** someone sends the contact form, logged in or not and suspended
+  or not, **then** the message is stored and staff read it at
+  `/admin/contact`, oldest first, with the sender's account if they were
+  logged in. Marking it handled is logged; the personal fields are wiped 12
+  months later (D-017).

@@ -274,6 +274,17 @@ INSERT INTO public.takedown_requests (
   'Dit klopt niet: ik blijf gewoon bij VC Testdorp spelen.', now() - interval '1 day'
 );
 
+-- --------------------------------------------------------- contact message
+-- An open message from Jana, sent while logged in (#81). e2e/global-setup.ts
+-- deletes every other message before a run.
+INSERT INTO public.contact_messages (
+  id, category, sender_name, sender_email, message, user_id, created_at
+) VALUES (
+  'c0000000-0000-4000-8000-000000000001', 'account', 'Jana Voorbeeld', 'jana@example.test',
+  'Kan ik mijn gebruikersnaam nog wijzigen na de registratie?',
+  'a0000000-0000-4000-8000-000000000001', now() - interval '2 days'
+);
+
 -- --------------------------------------------------------------- audit log
 -- Staff actions (#64), as moderation functions will write them. The second
 -- one is about a rumour that no longer exists: the log outlives its target.

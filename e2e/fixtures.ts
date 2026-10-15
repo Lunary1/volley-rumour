@@ -102,6 +102,12 @@ export const seed = {
     id: "f0000000-0000-4000-8000-000000000002",
     message: "Een jeugdploeg? Daar ben je veel te slecht voor.",
   },
+  // An open contact message from Jana (#81). Tests read it, never handle it.
+  contactMessage: {
+    senderName: "Jana Voorbeeld",
+    senderEmail: "jana@example.test",
+    message: "Kan ik mijn gebruikersnaam nog wijzigen na de registratie?",
+  },
   // Audit log entries by moderator_vr (#64); the second one's rumour is gone.
   staffActions: [
     { label: "Gerucht afgesloten", reason: "Officieel bevestigd door de club" },
