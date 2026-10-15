@@ -23,6 +23,7 @@ import Link from "next/link";
 import {
   getDivisionLabel,
   getProvinceLabel,
+  getPositionLabel,
   PROVINCE_LABELS,
   CLASSIFIED_TYPE_LABELS,
   CLASSIFIED_TYPE_COLORS,
@@ -408,7 +409,7 @@ export function ClassifiedsList({
                               </h3>
                               {classified.position && (
                                 <p className="text-base font-semibold text-primary mt-2 capitalize">
-                                  {classified.position}
+                                  {getPositionLabel(classified.position)}
                                 </p>
                               )}
                             </div>
@@ -521,7 +522,7 @@ export function ClassifiedsList({
                           </h3>
                           {classified.position && (
                             <p className="text-sm text-primary font-medium mt-1 capitalize">
-                              {classified.position}
+                              {getPositionLabel(classified.position)}
                             </p>
                           )}
                         </div>

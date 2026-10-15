@@ -107,24 +107,24 @@ INSERT INTO public.clubs (id, name, province, division) VALUES
 -- empty field. Search must still work with it in the list (#59).
 INSERT INTO public.classifieds (
   id, user_id, type, title, description, contact_name, team_name, position,
-  province, division, created_at
+  trainer_diploma, gender, province, division, created_at
 ) VALUES
   ('d0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000003',
    'team_seeks_player', 'VC Testdorp zoekt een setter',
    'Ons herenteam in Nationale 2 zoekt een ervaren setter voor volgend seizoen. Training op dinsdag en donderdag.',
-   'VC Testdorp', 'VC Testdorp', 'setter', 'antwerpen', 'nat2_heren', now() - interval '2 days'),
+   'VC Testdorp', 'VC Testdorp', 'setter', NULL, 'heren', 'antwerpen', 'nat2_heren', now() - interval '2 days'),
   ('d0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000001',
    'player_seeks_team', 'Libero zoekt nieuwe ploeg',
    'Libero met vijf jaar ervaring in Promo 1 zoekt een ambitieuze damesploeg in Limburg of Antwerpen.',
-   'Jana Voorbeeld', NULL, 'libero', 'limburg', 'promo1_dames', now() - interval '5 days'),
+   'Jana Voorbeeld', NULL, 'libero', NULL, 'dames', 'limburg', 'promo1_dames', now() - interval '5 days'),
   ('d0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000002',
    'trainer_seeks_team', 'Trainer B zoekt jeugdploeg',
    'Gediplomeerd trainer B zoekt een jeugdploeg voor het komende seizoen, liefst in Oost-Vlaanderen.',
-   'Tom Testmans', NULL, NULL, 'oost_vlaanderen', NULL, now() - interval '9 days'),
+   'Tom Testmans', NULL, NULL, 'trainer_b', NULL, 'oost_vlaanderen', NULL, now() - interval '9 days'),
   ('d0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000002',
    'trainer_seeks_team', 'Hulptrainer beschikbaar in Gent',
    NULL,
-   'Tom Testmans', NULL, NULL, 'oost_vlaanderen', NULL, now() - interval '12 days');
+   'Tom Testmans', NULL, NULL, NULL, NULL, 'oost_vlaanderen', NULL, now() - interval '12 days');
 
 -- An inactive ad: hidden from the list and its detail page returns 404.
 INSERT INTO public.classifieds (

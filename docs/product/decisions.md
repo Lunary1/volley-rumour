@@ -25,6 +25,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-016 | 2026-10-14 | Accepted | Suspensions, the verified badge and the moderator role are admin-only; suspended users are read-only |
 | D-017 | 2026-10-15 | Accepted | Contact messages: own staff page for moderators and admins; wiped 12 months after handling; abuse goes through Melden and takedowns |
 | D-018 | 2026-10-15 | Accepted | Blocks are enforced by the database in both directions; history stays readable; messaging only, not logged |
+| D-019 | 2026-10-15 | Accepted | Zoekertjes: "Dames/Heren" on every type, matching the division (no "Gemengd"); teams may state a minimum diploma |
 | O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
 
 ---
@@ -451,6 +452,26 @@ it (agent calls, following D-014 and D-017).
 **Consequences.** `blocked_users` is no longer readable or writable by
 visitors, and a block can't be edited, only lifted. A blocked user can tell
 they were blocked, as J-07 accepts.
+
+## D-019 — Zoekertje gender and diploma
+
+**Context.** #71: the create form asked for gender ("Geslacht" or
+"Dames/Heren", with Heren/Dames/Gemengd) but never stored it, and kept the
+trainer diploma in `position`. "Team zoekt trainer" had no diploma field,
+although J-08 lets a team state one. Owner's calls, 2026-10-15.
+
+**Decision** (2026-10-15).
+- **"Dames/Heren" on every type, and it must match the division.** Every senior
+  division is either heren or dames (D-003), so there is no "Gemengd". The
+  form only offers the divisions of the chosen gender; the server and the
+  database refuse a mismatch.
+- **Teams may state a minimum diploma; trainers must state theirs.** "Minimaal
+  diploma (optioneel)" on "team zoekt trainer", "Diploma" (required) on
+  "trainer zoekt team". Both go in their own `trainer_diploma` column.
+
+**Consequences.** New ads use senior divisions only, checked in the database
+too. Older ads keep whatever they hold; their trainer diploma moved out of
+`position`. J-08 no longer mentions "gemengd".
 
 ## O-001 — Rumour confirmation authority (Open)
 

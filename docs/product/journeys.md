@@ -240,8 +240,8 @@ behave inappropriately.
 3. Close the ad when the position is filled.
 
 **Acceptance criteria.**
-- **Given** the "team zoekt …" form, **then** I can specify team gender (heren /
-  dames / gemengd), senior division, province, position (players) or
+- **Given** the "team zoekt …" form, **then** I can specify team gender (heren or
+  dames, matching the division, D-019), senior division, province, position (players) or
   required diploma (trainers), and all of these are stored and shown.
 - **Given** several candidates contact me about one ad, **then** each is a
   separate conversation labelled with the ad title.
