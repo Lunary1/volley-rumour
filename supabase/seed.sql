@@ -261,6 +261,19 @@ INSERT INTO public.messages (conversation_id, sender_id, content, is_read, creat
   ('f0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000003',
    'Een jeugdploeg? Daar ben je veel te slecht voor.', true, now() - interval '3 days');
 
+-- Jana answers Tom's "Hulptrainer" ad. Only the block tests use it (#73):
+-- Tom blocks Jana; e2e/global-setup.ts lifts the block and deletes the
+-- messages the tests sent. Read, so unread counts in other tests don't change.
+INSERT INTO public.conversations (id, ad_id, ad_type, initiator_id, recipient_id, created_at, updated_at)
+VALUES ('f0000000-0000-4000-8000-000000000003', 'd0000000-0000-4000-8000-000000000005', 'classified',
+        'a0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002',
+        now() - interval '4 days', now() - interval '4 days');
+
+INSERT INTO public.messages (id, conversation_id, sender_id, content, is_read, created_at) VALUES
+  ('f1000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000003',
+   'a0000000-0000-4000-8000-000000000001',
+   'Dag Tom, zoek je nog iemand voor de jeugdtrainingen?', true, now() - interval '4 days');
+
 -- ------------------------------------------------------- takedown request
 -- An open request about Lotte Lorem (#68), so the inbox isn't empty locally.
 -- Its status page: /verwijderverzoek/status/seedtokenvoorlokaletestsVolleyRumours000001

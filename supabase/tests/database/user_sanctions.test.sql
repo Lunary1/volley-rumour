@@ -173,7 +173,7 @@ SELECT lives_ok(
   'a suspended user can still report');
 SELECT lives_ok(
   $$INSERT INTO public.blocked_users (blocker_id, blocked_id)
-    VALUES ('00000000-0000-0000-0000-00000000080c', '00000000-0000-0000-0000-00000000080d')$$,
+    VALUES ('00000000-0000-0000-0000-00000000080c', '00000000-0000-0000-0000-00000000080e')$$,
   'a suspended user can still block someone');
 SELECT lives_ok(
   $$DELETE FROM public.classifieds WHERE id = '00000000-0000-0000-0000-0000000080e2'$$,

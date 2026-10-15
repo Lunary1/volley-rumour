@@ -171,6 +171,10 @@ to Dutch messages. On the client, `handleServerActionResponse()` from
 ### Conversations
 Conversations are bidirectional (`initiator_id`, `recipient_id`, linked by
 `ad_id` + `ad_type`). Always query both directions with `or(and(…),and(…))`.
+Blocks (D-018) are enforced by the `check_not_blocked` trigger, which refuses
+messages and new conversations across a block with SQLSTATE `VR008`. RLS only
+shows a block to its blocker; use `public.is_blocked_with()` for the other
+direction.
 
 ### Language and UI
 - All user-facing text is **Dutch**: labels, errors, toasts, validation

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatInterface, type Message } from "@/components/chat-interface";
 import { ReportDialog } from "@/components/report-dialog";
+import { BlockUserDialog, UnblockButton } from "@/components/block-user-dialog";
+import { BLOCKED_MESSAGE } from "@/lib/blocks";
 import { getCurrentUser } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -99,16 +101,20 @@ export default async function ConversationPage({
     );
   }
 
-  // Check if blocked
-  const { data: blockData } = await supabase
-    .from("blocked_users")
-    .select("id")
-    .or(
-      `and(blocker_id.eq.${user.id},blocked_id.eq.${otherUserId}),and(blocker_id.eq.${otherUserId},blocked_id.eq.${user.id})`,
-    )
-    .limit(1);
-
-  const isBlocked = blockData && blockData.length > 0;
+  // A block in either direction (#73). RLS only shows our own blocks, so
+  // is_blocked_with() answers for the other direction. The database refuses
+  // messages across a block either way.
+  const [{ data: ownBlock }, { data: blockedEitherWay }] = await Promise.all([
+    supabase
+      .from("blocked_users")
+      .select("id")
+      .eq("blocker_id", user.id)
+      .eq("blocked_id", otherUserId)
+      .maybeSingle(),
+    supabase.rpc("is_blocked_with", { p_user_id: otherUserId }),
+  ]);
+  const iBlocked = Boolean(ownBlock);
+  const isBlocked = iBlocked || blockedEitherWay === true;
 
   // The latest 50 messages, oldest first. ChatInterface marks unread ones as
   // read and adds new ones through Realtime.
@@ -141,7 +147,9 @@ export default async function ConversationPage({
     .slice(0, 2);
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
+    // The viewport minus the site header (h-16 + border), so the message box
+    // or the block notice sits at the bottom of the screen.
+    <div className="h-[calc(100dvh-4rem-1px)] bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-border bg-card shrink-0">
         <div className="px-4 py-3 max-w-2xl mx-auto w-full">
@@ -202,38 +210,52 @@ export default async function ConversationPage({
               otherUserName={otherUserData.username}
               className="shrink-0"
             />
+            {!iBlocked && (
+              <BlockUserDialog
+                userId={otherUserId}
+                userName={otherUserData.username}
+                className="shrink-0"
+              />
+            )}
           </div>
         </div>
       </div>
 
       {/* Chat container */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        {isBlocked ? (
-          <div className="flex-1 flex items-center justify-center p-4">
-            <Card className="p-6 border-destructive/50 bg-destructive/5 text-center max-w-2xl">
-              <p className="text-destructive mb-4">
-                Deze conversatie is geblokkeerd.
-              </p>
-              <Link href="/messages">
-                <Button variant="outline" size="sm">
-                  Terug naar berichten
-                </Button>
-              </Link>
-            </Card>
-          </div>
-        ) : (
-          <div className="flex-1 overflow-hidden flex flex-col max-w-2xl mx-auto w-full">
-            <ChatInterface
-              conversationId={conversationId}
-              initialMessages={initialMessages}
-              currentUserId={user.id}
-              otherUserName={otherUserData?.username || "Gebruiker"}
-              currentUserName={user.username}
-              otherUserAvatar={otherUserData?.avatar_url}
-              currentUserAvatar={user.avatar_url}
-            />
-          </div>
-        )}
+        {/* Earlier messages stay readable after a block (#73). */}
+        <div className="flex-1 overflow-hidden flex flex-col max-w-2xl mx-auto w-full">
+          <ChatInterface
+            conversationId={conversationId}
+            initialMessages={initialMessages}
+            currentUserId={user.id}
+            otherUserName={otherUserData?.username || "Gebruiker"}
+            currentUserName={user.username}
+            otherUserAvatar={otherUserData?.avatar_url}
+            currentUserAvatar={user.avatar_url}
+            blockedNotice={
+              iBlocked ? (
+                <div
+                  role="status"
+                  className="flex flex-wrap items-center justify-between gap-3 text-sm"
+                >
+                  <p className="text-muted-foreground">
+                    Je hebt {otherUserData.username} geblokkeerd. Jullie kunnen
+                    elkaar geen berichten meer sturen.
+                  </p>
+                  <UnblockButton
+                    userId={otherUserId}
+                    userName={otherUserData.username}
+                  />
+                </div>
+              ) : isBlocked ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  {BLOCKED_MESSAGE}
+                </p>
+              ) : undefined
+            }
+          />
+        </div>
       </div>
     </div>
   );

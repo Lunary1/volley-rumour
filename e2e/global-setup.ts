@@ -1,8 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase";
 
-// coach_tom and vc_testdorp in supabase/seed.sql
+// speler_jana, coach_tom and vc_testdorp in supabase/seed.sql
+const JANA_ID = "a0000000-0000-4000-8000-000000000001";
 const TOM_ID = "a0000000-0000-4000-8000-000000000002";
+// Jana and Tom's conversation and its seeded message, only used by the block
+// tests (#73).
+const BLOCK_CONVERSATION_ID = "f0000000-0000-4000-8000-000000000003";
+const BLOCK_SEED_MESSAGE_ID = "f1000000-0000-4000-8000-000000000001";
 const CLUB_ID = "a0000000-0000-4000-8000-000000000003";
 // Mila Meldtest, only used by the report tests (#69).
 const REPORT_RUMOUR_ID = "e0000000-0000-4000-8000-00000000000a";
@@ -28,6 +33,8 @@ const TAKEDOWN_RUMOUR_IDS = [
  * - every report, the removal of Mila Meldtest and coach_tom's block of
  *   vc_testdorp (#69). Reports count towards the daily limit, and a user may
  *   have one open report per item.
+ * - coach_tom's block of speler_jana and the messages the block tests sent in
+ *   their conversation (#73).
  * - test_geschorst's suspension, and test_kandidaat's badge and moderator
  *   role (#80).
  * - contact messages sent by tests, which count towards the daily limits
@@ -87,6 +94,26 @@ export default async function globalSetup() {
     .eq("blocked_id", CLUB_ID);
   if (block.error) {
     throw new Error(`Lifting the report-test block: ${block.error.message}`);
+  }
+
+  const blockTest = await admin
+    .from("blocked_users")
+    .delete()
+    .eq("blocker_id", TOM_ID)
+    .eq("blocked_id", JANA_ID);
+  if (blockTest.error) {
+    throw new Error(`Lifting the block-test block: ${blockTest.error.message}`);
+  }
+
+  const blockMessages = await admin
+    .from("messages")
+    .delete()
+    .eq("conversation_id", BLOCK_CONVERSATION_ID)
+    .neq("id", BLOCK_SEED_MESSAGE_ID);
+  if (blockMessages.error) {
+    throw new Error(
+      `Cleaning up block-test messages: ${blockMessages.error.message}`,
+    );
   }
 
   const suspension = await admin

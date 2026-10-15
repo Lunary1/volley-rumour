@@ -2,11 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { sendMessageSchema } from "@/lib/schemas";
 import {
   successResponse,
   errorResponse,
   extractErrorMessage,
+  type ActionResponse,
 } from "@/lib/response";
 
 export interface Conversation {
@@ -102,17 +104,8 @@ export async function createConversation(
     return errorResponse("Je kan jezelf geen bericht sturen");
   }
 
-  // Check if user is blocked
-  const { data: isBlocked } = await supabase
-    .from("blocked_users")
-    .select("id")
-    .eq("blocker_id", recipientId)
-    .eq("blocked_id", user.id)
-    .single();
-
-  if (isBlocked) {
-    return errorResponse("Deze gebruiker heeft je geblokkeerd");
-  }
+  // A block in either direction is refused by the database when the
+  // conversation or the message is inserted (#73).
 
   // Try to get existing conversation - check both directions
   // (user could be initiator OR recipient from a previous conversation)
@@ -361,57 +354,77 @@ export async function getConversations() {
   return { success: true, data: enriched || [] };
 }
 
+const userIdSchema = z.string().uuid("Ongeldige gebruiker");
+
 /**
- * Block a user
+ * Block a user (#73): from then on neither of you can send the other a
+ * message or start a conversation. Blocking someone already blocked is fine.
  */
-export async function blockUser(userId: string) {
+export async function blockUser(userId: string): Promise<ActionResponse> {
+  const parsed = userIdSchema.safeParse(userId);
+  if (!parsed.success) return errorResponse("Ongeldige gebruiker");
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Must be logged in" };
+    return errorResponse("Je moet ingelogd zijn");
+  }
+
+  if (user.id === parsed.data) {
+    return errorResponse("Je kan jezelf niet blokkeren");
   }
 
   const { error } = await supabase.from("blocked_users").insert({
     blocker_id: user.id,
-    blocked_id: userId,
+    blocked_id: parsed.data,
   });
 
-  if (error && !error.message?.includes("duplicate")) {
-    return { error: error.message };
+  // 23505: already blocked.
+  if (error && error.code !== "23505") {
+    return errorResponse(
+      extractErrorMessage(error, "Blokkeren is niet gelukt"),
+    );
   }
 
-  revalidatePath("/messages");
-  return { success: true };
+  revalidatePath("/messages", "layout");
+  revalidatePath("/profile");
+  return successResponse(undefined);
 }
 
 /**
- * Unblock a user
+ * Lift a block (#73), from the conversation or the profile page.
  */
-export async function unblockUser(userId: string) {
+export async function unblockUser(userId: string): Promise<ActionResponse> {
+  const parsed = userIdSchema.safeParse(userId);
+  if (!parsed.success) return errorResponse("Ongeldige gebruiker");
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Must be logged in" };
+    return errorResponse("Je moet ingelogd zijn");
   }
 
   const { error } = await supabase
     .from("blocked_users")
     .delete()
     .eq("blocker_id", user.id)
-    .eq("blocked_id", userId);
+    .eq("blocked_id", parsed.data);
 
   if (error) {
-    return { error: error.message };
+    return errorResponse(
+      extractErrorMessage(error, "Deblokkeren is niet gelukt"),
+    );
   }
 
-  revalidatePath("/messages");
-  return { success: true };
+  revalidatePath("/messages", "layout");
+  revalidatePath("/profile");
+  return successResponse(undefined);
 }
 
 /**

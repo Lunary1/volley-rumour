@@ -220,6 +220,8 @@ behave inappropriately.
 - **Given** I block a user, **then** they can no longer send messages to me or
   start new conversations with me, and see a neutral message ("Je kan deze
   gebruiker geen berichten sturen").
+- **Given** I blocked a user, **then** I can't message them either, and our
+  earlier messages stay readable for both of us (D-018).
 - **Given** I report a conversation with a reason, **then** a report is created
   for moderators (J-15) and I see a confirmation.
 - **Given** I blocked someone, **when** I open my profile's block list, **then**

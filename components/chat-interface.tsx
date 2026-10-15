@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow, format } from "date-fns";
 import { nl } from "date-fns/locale";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { sendMessage, markAsRead } from "@/app/actions/messages";
 import { createClient } from "@/lib/supabase/client";
+import { BLOCKED_MESSAGE } from "@/lib/blocks";
 import { SendHorizontal, Check, CheckCheck, MessageCircle } from "lucide-react";
 
 export interface Message {
@@ -30,6 +33,8 @@ interface ChatInterfaceProps {
   currentUserName?: string;
   otherUserAvatar?: string | null;
   currentUserAvatar?: string | null;
+  /** Shown instead of the message box when either user blocked the other (#73). */
+  blockedNotice?: React.ReactNode;
 }
 
 export function ChatInterface({
@@ -40,7 +45,9 @@ export function ChatInterface({
   currentUserName,
   otherUserAvatar,
   currentUserAvatar,
+  blockedNotice,
 }: ChatInterfaceProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -198,7 +205,10 @@ export function ChatInterface({
         setMessages((prev) =>
           prev.filter((m) => m.id !== optimisticMessage.id),
         );
-        alert(result.error || "Failed to send message");
+        setNewMessage(messageContent);
+        toast.error(result.error || "Je bericht is niet verstuurd");
+        // Blocked since the page loaded: show the notice instead of the box.
+        if (result.error === BLOCKED_MESSAGE) router.refresh();
       } else if (result.data) {
         // Swap the temp message for the stored one. Don't rely on the
         // Realtime echo: it is missed when the channel hasn't joined yet.
@@ -224,7 +234,7 @@ export function ChatInterface({
       }
     } catch (err) {
       console.error("Error sending message:", err);
-      alert("Er is een fout opgetreden bij het verzenden");
+      toast.error("Er is een fout opgetreden bij het verzenden");
     } finally {
       setSending(false);
     }
@@ -421,31 +431,35 @@ export function ChatInterface({
 
       {/* Input area */}
       <div className="border-t border-border bg-card p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
-        <form
-          onSubmit={handleSendMessage}
-          className="flex items-center gap-2 max-w-2xl mx-auto"
-        >
-          <Input
-            ref={inputRef}
-            type="text"
-            placeholder="Type je bericht..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            disabled={sending}
-            className="flex-1 bg-background min-h-[44px] rounded-full px-4 text-sm"
-            enterKeyHint="send"
-            autoComplete="off"
-          />
-          <Button
-            type="submit"
-            disabled={sending || !newMessage.trim()}
-            size="icon"
-            className="h-[44px] w-[44px] rounded-full shrink-0"
-            aria-label="Verstuur bericht"
+        {blockedNotice ? (
+          <div className="max-w-2xl mx-auto">{blockedNotice}</div>
+        ) : (
+          <form
+            onSubmit={handleSendMessage}
+            className="flex items-center gap-2 max-w-2xl mx-auto"
           >
-            <SendHorizontal className="h-5 w-5" />
-          </Button>
-        </form>
+            <Input
+              ref={inputRef}
+              type="text"
+              placeholder="Type je bericht..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              disabled={sending}
+              className="flex-1 bg-background min-h-[44px] rounded-full px-4 text-sm"
+              enterKeyHint="send"
+              autoComplete="off"
+            />
+            <Button
+              type="submit"
+              disabled={sending || !newMessage.trim()}
+              size="icon"
+              className="h-[44px] w-[44px] rounded-full shrink-0"
+              aria-label="Verstuur bericht"
+            >
+              <SendHorizontal className="h-5 w-5" />
+            </Button>
+          </form>
+        )}
       </div>
     </div>
   );
