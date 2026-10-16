@@ -24,6 +24,7 @@ import {
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ReportDialog } from "@/components/report-dialog";
 import { usePathname, useRouter } from "next/navigation";
+import { useIsClient } from "@/lib/use-is-client";
 import {
   LOGIN_TO_VOTE_MESSAGE,
   OWN_RUMOUR_MESSAGE,
@@ -106,6 +107,8 @@ export function RumourCard({
 }: RumourCardProps) {
   const router = useRouter();
   const pathname = usePathname();
+  // A vote clicked before hydration would be lost; keep the buttons off.
+  const isClient = useIsClient();
   const [localUpvotes, setLocalUpvotes] = useState(rumour.votes_true);
   const [localDownvotes, setLocalDownvotes] = useState(rumour.votes_false);
   const [localUserVote, setLocalUserVote] = useState<"up" | "down" | null>(
@@ -363,7 +366,7 @@ export function RumourCard({
               variant="ghost"
               size="sm"
               onClick={() => handleVote("up")}
-              disabled={isVoting || !!votingClosedReason}
+              disabled={isVoting || !!votingClosedReason || !isClient}
               aria-pressed={localUserVote === "up"}
               className={`gap-2 ${
                 localUserVote === "up"
@@ -384,7 +387,7 @@ export function RumourCard({
               variant="ghost"
               size="sm"
               onClick={() => handleVote("down")}
-              disabled={isVoting || !!votingClosedReason}
+              disabled={isVoting || !!votingClosedReason || !isClient}
               aria-pressed={localUserVote === "down"}
               className={`gap-2 ${
                 localUserVote === "down"
