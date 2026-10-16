@@ -154,8 +154,8 @@ credible each rumour is.
 - **Given** a successful submit, **then** I land on my new ad's detail page with
   a confirmation toast, and the ad appears in `/zoekertjes`.
 - **Given** the ad is created, **then** it has an expiry date
-  **[assumption: end of the current transfer season, e.g. 31 August]** and
-  I'm told when it expires.
+  (the next 31 August, at least 30 days after posting, D-024) and I'm told
+  when it expires.
 - **Given** the form, **then** I'm told that my name and club will be public,
   before I submit.
 
@@ -278,7 +278,8 @@ to be right.
 - **Given** I already have N pending rumours **[assumption: N = 5]**, **then**
   I can't submit more until some are reviewed (anti-spam).
 - **Given** a moderator approves or rejects my rumour, **then** I'm notified
-  (in-app, and by email **[assumption]**), with the reason if rejected.
+  (in-app, and by email unless I turned that off, D-025), with the reason if
+  rejected.
 
 ## J-10 — Rumour contributor follows own rumours, track record and voting
 
@@ -295,7 +296,7 @@ whether I believe other people's rumours.
   afgewezen + reden / lopend / bevestigd / ontkracht / niet bevestigd /
   verwijderd).
 - **Given** resolved rumours, **then** my track record counts only confirmed
-  vs denied (D-005, proposed).
+  vs denied; expired rumours are neutral (D-005).
 - **Given** a live rumour by someone else, **when** I vote, **then** I can vote
   once, change my vote, and the counts stay correct under concurrent votes
   (enforced in the database, not with read-modify-write in the app).
@@ -331,7 +332,7 @@ and delete my account and data if I leave.
 - **Given** a partial failure during deletion, **then** no half-deleted state is
   left behind (single transaction or idempotent retry).
 - **Given** the privacy page, **then** it lists every processor in use (Supabase,
-  Vercel Analytics/Speed Insights, Datadog RUM incl. session replay if kept)
+  Vercel Analytics/Speed Insights, the email provider; Datadog is removed, D-023)
   and matches what the site actually does.
 
 ## J-12 — Named person requests removal of a rumour about them
@@ -353,7 +354,7 @@ it taken down quickly, without needing an account.
   **stays visible until a moderator decides** (D-014) and the request appears
   in the moderators' inbox (`/admin/meldingen`).
 - **Given** a request, **then** the requester sees a reference and a private
-  status link. There is no email until #53 is decided.
+  status link. There is no email (D-014).
 - **Given** a moderator decides (J-15), **then** the status link shows the
   outcome and the moderator's note; a removed rumour disappears from every
   public view and its author sees it as "Verwijderd", without who asked.
@@ -390,8 +391,7 @@ window and risky ones never do.
 **Goal.** Close the loop: turn true rumours into confirmed transfers, and mark
 wrong ones as denied or expired.
 
-> Who may do this is still open (**O-001**). These criteria assume option A
-> (moderators only) and should be revised once O-001 is decided.
+> Moderators only (**D-020**, was O-001).
 
 **Steps.**
 1. Open a live rumour in the admin view.
