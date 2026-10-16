@@ -112,9 +112,9 @@ SELECT throws_ok(
     WHERE initiator_id = '00000000-0000-0000-0000-00000000000a'$$,
   '42501', NULL, 'participants cannot change who is in a conversation');
 SELECT lives_ok(
-  $$UPDATE public.conversations SET is_archived = true, updated_at = now()
+  $$UPDATE public.conversations SET updated_at = now()
     WHERE initiator_id = '00000000-0000-0000-0000-00000000000a'$$,
-  'participants can archive and bump a conversation');
+  'participants can bump a conversation');
 SELECT is(
   pg_temp.rows_changed($$UPDATE public.messages SET is_read = true WHERE content = 'Hallo'$$),
   0, 'senders cannot mark their own message as read');

@@ -52,7 +52,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-04    | Post "speler zoekt team"                 | **PARTIAL** | Server action, gender stored, login first, public notice (#71); expiry left (#84) |
 | J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status waits on #84 |
 | J-06    | Coach contacts a club                    | **PARTIAL** | No notifications; message privacy rests entirely on unverified RLS         |
-| J-07    | Block / report                           | **PARTIAL** | Block, unblock and report work (#73, #87); archiving still hides the conversation for both (#91) |
+| J-07    | Block / report                           | **WORKS**   | Block, unblock and report work (#73, #87); archiving is per user (#91) |
 | J-08    | Club recruits player/trainer             | **WORKS**   | Gender and diploma stored and shown (#71); ads closed as gevonden (#72)   |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
 | J-10    | Own rumours, track record, voting        | **PARTIAL** | Vote counts are race-prone; homepage votes saved since #129                 |
@@ -62,7 +62,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-14    | Resolve a rumour                         | **MISSING** | `confirmRumour` removed in #65 (X-3); rebuilt with #70                        |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
-**Count:** 3 WORKS · 9 PARTIAL · 2 BROKEN · 1 MISSING.
+**Count:** 4 WORKS · 8 PARTIAL · 2 BROKEN · 1 MISSING.
 
 ---
 
@@ -156,14 +156,14 @@ items.
 | Inbox ordering, unread counts, header badge | WORKS | [messages.ts:244-362](../../app/actions/messages.ts#L244-L362), [user-menu.tsx](../../components/user-menu.tsx), [realtime-scope.spec.ts](../../e2e/realtime-scope.spec.ts) | Inbox: N+1 queries per conversation (X-9). Badge: one count on `recipient_id`, live through a filtered subscription (#74) |
 | Non-participants can never read, incl. Realtime | **WORKS** | [messages_recipient migration](../../supabase/migrations/20261015135308_messages_recipient.sql), [realtime-scope.spec.ts](../../e2e/realtime-scope.spec.ts) | #74: both subscriptions are filtered on the server, and RLS keeps a third user's events out even when they subscribe without a filter or with someone else's (tested) |
 
-### J-07 — Coach blocks or reports · PARTIAL
+### J-07 — Coach blocks or reports · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Block stops new messages and conversations | **WORKS** | [block_users migration](../../supabase/migrations/20261015080113_block_users.sql), [page.tsx](../../app/messages/[conversationId]/page.tsx), [blocks.spec.ts](../../e2e/blocks.spec.ts) | #73: "Blokkeren" in the conversation with a confirmation. A database trigger refuses messages and new conversations in both directions (`VR008`), so no code path can skip it; the other user sees "Je kan deze gebruiker geen berichten sturen". Earlier messages stay readable (D-018) |
 | Report conversation → moderator report | **WORKS** | [messages/[conversationId]/page.tsx](../../app/messages/[conversationId]/page.tsx), [reports.ts](../../app/actions/reports.ts), [reports.spec.ts](../../e2e/reports.spec.ts) | #87: "Melden" in the conversation, with a reason and optionally blocking the other user; confirmation shown; lands in `/admin/meldingen` (D-015) |
 | Unblock from profile | **WORKS** | [blocked-users-card.tsx](../../app/profile/blocked-users-card.tsx), [messages.ts:400](../../app/actions/messages.ts#L400) | #73: "Geblokkeerde gebruikers" on the profile page with "Deblokkeren"; also from the conversation |
-| Archive only for me | **BROKEN** | [messages.ts:460](../../app/actions/messages.ts#L460) | `is_archived` sits on the shared conversation row, so it archives for both participants. No UI |
+| Archive only for me | **WORKS** | [conversation_archives migration](../../supabase/migrations/20261016123232_conversation_archives.sql), [archive-conversation-button.tsx](../../components/archive-conversation-button.tsx), [messages-archive.spec.ts](../../e2e/messages-archive.spec.ts) | #91: archive and unarchive from the inbox, with an "Archief" tab. One `conversation_archives` row per user replaces the shared `is_archived` flag, and RLS limits each user to their own rows. A new incoming message brings the conversation back to the inbox |
 
 ### J-08 — Club recruits player/trainer · WORKS
 
