@@ -166,7 +166,8 @@ SELECT lives_ok(
   $$UPDATE public.messages SET is_read = true, read_at = now() WHERE id = '00000000-0000-0000-0000-0000000080a1'$$,
   'a suspended user can still mark messages as read');
 SELECT lives_ok(
-  $$UPDATE public.conversations SET is_archived = true WHERE id = '00000000-0000-0000-0000-0000000080c1'$$,
+  $$INSERT INTO public.conversation_archives (conversation_id, user_id)
+    VALUES ('00000000-0000-0000-0000-0000000080c1', '00000000-0000-0000-0000-00000000080c')$$,
   'a suspended user can still archive a conversation');
 SELECT lives_ok(
   $$SELECT public.submit_report('rumour', '00000000-0000-0000-0000-0000000080f1', 'incorrect')$$,

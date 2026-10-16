@@ -29,7 +29,6 @@ export interface Conversation {
   };
   created_at: string;
   updated_at: string;
-  is_archived: boolean;
   unread_count?: number;
   last_message?: string;
 }
@@ -232,9 +231,10 @@ export async function sendMessage(
 }
 
 /**
- * Get all conversations for current user
+ * Get the current user's conversations: the inbox, or the ones they archived
+ * for themselves (#91).
  */
-export async function getConversations() {
+export async function getConversations({ archived = false } = {}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -244,7 +244,19 @@ export async function getConversations() {
     return { success: false, error: "Must be logged in" };
   }
 
-  const { data: conversations, error } = await supabase
+  // RLS only shows the user's own archive rows.
+  const { data: archives, error: archivesError } = await supabase
+    .from("conversation_archives")
+    .select("conversation_id");
+  if (archivesError) {
+    return { success: false, error: extractErrorMessage(archivesError) };
+  }
+  const archivedIds = archives.map((a) => a.conversation_id);
+  if (archived && archivedIds.length === 0) {
+    return { success: true, data: [] };
+  }
+
+  let query = supabase
     .from("conversations")
     .select(
       `
@@ -253,9 +265,15 @@ export async function getConversations() {
       recipient:recipient_id(id, username, avatar_url, trust_score)
     `,
     )
-    .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`)
-    .eq("is_archived", false)
-    .order("updated_at", { ascending: false });
+    .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`);
+  if (archived) {
+    query = query.in("id", archivedIds);
+  } else if (archivedIds.length > 0) {
+    query = query.not("id", "in", `(${archivedIds.join(",")})`);
+  }
+  const { data: conversations, error } = await query.order("updated_at", {
+    ascending: false,
+  });
 
   if (error) {
     return { success: false, error: error.message };
@@ -430,45 +448,42 @@ export async function unblockUser(userId: string): Promise<ActionResponse> {
   return successResponse(undefined);
 }
 
+const conversationIdSchema = z.string().uuid("Ongeldig gesprek");
+
 /**
- * Archive a conversation
+ * Archive or unarchive a conversation for the current user only (#91). The
+ * other participant keeps it in their inbox. RLS refuses conversations the
+ * user isn't part of; a new incoming message unarchives it (DB trigger).
  */
-export async function archiveConversation(conversationId: string) {
+export async function setConversationArchived(
+  conversationId: string,
+  archived: boolean,
+): Promise<ActionResponse<undefined>> {
+  const parsed = conversationIdSchema.safeParse(conversationId);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return errorResponse("Je moet ingelogd zijn");
 
-  if (!user) {
-    return { error: "Must be logged in" };
-  }
-
-  // Verify user is part of conversation
-  const { data: conversation } = await supabase
-    .from("conversations")
-    .select("initiator_id, recipient_id")
-    .eq("id", conversationId)
-    .single();
-
-  if (
-    !conversation ||
-    (conversation.initiator_id !== user.id &&
-      conversation.recipient_id !== user.id)
-  ) {
-    return { error: "Unauthorized" };
-  }
-
-  const { error } = await supabase
-    .from("conversations")
-    .update({ is_archived: true })
-    .eq("id", conversationId);
-
-  if (error) {
-    return { error: error.message };
-  }
+  const { error } = archived
+    ? await supabase
+        .from("conversation_archives")
+        .upsert(
+          { conversation_id: parsed.data, user_id: user.id },
+          { ignoreDuplicates: true },
+        )
+    : await supabase
+        .from("conversation_archives")
+        .delete()
+        .eq("conversation_id", parsed.data)
+        .eq("user_id", user.id);
+  if (error) return errorResponse(extractErrorMessage(error));
 
   revalidatePath("/messages");
-  return { success: true };
+  return successResponse(undefined);
 }
 
 /**
