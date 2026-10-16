@@ -82,6 +82,8 @@ interface RumourDetailModalProps {
   userVote: "up" | "down" | null;
   onVote: (rumourId: string, voteType: "up" | "down") => Promise<unknown>;
   isVoting?: boolean;
+  // Set when the user can't vote on this rumour (#78); shown under the buttons
+  votingClosedReason?: string | null;
 }
 
 export function RumourDetailModal({
@@ -92,6 +94,7 @@ export function RumourDetailModal({
   userVote,
   onVote,
   isVoting = false,
+  votingClosedReason = null,
 }: RumourDetailModalProps) {
   const total = votes.up + votes.down;
   const karma = total > 0 ? Math.round((votes.up / total) * 100) : 50;
@@ -217,7 +220,7 @@ export function RumourDetailModal({
               variant="ghost"
               size="sm"
               onClick={() => handleVote("up")}
-              disabled={isVoting}
+              disabled={isVoting || !!votingClosedReason}
               aria-pressed={userVote === "up"}
               className={`gap-2 ${
                 userVote === "up"
@@ -236,7 +239,7 @@ export function RumourDetailModal({
               variant="ghost"
               size="sm"
               onClick={() => handleVote("down")}
-              disabled={isVoting}
+              disabled={isVoting || !!votingClosedReason}
               aria-pressed={userVote === "down"}
               className={`gap-2 ${
                 userVote === "down"
@@ -249,6 +252,11 @@ export function RumourDetailModal({
               <span className="font-semibold">{votes.down}</span>
             </Button>
           </div>
+          {votingClosedReason && (
+            <p className="-mt-2 text-center text-xs text-muted-foreground">
+              {votingClosedReason}
+            </p>
+          )}
 
           <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border">
             <div className="flex items-center gap-1.5">

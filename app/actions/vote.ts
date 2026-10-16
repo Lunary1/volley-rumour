@@ -1,90 +1,92 @@
 "use server";
 
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
+import {
+  type ActionResponse,
+  errorResponse,
+  successResponse,
+} from "@/lib/response";
+import {
+  LOGIN_TO_VOTE_MESSAGE,
+  OWN_RUMOUR_ERROR_CODE,
+  OWN_RUMOUR_MESSAGE,
+  VOTING_CLOSED_ERROR_CODE,
+  VOTING_CLOSED_MESSAGE,
+  type VoteType,
+} from "@/lib/rumours";
 
-/** A refused vote, in Dutch. Suspended users can't vote (#80). */
+export type VoteCounts = { votes_true: number; votes_false: number };
+
+const voteSchema = z.object({
+  rumourId: z.string().uuid(),
+  voteType: z.enum(["up", "down"]),
+});
+
+/** A vote the database refused, in Dutch (#78). */
 function voteError(error: { code?: string }) {
-  if (error.code === SUSPENDED_ERROR_CODE) return { error: SUSPENDED_MESSAGE };
+  switch (error.code) {
+    case SUSPENDED_ERROR_CODE:
+      return errorResponse(SUSPENDED_MESSAGE);
+    case OWN_RUMOUR_ERROR_CODE:
+      return errorResponse(OWN_RUMOUR_MESSAGE);
+    case VOTING_CLOSED_ERROR_CODE:
+      return errorResponse(VOTING_CLOSED_MESSAGE);
+  }
   console.error("[VOTE_ERROR] Failed to save vote:", error);
-  return { error: "Je stem kon niet opgeslagen worden" };
+  return errorResponse("Je stem kon niet opgeslagen worden");
 }
 
-export async function voteOnRumour(rumourId: string, voteType: "up" | "down") {
-  const supabase = await createClient();
+/**
+ * Casts or changes the user's vote. The database decides who may vote and
+ * keeps the counts (#78): the `check_vote_allowed` trigger refuses votes on
+ * your own rumour and on closed ones, and `on_vote_change` recounts.
+ */
+export async function voteOnRumour(
+  rumourId: string,
+  voteType: VoteType,
+): Promise<ActionResponse<VoteCounts>> {
+  const parsed = voteSchema.safeParse({ rumourId, voteType });
+  if (!parsed.success) return errorResponse("Ongeldige stem");
 
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return errorResponse(LOGIN_TO_VOTE_MESSAGE);
 
-  if (!user) {
-    return { error: "Je moet ingelogd zijn om te stemmen" };
-  }
-
-  // Check if user already voted
-  const { data: existingVote } = await supabase
-    .from("rumour_votes")
-    .select("*")
-    .eq("rumour_id", rumourId)
-    .eq("user_id", user.id)
-    .single();
-
-  // Get current rumour vote counts
-  const { data: rumour } = await supabase
-    .from("rumours")
-    .select("votes_true, votes_false, creator_id")
-    .eq("id", rumourId)
-    .single();
-
-  if (!rumour) {
-    return { error: "Gerucht niet gevonden" };
-  }
-
-  if (existingVote) {
-    // existingVote.vote_type is boolean: true = "up", false = "down"
-    const existingVoteType = existingVote.vote_type === true ? "up" : "down";
-
-    if (existingVoteType === voteType) {
-      return { error: "Je hebt al op deze optie gestemd" };
-    }
-
-    // Update vote type (convert to boolean: true = up, false = down)
-    const isUpvote = voteType === "up";
-    const { error: updateError } = await supabase
+  // vote_type is boolean: true = "up", false = "down". One vote per user per
+  // rumour: if the insert hits that, change the existing vote. (An upsert
+  // would also write rumour_id and user_id, which users may not update.)
+  const vote_type = parsed.data.voteType === "up";
+  let { error } = await supabase.from("rumour_votes").insert({
+    rumour_id: parsed.data.rumourId,
+    user_id: user.id,
+    vote_type,
+  });
+  if (error?.code === "23505") {
+    ({ error } = await supabase
       .from("rumour_votes")
-      .update({ vote_type: isUpvote })
-      .eq("id", existingVote.id);
-
-    if (updateError) return voteError(updateError);
-  } else {
-    // Create new vote record (convert to boolean: true = up, false = down)
-    const isUpvote = voteType === "up";
-    const { error: insertError } = await supabase.from("rumour_votes").insert({
-      rumour_id: rumourId,
-      user_id: user.id,
-      vote_type: isUpvote,
-    });
-
-    if (insertError) return voteError(insertError);
+      .update({ vote_type })
+      .eq("rumour_id", parsed.data.rumourId)
+      .eq("user_id", user.id));
   }
+  if (error) return voteError(error);
 
-  // The on_vote_change trigger recounts votes_true/votes_false (and the
-  // creator's trust score) in the database; read the fresh counts back.
-  const { data: counts } = await supabase
+  const { data: counts, error: countsError } = await supabase
     .from("rumours")
     .select("votes_true, votes_false")
-    .eq("id", rumourId)
+    .eq("id", parsed.data.rumourId)
     .single();
-
-  const newVotesTrue = counts?.votes_true ?? rumour.votes_true;
-  const newVotesFalse = counts?.votes_false ?? rumour.votes_false;
+  if (countsError || !counts) return voteError(countsError ?? {});
 
   revalidatePath("/geruchten", "layout");
+  revalidatePath("/");
 
-  return {
-    success: true,
-    votes_true: newVotesTrue,
-    votes_false: newVotesFalse,
-  };
+  return successResponse({
+    votes_true: counts.votes_true ?? 0,
+    votes_false: counts.votes_false ?? 0,
+  });
 }

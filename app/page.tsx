@@ -221,7 +221,8 @@ export default async function HomePage() {
                   key={rumour.id}
                   rumour={rumour}
                   onVote={voteOnRumour}
-                  userVote={userVotes[rumour.id] ?? null}
+                  userVote={userVotes.votes[rumour.id] ?? null}
+                  currentUserId={userVotes.userId}
                 />
               ))}
             </div>

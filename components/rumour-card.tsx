@@ -23,7 +23,17 @@ import {
 } from "@/components/rumour-detail-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ReportDialog } from "@/components/report-dialog";
-import { RUMOUR_SOURCE_SHORT_LABELS, labelFor } from "@/lib/rumours";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  LOGIN_TO_VOTE_MESSAGE,
+  OWN_RUMOUR_MESSAGE,
+  RUMOUR_SOURCE_SHORT_LABELS,
+  VOTING_CLOSED_MESSAGE,
+  isVotingOpen,
+  labelFor,
+} from "@/lib/rumours";
+import type { ActionResponse } from "@/lib/response";
+import type { VoteCounts } from "@/app/actions/vote";
 
 interface RumourCardProps {
   rumour: {
@@ -41,6 +51,7 @@ interface RumourCardProps {
     created_at: string;
     status: string;
     // null once the creator's account is deleted (deleteAccount keeps the rumour)
+    creator_id: string | null;
     creator: {
       username: string;
       trust_score: number;
@@ -50,9 +61,11 @@ interface RumourCardProps {
   onVote?: (
     rumourId: string,
     voteType: "up" | "down",
-  ) => Promise<{ success?: boolean; error?: string } | void>;
+  ) => Promise<ActionResponse<VoteCounts>>;
   // The logged-in user's vote, loaded by the page with getUserVotes() (#129)
   userVote?: "up" | "down" | null;
+  // From getUserVotes() too; null for visitors (#78)
+  currentUserId?: string | null;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -85,7 +98,14 @@ const statusColors: Record<string, string> = {
     "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
 };
 
-export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
+export function RumourCard({
+  rumour,
+  onVote,
+  userVote,
+  currentUserId = null,
+}: RumourCardProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [localUpvotes, setLocalUpvotes] = useState(rumour.votes_true);
   const [localDownvotes, setLocalDownvotes] = useState(rumour.votes_false);
   const [localUserVote, setLocalUserVote] = useState<"up" | "down" | null>(
@@ -138,8 +158,28 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
     };
   }, [rumour.id]);
 
+  // Why the buttons are off, if they are; the database refuses these votes
+  // too (#78).
+  const votingClosedReason = !isVotingOpen(rumour.status)
+    ? VOTING_CLOSED_MESSAGE
+    : currentUserId && rumour.creator_id === currentUserId
+      ? OWN_RUMOUR_MESSAGE
+      : null;
+
   const handleVote = async (voteType: "up" | "down") => {
-    if (localUserVote === voteType || isVoting) return;
+    if (localUserVote === voteType || isVoting || votingClosedReason) return;
+
+    // Visitors get a way to log in instead of a vote that bounces (#78).
+    if (!currentUserId) {
+      toast(LOGIN_TO_VOTE_MESSAGE, {
+        action: {
+          label: "Inloggen",
+          onClick: () =>
+            router.push(`/auth/login?next=${encodeURIComponent(pathname)}`),
+        },
+      });
+      return;
+    }
 
     setIsVoting(true);
     const previousUpvotes = localUpvotes;
@@ -165,23 +205,15 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
       if (onVote) {
         const result = await onVote(rumour.id, voteType);
 
-        if (result?.error) {
+        if (!result.success) {
           setLocalUpvotes(previousUpvotes);
           setLocalDownvotes(previousDownvotes);
           setLocalUserVote(previousUserVote);
           toast.error(result.error);
-        } else if (result?.success) {
-          const supabase = await createClient();
-          const { data } = await supabase
-            .from("rumours")
-            .select("votes_true, votes_false")
-            .eq("id", rumour.id)
-            .single();
-
-          if (data) {
-            setLocalUpvotes(data.votes_true);
-            setLocalDownvotes(data.votes_false);
-          }
+        } else {
+          // The database's counts, including votes others cast meanwhile
+          setLocalUpvotes(result.data.votes_true);
+          setLocalDownvotes(result.data.votes_false);
         }
       }
     } finally {
@@ -331,7 +363,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => handleVote("up")}
-              disabled={isVoting}
+              disabled={isVoting || !!votingClosedReason}
               aria-pressed={localUserVote === "up"}
               className={`gap-2 ${
                 localUserVote === "up"
@@ -352,7 +384,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => handleVote("down")}
-              disabled={isVoting}
+              disabled={isVoting || !!votingClosedReason}
               aria-pressed={localUserVote === "down"}
               className={`gap-2 ${
                 localUserVote === "down"
@@ -365,6 +397,11 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
               <span className="font-semibold">{localDownvotes}</span>
             </Button>
           </div>
+          {votingClosedReason && (
+            <p className="-mt-2 mb-4 text-center text-xs text-muted-foreground">
+              {votingClosedReason}
+            </p>
+          )}
 
           {/* Footer: Creator + Trust + Discussion */}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
@@ -424,6 +461,7 @@ export function RumourCard({ rumour, onVote, userVote }: RumourCardProps) {
         userVote={localUserVote}
         onVote={(_id, voteType) => handleVote(voteType)}
         isVoting={isVoting}
+        votingClosedReason={votingClosedReason}
       />
     </>
   );
