@@ -222,9 +222,10 @@ test("deleting asks for confirmation and keeps the conversation", async ({
 }) => {
   const title = `VC Weg${Date.now()} zoekt een setter`;
   const id = await createAd("tom", title);
+  // Not Jana: blocks.spec.ts has Tom block her while it runs (#78 CI run).
   const conversationId = await createConversation(
     id,
-    "jana",
+    "wachtrij",
     "tom",
     "Is deze plaats nog vrij?",
   );

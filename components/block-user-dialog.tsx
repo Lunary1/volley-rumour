@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { blockUser, unblockUser } from "@/app/actions/messages";
 import { cn } from "@/lib/utils";
+import { useIsClient } from "@/lib/use-is-client";
 
 interface BlockUserDialogProps {
   userId: string;
@@ -34,6 +35,8 @@ export function BlockUserDialog({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  // A click before hydration wouldn't open the dialog; keep it off until then.
+  const isClient = useIsClient();
 
   function confirm() {
     startTransition(async () => {
@@ -56,6 +59,7 @@ export function BlockUserDialog({
         size="sm"
         className={cn("gap-1.5 text-muted-foreground", className)}
         onClick={() => setOpen(true)}
+        disabled={!isClient}
         aria-label="Blokkeren"
       >
         <Ban className="h-3.5 w-3.5" aria-hidden />
@@ -109,6 +113,8 @@ export function UnblockButton({
 }: UnblockButtonProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  // A click before hydration does nothing; keep the button off until then.
+  const isClient = useIsClient();
 
   function unblock() {
     startTransition(async () => {
@@ -129,7 +135,7 @@ export function UnblockButton({
       size="sm"
       className={className}
       onClick={unblock}
-      disabled={pending}
+      disabled={pending || !isClient}
       aria-label={`${userName} deblokkeren`}
     >
       Deblokkeren

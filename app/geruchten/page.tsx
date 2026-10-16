@@ -144,10 +144,12 @@ export default async function GeruchtenPage(props: {
                   votes_false: rumour.votes_false,
                   created_at: rumour.created_at,
                   status: rumour.status,
+                  creator_id: rumour.creator_id,
                   creator: rumour.creator,
                 }}
                 onVote={voteOnRumour}
-                userVote={userVotes[rumour.id] ?? null}
+                userVote={userVotes.votes[rumour.id] ?? null}
+                currentUserId={userVotes.userId}
               />
             ))}
           </div>

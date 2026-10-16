@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
 
 // speler_jana, coach_tom and vc_testdorp in supabase/seed.sql
@@ -42,8 +42,8 @@ const VOTER_ID = "a0000000-0000-4000-8000-000000000008";
  *   role (#80).
  * - contact messages sent by tests, which count towards the daily limits
  *   (#81).
- * - volle_wachtrij's votes, and the counts of the rumours they were on
- *   (#129).
+ * - volle_wachtrij's votes (#129). The vote trigger recounts the rumours
+ *   they were on (#78).
  */
 export default async function globalSetup() {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -152,33 +152,8 @@ export default async function globalSetup() {
   const votes = await admin
     .from("rumour_votes")
     .delete()
-    .eq("user_id", VOTER_ID)
-    .select("rumour_id");
+    .eq("user_id", VOTER_ID);
   if (votes.error) {
     throw new Error(`Cleaning up vote-test votes: ${votes.error.message}`);
   }
-  for (const { rumour_id } of votes.data) {
-    await recountVotes(admin, rumour_id);
-  }
-}
-
-/**
- * The vote trigger only recounts on insert and update (it reads NEW, which a
- * delete doesn't have), so count again after removing a vote (#78).
- */
-async function recountVotes(admin: SupabaseClient, rumourId: string) {
-  const count = async (voteType: boolean) => {
-    const { count, error } = await admin
-      .from("rumour_votes")
-      .select("id", { count: "exact", head: true })
-      .eq("rumour_id", rumourId)
-      .eq("vote_type", voteType);
-    if (error) throw new Error(`Counting votes: ${error.message}`);
-    return count ?? 0;
-  };
-  const { error } = await admin
-    .from("rumours")
-    .update({ votes_true: await count(true), votes_false: await count(false) })
-    .eq("id", rumourId);
-  if (error) throw new Error(`Recounting votes: ${error.message}`);
 }

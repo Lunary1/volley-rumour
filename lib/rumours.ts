@@ -83,6 +83,23 @@ export const MAX_PENDING_RUMOURS = 5;
 
 export const PENDING_LIMIT_MESSAGE = `Je hebt al ${MAX_PENDING_RUMOURS} geruchten die op een moderator wachten. Je kan een nieuw gerucht delen zodra er een is nagekeken.`;
 
+// Voting (#78). The database decides in check_vote_allowed(): only lopende
+// rumours (status "rumour"), and not your own.
+export type VoteType = "up" | "down";
+
+/** SQLSTATE for a vote on your own rumour. */
+export const OWN_RUMOUR_ERROR_CODE = "VR009";
+/** SQLSTATE for a vote on a rumour that isn't lopend. */
+export const VOTING_CLOSED_ERROR_CODE = "VR010";
+
+export const OWN_RUMOUR_MESSAGE = "Je kan niet stemmen op je eigen gerucht";
+export const VOTING_CLOSED_MESSAGE = "Stemmen kan alleen op lopende geruchten";
+export const LOGIN_TO_VOTE_MESSAGE = "Log in om te stemmen";
+
+export function isVotingOpen(status: string): boolean {
+  return status === "rumour";
+}
+
 /** Senior divisions only (D-003). Keep in sync with the migrations. */
 export const RUMOUR_DIVISIONS = {
   liga_heren: "LIGA HEREN",
