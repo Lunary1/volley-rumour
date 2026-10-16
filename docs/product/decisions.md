@@ -32,6 +32,8 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-023 | 2026-10-17 | Accepted | Datadog is removed; no session replay or third-party RUM          |
 | D-024 | 2026-10-17 | Accepted | Zoekertjes expire on 31 August (at least 30 days after posting); the owner can renew |
 | D-025 | 2026-10-17 | Accepted | Minimal, content-free email notifications for messages and moderation outcomes, with an opt-out |
+| D-026 | 2026-10-17 | Accepted | A new message brings an archived conversation back to the inbox      |
+| D-027 | 2026-10-17 | Accepted | French and English are a nice-to-have, not a launch blocker; built with next-intl, Dutch the default |
 
 ---
 
@@ -594,3 +596,46 @@ the earlier of both, and no expiry were considered.
 
 **Consequences.** Adds an email provider, a new processor on the privacy page
 (#77); which one is picked in #98. #98 builds the notifications.
+
+## D-026 — A new message unarchives a conversation
+
+**Context.** #91 made archiving per user and, as an agent call, brought an
+archived conversation back to the inbox when a new message arrives (the
+`unarchive_for_recipient` trigger). The owner asked for a recommendation
+(Q14).
+
+**Decision** (2026-10-17). **Keep it.** Archiving tidies the inbox; it isn't
+a mute. Missing a reply about an ad costs more than a conversation coming
+back, and users who don't want to hear from someone block them (D-018), which
+stops the messages altogether.
+
+**Consequences.** None; this is how #91 already works.
+
+## D-027 — French and English, the simple way
+
+**Context.** The competitor offers French (#55). The site is Dutch only, with
+the copy hard-coded in components. The owner sees French, and maybe English,
+as a nice-to-have and asked for the easiest common approach (2026-10-17).
+
+**Decision.**
+- **Nice-to-have, not a launch blocker.** Launch can go ahead in Dutch only.
+- **next-intl, the usual library for the Next.js App Router.** UI strings move
+  into one message file per language (`messages/nl.json`, `fr.json`,
+  `en.json`); components read them with `useTranslations`/
+  `getTranslations`. Dutch is the default and the fallback for a missing
+  string.
+- **First without language URLs** (agent call): the language comes from a
+  language switch (stored in a cookie), or else from the browser's language,
+  else Dutch. This leaves the routes and the coming-soon gate alone. Most
+  multilingual sites use `/fr/...` paths so search engines index each
+  language; next-intl can add that later without touching the strings.
+- **Only the interface is translated.** Rumours, zoekertjes and messages stay
+  in the language they were written in. Moderators judge French and English
+  content too (D-002).
+- Legal pages, emails (D-025) and validation messages are translated before a
+  language is switched on.
+
+**Consequences.** Extracting the Dutch strings comes first and is useful on
+its own: it finds the English strings that leak into the UI (#90). Then
+French and English are added as translations: #143 and #144 in M3.
+
