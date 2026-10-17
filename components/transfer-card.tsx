@@ -1,44 +1,54 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Calendar, UserCircle } from "lucide-react";
+import { ArrowRight, Calendar, ExternalLink, UserCircle } from "lucide-react";
+import { ShareButton } from "@/components/share-button";
 import { formatDate } from "@/lib/dates";
+import {
+  TRANSFER_CATEGORIES,
+  isRetirement,
+  type TransferCategory,
+} from "@/lib/transfers";
 
-interface TransferCardProps {
-  transfer: {
-    id: string;
-    player_name: string;
-    from_club: string | null;
-    to_club: string;
-    transfer_type: string;
-    transfer_date: string;
-    is_official: boolean;
-  };
+/** The transfer columns the card shows. */
+export const TRANSFER_CARD_COLUMNS =
+  "id, player_name, from_club, to_club, category, confirmed_at, source_url";
+
+export interface TransferCardData {
+  id: string;
+  player_name: string;
+  from_club: string | null;
+  to_club: string | null;
+  category: string;
+  confirmed_at: string | null;
+  source_url: string | null;
 }
 
-const transferTypeLabels: Record<string, string> = {
-  player_male: "Speler",
-  player_female: "Speelster",
-  coach_male: "Trainer",
-  coach_female: "Trainster",
-  player_retirement: "Speler Stopt",
-  coach_retirement: "Trainer Stopt",
-};
-
-const transferTypeColors: Record<string, string> = {
+const categoryColors: Record<TransferCategory, string> = {
   player_male: "bg-primary/20 text-primary border-primary/30",
   player_female: "bg-primary/20 text-primary border-primary/30",
-  coach_male: "bg-accent/20 text-accent border-accent/30",
-  coach_female: "bg-accent/20 text-accent border-accent/30",
+  trainer_male: "bg-accent/20 text-accent border-accent/30",
+  trainer_female: "bg-accent/20 text-accent border-accent/30",
   player_retirement: "bg-muted text-muted-foreground border-muted",
-  coach_retirement: "bg-muted text-muted-foreground border-muted",
+  trainer_retirement: "bg-muted text-muted-foreground border-muted",
 };
 
-export function TransferCard({ transfer }: TransferCardProps) {
-  const isRetirement = transfer.transfer_type?.includes("retirement") ?? false;
+/**
+ * A confirmed transfer (#70, #82). No contact button: messaging is for
+ * zoekertjes only (D-004).
+ */
+export function TransferCard({
+  transfer,
+  share = false,
+}: {
+  transfer: TransferCardData;
+  /** Show a share button, as on /transfers. */
+  share?: boolean;
+}) {
+  const category = transfer.category as TransferCategory;
+  const retirement = isRetirement(transfer.category);
   const typeColor =
-    transferTypeColors[transfer.transfer_type] ||
-    "bg-muted text-muted-foreground border-muted";
-  const typeLabel = transferTypeLabels[transfer.transfer_type] || "Onbekend";
+    categoryColors[category] ?? "bg-muted text-muted-foreground border-muted";
+  const typeLabel = TRANSFER_CATEGORIES[category] ?? "Transfer";
 
   return (
     <Card className="bg-card border-border hover:border-primary/40 transition-all hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(255,127,80,0.15)]">
@@ -47,11 +57,6 @@ export function TransferCard({ transfer }: TransferCardProps) {
           <Badge variant="outline" className={typeColor}>
             {typeLabel}
           </Badge>
-          {transfer.is_official && (
-            <Badge className="bg-primary text-primary-foreground">
-              Officieel
-            </Badge>
-          )}
         </div>
 
         <div className="flex items-center gap-2 mb-2">
@@ -60,7 +65,7 @@ export function TransferCard({ transfer }: TransferCardProps) {
         </div>
 
         <div className="flex items-center gap-2 text-sm mb-3">
-          {isRetirement ? (
+          {retirement ? (
             <>
               {transfer.from_club && (
                 <>
@@ -93,15 +98,41 @@ export function TransferCard({ transfer }: TransferCardProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Calendar className="h-3.5 w-3.5" />
-          <span>
-            {transfer.transfer_date &&
-            !isNaN(new Date(transfer.transfer_date).getTime())
-              ? formatDate(transfer.transfer_date, "d MMMM yyyy")
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5" aria-hidden />
+            {transfer.confirmed_at
+              ? `Bevestigd op ${formatDate(transfer.confirmed_at, "d MMMM yyyy")}`
               : "Datum onbekend"}
           </span>
+          {transfer.source_url && (
+            <a
+              href={transfer.source_url}
+              target="_blank"
+              rel="nofollow noopener noreferrer"
+              className="flex items-center gap-1 text-primary underline underline-offset-2"
+            >
+              Officiële bron
+              <ExternalLink className="h-3 w-3" aria-hidden />
+            </a>
+          )}
         </div>
+
+        {share && (
+          <div className="mt-4">
+            <ShareButton
+              title={`${transfer.player_name} — ${transfer.from_club ? `${transfer.from_club} ➜ ` : ""}${retirement ? "stopt" : transfer.to_club}`}
+              shareText={
+                retirement
+                  ? `🏐 Bevestigd: ${transfer.player_name} stopt${transfer.from_club ? ` bij ${transfer.from_club}` : ""}. Bekijk het op VolleyRumours!`
+                  : `🏐 Transfer bevestigd: ${transfer.player_name} ${transfer.from_club ? `van ${transfer.from_club} naar ${transfer.to_club}` : `naar ${transfer.to_club}`}. Bekijk het op VolleyRumours!`
+              }
+              url="/transfers"
+              variant="outline"
+              size="sm"
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

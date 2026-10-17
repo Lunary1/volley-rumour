@@ -1,15 +1,23 @@
 // Rumour statuses (Moderation Policy, D-002). New rumours start pending and
 // only become public once a moderator approves them; RLS enforces this
 // (issue #65). A moderator removes a public rumour after a takedown request
-// (#68).
+// (#68). A moderator resolves a lopend rumour as confirmed, denied or expired
+// ("Niet bevestigd", neutral for the track record) (#70, D-020, D-005).
 export type RumourStatus =
-  "pending" | "rumour" | "confirmed" | "denied" | "rejected" | "removed";
+  | "pending"
+  | "rumour"
+  | "confirmed"
+  | "denied"
+  | "expired"
+  | "rejected"
+  | "removed";
 
 /** Statuses everyone may see. Authors and staff can also read the others. */
 export const PUBLIC_RUMOUR_STATUSES = [
   "rumour",
   "confirmed",
   "denied",
+  "expired",
 ] as const;
 
 export function isPublicRumourStatus(status: string): boolean {
@@ -22,6 +30,7 @@ export const RUMOUR_STATUS_LABELS: Record<RumourStatus, string> = {
   rumour: "Lopend",
   confirmed: "Bevestigd",
   denied: "Ontkracht",
+  expired: "Niet bevestigd",
   rejected: "Afgewezen",
   removed: "Verwijderd",
 };

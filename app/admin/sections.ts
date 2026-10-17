@@ -16,6 +16,19 @@ export const adminSections: AdminSection[] = [
     issue: 66,
   },
   {
+    label: "Lopende geruchten",
+    description:
+      "Geruchten afsluiten als bevestigd, ontkracht of niet bevestigd.",
+    href: "/admin/geruchten",
+    issue: 70,
+  },
+  {
+    label: "Transfers",
+    description: "Bevestigde transfers toevoegen, aanpassen of verwijderen.",
+    href: "/admin/transfers",
+    issue: 70,
+  },
+  {
     label: "Meldingen",
     description:
       "Verwijderverzoeken en gemelde geruchten, zoekertjes en gesprekken behandelen.",

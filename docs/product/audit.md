@@ -47,7 +47,7 @@ ran without Supabase credentials, which is what CI will face.
 | Journey | Title                                    | Overall     | Top gap                                                                     |
 | ------- | ---------------------------------------- | ----------- | --------------------------------------------------------------------------- |
 | J-01    | Find a matching zoekertje                | **PARTIAL** | Logged-out contact dead-ends (search crash fixed in #59)    |
-| J-02    | Read Transfer Talk / transfers           | **BROKEN**  | Unmoderated rumours are public; crash on anonymised rumours fixed in #57     |
+| J-02    | Read Transfer Talk / transfers           | **PARTIAL** | Karma labels instead of a track record (#88); no pagination (X-9). Transfer tabs fixed (#70, #82) |
 | J-03    | Create an account                        | **PARTIAL** | No 16+ / terms confirmation; raw English errors                             |
 | J-04    | Post "speler zoekt team"                 | **PARTIAL** | Server action, gender stored, login first, public notice (#71); expiry left (#84) |
 | J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status waits on #84 |
@@ -59,10 +59,10 @@ ran without Supabase credentials, which is what CI will face.
 | J-11    | Account and personal data                | **BROKEN**  | Account deletion can leave a half-deleted state (password reset fixed in #58) |
 | J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
 | J-13    | Pre-moderation queue                     | **PARTIAL** | Queue, approve/reject and audit log work (#66); no track record (#88) or email (#53) |
-| J-14    | Resolve a rumour                         | **MISSING** | `confirmRumour` removed in #65 (X-3); rebuilt with #70                        |
+| J-14    | Resolve a rumour                         | **PARTIAL** | Confirm, deny, expire, bulk expire and transfer edits work (#70); the track record waits on #88 |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
-**Count:** 4 WORKS · 8 PARTIAL · 2 BROKEN · 1 MISSING.
+**Count:** 4 WORKS · 10 PARTIAL · 1 BROKEN · 0 MISSING.
 
 ---
 
@@ -80,7 +80,7 @@ items.
 | X-5 | **Fixed** (#74) | **Message privacy rests entirely on unverified RLS.** Fixed: the chat subscribes per conversation and the badge to `recipient_id=eq.<me>` (set by a database trigger), both filtered on the server; no payload is logged; a Playwright test shows a third user gets no events, even with no filter or a spoofed one. Both Realtime subscriptions listen to *all* `messages` changes with no filter and filter in the browser. The header logs every payload to the console.                                                                                                                                                          | [chat-interface.tsx:102-109](../../components/chat-interface.tsx#L102-L109), [user-menu.tsx:66-76](../../components/user-menu.tsx#L66-L76) |
 | X-6 | **High**     | **Promised safety features don't exist.** No moderation, report, takedown, edit or delete paths for rumours or zoekertjes, although the Terms promise removal, warnings and suspensions.                                                                                                                                                                              | [voorwaarden:208-225](../../app/voorwaarden/page.tsx#L208-L225) |
 | X-7 | **High**     | **Privacy and compliance gaps.** No age or terms confirmation at sign-up (D-003). Datadog RUM records 20% of sessions on replay, including private chats, and isn't in the privacy policy. Zoekertjes keep the poster's real name in `title` after account deletion.                                                                                                     | [sign-up/page.tsx:72-83](../../app/auth/sign-up/page.tsx#L72-L83), [datadog-rum-provider.tsx:18](../../components/datadog-rum-provider.tsx#L18), [auth.ts:174-182](../../app/actions/auth.ts#L174-L182) |
-| X-8 | **Medium**   | **Schema drift between code paths.** `transfers.category` (written) vs `transfer_type` (read). `ad_type` is written as `transfer_talk` but checked as `"transfer"`. Validated fields (zoekertje `geslacht`) are never stored; rumour gender and divisions are stored since #67. The unused `createClassifiedSchema` didn't match the real types (removed in #61).                                         | [rumour.ts:111-118](../../app/actions/rumour.ts#L111-L118), [transfers/page.tsx:25](../../app/transfers/page.tsx#L25), [messages.ts:345](../../app/actions/messages.ts#L345) |
+| X-8 | **Fixed** (#70, #82) | **Schema drift between code paths.** Fixed for transfers: `category` is the type everywhere (database, `resolve_rumour()`, tabs, cards), and the transfer card's contact button, the only caller writing `transfer_talk`, is gone (D-004). `transfers.category` (written) vs `transfer_type` (read). `ad_type` is written as `transfer_talk` but checked as `"transfer"`. Validated fields (zoekertje `geslacht`) are never stored; rumour gender and divisions are stored since #67. The unused `createClassifiedSchema` didn't match the real types (removed in #61).                                         | [rumour.ts:111-118](../../app/actions/rumour.ts#L111-L118), [transfers/page.tsx:25](../../app/transfers/page.tsx#L25), [messages.ts:345](../../app/actions/messages.ts#L345) |
 | X-9 | **Medium**   | **No caching anywhere.** The layout header calls `getCurrentUser()`, which reads cookies, so every route renders dynamically and the `revalidate` exports have no effect. `/geruchten` runs 4 unpaginated full-table queries per request; the inbox runs one query per conversation (N+1). The untracked `k6/` stress test against production was removed in #60; load testing moves to #97 on a non-production target. | [header.tsx:21](../../components/header.tsx#L21), [geruchten/page.tsx:43-46](../../app/geruchten/page.tsx#L43-L46), [messages.ts:291-306](../../app/actions/messages.ts#L291-L306) |
 | X-10 | **Partly fixed** (#31, #38, #39) | **Tooling.** Lint broken, no tests, no CI, two lockfiles, `@supabase/supabase-js: "latest"`, critical Next advisories, package name `my-v0-project`. CI (#31), packages and advisories (#38) and ESLint (#39) are fixed; tests remain (step 1.4).                                                                                                                                                                                                                  | [package.json](../../package.json) |
 | X-11 | **Fixed** (#36, D-009) | **Coming-soon mode only hides the homepage.** `NEXT_PUBLIC_COMING_SOON` is checked in `app/page.tsx` alone; every other route (`/geruchten/nieuw`, `/zoekertjes/nieuw`, `/auth/sign-up`, …) is live in production for anyone with the URL. That makes X-1 and X-2 public today, and means every merge to `main` is a public release. Preview deployments also share the production database. | [page.tsx:86](../../app/page.tsx#L86), [proxy.ts](../../proxy.ts) |
@@ -100,17 +100,17 @@ items.
 | Logged-out "Contact opnemen" → login → back | **BROKEN** | [classified-detail-contact.tsx:25-39](../../components/classified-detail-contact.tsx#L25-L39), [messages.ts:97-99](../../app/actions/messages.ts#L97-L99) | The modal opens anyway; the visitor writes a message and then gets a "Je moet ingelogd zijn" toast. No redirect |
 | Removed ad URL → Dutch "niet beschikbaar" page | PARTIAL | [zoekertjes/[id]/page.tsx:82](../../app/zoekertjes/[id]/page.tsx#L82) | `notFound()` falls through to Next's default English 404; there's no `app/not-found.tsx` |
 
-### J-02 — Visitor reads Transfer Talk and transfers · BROKEN
+### J-02 — Visitor reads Transfer Talk and transfers · PARTIAL
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Only moderator-approved rumours visible | **WORKS** | [geruchten/page.tsx:12-30](../../app/geruchten/page.tsx#L12-L30), [rumour.ts:47-58](../../app/actions/rumour.ts#L47-L58) | Fixed in #65: RLS hides pending and rejected rumours; Transfer Talk lists approved statuses only. Moderators approve in the queue (#66) |
 | Card shows neutral belief %, author track record, no good/evil labels | PARTIAL | [rumour-card.tsx:184-212](../../components/rumour-card.tsx#L184-L212) | Shows the "Evil/Corrupt/Heroic/Legendary" karma label and trust points instead of a track record (D-005) |
 | Card renders for anonymised authors | **FIXED** (#57) | [rumour-card.tsx](../../components/rumour-card.tsx), [geruchten-deleted-creator.spec.ts](../../e2e/geruchten-deleted-creator.spec.ts) | Shows "Verwijderd account" without a trust score, in the card and the detail modal (X-2) |
-| Source type and link shown | MISSING | — | No source field exists |
+| Source type and link shown | **WORKS** | [rumour-card.tsx](../../components/rumour-card.tsx), [rumour-sources.spec.ts](../../e2e/rumour-sources.spec.ts) | #67: "Bron: …" and the link on the card and in the detail view. A resolved rumour also links the official source the moderator used (#70) |
 | "Melden" link on each card | **WORKS** | [rumour-card.tsx](../../components/rumour-card.tsx), [report-dialog.tsx](../../components/report-dialog.tsx), [reports.spec.ts](../../e2e/reports.spec.ts) | #79: "Melden" on every card and in the detail view; logged-out visitors go to login and back. The dialog also offers the takedown form (J-12) |
-| Transfer tabs show the right items with correct labels | **BROKEN** | [transfers/page.tsx:25-39](../../app/transfers/page.tsx#L25-L39), [transfer-card-interactive.tsx:32-62](../../components/transfer-card-interactive.tsx#L32-L62), [rumour.ts:104-118](../../app/actions/rumour.ts#L104-L118) | The filters use `player/coach/retirement`, the labels expect `player_male/…`, and the confirm path writes `category`, not `transfer_type`. Either the tabs are empty or labels show "Onbekend". It also only ever maps to *male* types (VERIFY data) |
-| No "Contact <author>" on transfers (D-004) | **BROKEN** | [transfer-card-interactive.tsx:158-171](../../components/transfer-card-interactive.tsx#L158-L171) | Button present; `creator_id` is never set by the confirm path |
+| Transfer tabs show the right items with correct labels | **WORKS** | [transfers/page.tsx](../../app/transfers/page.tsx), [lib/transfers.ts](../../lib/transfers.ts), [rumour-resolution.spec.ts](../../e2e/rumour-resolution.spec.ts) | #70, #82: one set of types (`category`), tabs Spelers / Trainers / Gestopt, Dutch labels, the confirmation date and the official source. Before, the page queried columns that don't exist and showed nothing |
+| No "Contact <author>" on transfers (D-004) | **WORKS** | [transfer-card.tsx](../../components/transfer-card.tsx) | #82: one card for the homepage and `/transfers`, without a contact button |
 | Pagination, <1 s p95 | PARTIAL | [geruchten/page.tsx:43-46](../../app/geruchten/page.tsx#L43-L46) | Transfers are capped at 50; rumours are unpaginated with 4 full queries per request (X-9) |
 
 ### J-03 — Visitor creates an account · PARTIAL
@@ -229,16 +229,16 @@ items.
 | Reject with reason | **WORKS** | `reject_rumour()`, [profile-view.tsx](../../app/profile/profile-view.tsx) | #66: fixed list of reasons (note required for "Andere"); the author sees the reason on their profile |
 | Audit log | **WORKS** | `log_staff_action()`, [admin/logboek](../../app/admin/logboek/page.tsx) | #64, #66: approve and reject log in the same transaction as the decision |
 
-### J-14 — Resolve a rumour · MISSING
+### J-14 — Resolve a rumour · PARTIAL
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Confirm with source → typed transfer linked to rumour | **BROKEN** | [rumour.ts:73-155](../../app/actions/rumour.ts#L73-L155) | No auth check (X-3); no source; male-only type mapping; `transfer_type` and `transfer_date` aren't set; no caller |
-| No duplicate transfer on re-confirm | MISSING | [rumour.ts:111](../../app/actions/rumour.ts#L111) | Not guarded (unique `source_rumour_id`? VERIFY) |
-| Deny / expire, close voting, update track record | MISSING | — | The `denied` filter exists on `/geruchten`, but nothing can set it |
-| Bulk "niet bevestigd" at window close | MISSING | — | |
-| Add transfer directly | MISSING | — | |
-| Correct or remove a transfer, audited | MISSING | — | |
+| Confirm with source → typed transfer linked to rumour | **WORKS** | [rumour_resolution migration](../../supabase/migrations/20261017110217_rumour_resolution.sql), [admin/geruchten](../../app/admin/geruchten/page.tsx), [rumour-resolution.spec.ts](../../e2e/rumour-resolution.spec.ts) | #70: `resolve_rumour()` is staff-only (D-020), needs an http(s) source and a type that fits the rumour (preselected from its gender), and makes the transfer with the clubs, division and date in the same transaction as the log entry |
+| No duplicate transfer on re-confirm | **WORKS** | [rumour_resolution.test.sql](../../supabase/tests/database/rumour_resolution.test.sql) | Only lopende rumours can be resolved (row lock), and `source_rumour_id` is unique |
+| Deny / expire, close voting, update track record | PARTIAL | `resolve_rumour()`, [votes](../../supabase/migrations/20261016224117_vote_integrity.sql) | Status changes, voting closes (#78), the author sees it on their profile and Transfer Talk filters "Niet bevestigd". The track record itself waits on #88 |
+| Bulk "niet bevestigd" at window close | **WORKS** | `expire_open_rumours()`, [expire-all.tsx](../../app/admin/geruchten/expire-all.tsx) | One button with a confirmation; one log entry per rumour |
+| Add transfer directly | **WORKS** | `create_transfer()`, [admin/transfers](../../app/admin/transfers/page.tsx) | Needs an official source; dated in Belgian time |
+| Correct or remove a transfer, audited | **WORKS** | `update_transfer()`, `delete_transfer()` | The log keeps what the transfer said before. Removing a rumour's transfer makes the rumour lopend again, so a wrong confirmation can be redone |
 
 ### J-15 — Reports, takedowns, sanctions · PARTIAL
 

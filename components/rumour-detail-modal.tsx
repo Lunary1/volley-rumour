@@ -62,6 +62,7 @@ const statusLabels: Record<string, string> = {
   rumour: "Gerucht",
   confirmed: "Bevestigd ✓",
   denied: "Ontkracht ✗",
+  expired: "Niet bevestigd",
 };
 
 const statusColors: Record<string, string> = {
@@ -71,6 +72,7 @@ const statusColors: Record<string, string> = {
     "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
   denied:
     "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
+  expired: "bg-muted text-muted-foreground border-border",
 };
 
 interface RumourDetailModalProps {
