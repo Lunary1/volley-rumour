@@ -64,18 +64,10 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Cache Supabase images
-        id: supabase-images
-        uses: actions/cache@v4
-        with:
-          path: ~/supabase-images.tar
-          # The CLI version pins the image versions.
-          key: supabase-images-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
-      - name: Load Supabase images
-        if: steps.supabase-images.outputs.cache-hit == 'true'
-        run: docker load -i ~/supabase-images.tar
-
+      # Not cached: the Supabase images (~700 MB compressed) took 70–95 s to
+      # restore and docker load, against ~42 s to pull them; the Playwright
+      # browser saved ~1 s, as its system dependencies install either way.
+      # Measured in #136.
       - name: Start Supabase
         # Same services as locally: db:start leaves out what the tests don't use.
         run: npm run db:start
@@ -83,32 +75,12 @@ jobs:
       - name: Database tests
         run: npm run db:test
 
-      - name: Save Supabase images
-        # After db:test, so the pg_prove image is in it too.
-        if: steps.supabase-images.outputs.cache-hit != 'true'
-        run: docker save -o ~/supabase-images.tar $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^ghcr.io/supabase/')
-
-      - name: Playwright version
-        id: playwright
-        run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright browser
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
       - name: Install Playwright browser
         # The tests run headless, so the headless shell is all they need.
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps --only-shell chromium
 
-      - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
-
       - name: Cache Next build
+        # Turbopack's build cache: compiling drops from ~8 s to under 1 s.
         uses: actions/cache@v4
         with:
           path: .next/cache
