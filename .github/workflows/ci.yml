@@ -48,6 +48,11 @@ jobs:
     name: e2e
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      # The CLI pulls from public.ecr.aws by default, which rate-limits the
+      # runners (toomanyrequests on every run, up to 26 s of retries before
+      # it falls back to ghcr.io anyway). Pull from ghcr.io directly (#136).
+      SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
     steps:
       - uses: actions/checkout@v4
 
@@ -59,6 +64,10 @@ jobs:
       - name: Install
         run: npm ci
 
+      # Not cached: the Supabase images (~700 MB compressed) took 70–95 s to
+      # restore and docker load, against ~42 s to pull them; the Playwright
+      # browser saved ~1 s, as its system dependencies install either way.
+      # Measured in #136.
       - name: Start Supabase
         # Same services as locally: db:start leaves out what the tests don't use.
         run: npm run db:start
@@ -67,7 +76,19 @@ jobs:
         run: npm run db:test
 
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        # The tests run headless, so the headless shell is all they need.
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Cache Next build
+        # Turbopack's build cache: compiling drops from ~8 s to under 1 s.
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          # Separate from a Vercel build: the e2e build inlines the local
+          # Supabase values. A source change falls back to the newest cache.
+          key: next-e2e-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('app/**', 'components/**', 'lib/**', 'public/**', '*.ts', '*.mjs', '*.json') }}
+          restore-keys: |
+            next-e2e-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
 
       - name: Playwright
         # Builds the app with the local Supabase values and starts it on :3100.
