@@ -105,7 +105,7 @@ items.
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Only moderator-approved rumours visible | **WORKS** | [geruchten/page.tsx:12-30](../../app/geruchten/page.tsx#L12-L30), [rumour.ts:47-58](../../app/actions/rumour.ts#L47-L58) | Fixed in #65: RLS hides pending and rejected rumours; Transfer Talk lists approved statuses only. Moderators approve in the queue (#66) |
-| Card shows neutral belief %, author track record, no good/evil labels | PARTIAL | [rumour-card.tsx:184-212](../../components/rumour-card.tsx#L184-L212) | Shows the "Evil/Corrupt/Heroic/Legendary" karma label and trust points instead of a track record (D-005, proposed) |
+| Card shows neutral belief %, author track record, no good/evil labels | PARTIAL | [rumour-card.tsx:184-212](../../components/rumour-card.tsx#L184-L212) | Shows the "Evil/Corrupt/Heroic/Legendary" karma label and trust points instead of a track record (D-005) |
 | Card renders for anonymised authors | **FIXED** (#57) | [rumour-card.tsx](../../components/rumour-card.tsx), [geruchten-deleted-creator.spec.ts](../../e2e/geruchten-deleted-creator.spec.ts) | Shows "Verwijderd account" without a trust score, in the card and the detail modal (X-2) |
 | Source type and link shown | MISSING | — | No source field exists |
 | "Melden" link on each card | **WORKS** | [rumour-card.tsx](../../components/rumour-card.tsx), [report-dialog.tsx](../../components/report-dialog.tsx), [reports.spec.ts](../../e2e/reports.spec.ts) | #79: "Melden" on every card and in the detail view; logged-out visitors go to login and back. The dialog also offers the takedown form (J-12) |
@@ -191,7 +191,7 @@ items.
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | See status of each of my rumours | PARTIAL | [profile.ts:151-184](../../app/actions/profile.ts#L151-L184) | 5 most recent only; only the statuses `rumour/confirmed/denied` exist |
-| Track record = confirmed vs denied | MISSING | [profile/page.tsx:50-130](../../app/profile/page.tsx#L50-L130) | Trust points plus derived achievements instead (D-005, proposed) |
+| Track record = confirmed vs denied | MISSING | [profile/page.tsx:50-130](../../app/profile/page.tsx#L50-L130) | Trust points plus derived achievements instead (D-005) |
 | Vote once, change vote, correct under concurrency | **FIXED** (#78) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql), [vote.ts](../../app/actions/vote.ts), [votes.spec.ts](../../e2e/votes.spec.ts) | The `on_vote_change` trigger counts in the database. It locks the rumour row first, so concurrent votes all count, and it recounts when a vote is deleted (account deletion). Votes are private: users read only their own. Pages load the user's votes in one query (#129). A visitor who votes gets "Log in om te stemmen" with a button to the login page, which returns to the page |
 | Can't vote on own rumour | **FIXED** (#78) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql), [rumour-card.tsx](../../components/rumour-card.tsx) | `check_vote_allowed` refuses it (`VR009`); the card disables the buttons and says why |
 | Votes don't change reputation | **BROKEN** (vs D-005) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql) | Each vote still moves the creator's trust score (net votes over their rumours). Since #78 the database computes it, not the voter's session. What votes mean for reputation follows #47 |

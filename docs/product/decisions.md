@@ -11,7 +11,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-002 | 2026-10-13 | Accepted | Rumours are pre-moderated                                         |
 | D-003 | 2026-10-13 | Accepted | Senior divisions only; users confirm they are 16+ at sign-up      |
 | D-004 | 2026-10-13 | Accepted | In-app messaging is for zoekertjes only                           |
-| D-005 | 2026-10-13 | Proposed | Replace popularity points with an accuracy-based track record     |
+| D-005 | 2026-10-17 | Accepted | Replace popularity points with an accuracy-based track record     |
 | D-006 | 2026-10-13 | Accepted | Moderation needs an admin role, separate from the user account type |
 | D-007 | 2026-10-13 | Accepted | npm is the package manager; `pnpm-lock.yaml` is removed           |
 | D-008 | 2026-10-13 | Accepted | GitHub Flow: protected `main` is production; PRs with CI, squash merge |
@@ -26,7 +26,14 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-017 | 2026-10-15 | Accepted | Contact messages: own staff page for moderators and admins; wiped 12 months after handling; abuse goes through Melden and takedowns |
 | D-018 | 2026-10-15 | Accepted | Blocks are enforced by the database in both directions; history stays readable; messaging only, not logged |
 | D-019 | 2026-10-15 | Accepted | Zoekertjes: "Dames/Heren" on every type, matching the division (no "Gemengd"); teams may state a minimum diploma |
-| O-001 | 2026-10-13 | Open     | Who may confirm a rumour as a transfer, and who marks it denied   |
+| D-020 | 2026-10-17 | Accepted | Only moderators resolve a rumour, as confirmed (with an official source), denied or expired (was O-001) |
+| D-021 | 2026-10-17 | Accepted | Deleting an account deletes its zoekertjes                        |
+| D-022 | 2026-10-17 | Accepted | Visitors reach a zoekertje's poster through messaging only; contact emails are never shown |
+| D-023 | 2026-10-17 | Accepted | Datadog is removed; no session replay or third-party RUM          |
+| D-024 | 2026-10-17 | Accepted | Zoekertjes expire on 31 August (at least 30 days after posting); the owner can renew |
+| D-025 | 2026-10-17 | Accepted | Minimal, content-free email notifications for messages and moderation outcomes, with an opt-out |
+| D-026 | 2026-10-17 | Accepted | A new message brings an archived conversation back to the inbox      |
+| D-027 | 2026-10-17 | Accepted | French and English are a nice-to-have, not a launch blocker; built with next-intl, Dutch the default |
 
 ---
 
@@ -44,7 +51,7 @@ already exists).
 
 **Consequences.**
 - No club-specific permissions at launch (e.g. club reps cannot confirm their
-  own club's transfers — see O-001).
+  own club's transfers — see D-020).
 - Anyone can post a "team zoekt …" ad on behalf of any club. Mitigated by
   moderation and reporting; revisit if impersonation reports appear.
 
@@ -95,7 +102,7 @@ talk. Contacting whoever posted a transfer has no clear purpose, invites
 harassment of sources, and is broken anyway (transfers created from rumours have
 no `creator_id`).
 
-## D-005 — Reputation as an accuracy track record (Proposed)
+## D-005 — Reputation as an accuracy track record
 
 **Question from owner.** Do we want gamification (points, leaderboard, karma)?
 Being an "official rumour platform" is not the goal, but a reputation signal
@@ -129,7 +136,19 @@ helps readers weigh a rumour.
 rumour is true; we show how often a *contributor* has been right in the past.
 That is the same heuristic readers already apply informally, made explicit.
 
-**Needs owner sign-off before it becomes backlog items.**
+**Accepted by the owner on 2026-10-17** (#47), as proposed. Hybrid (the track
+record public, points kept internally) and keeping the points were
+considered and turned down.
+
+**Consequences.**
+- The trust points (`trust_score`, `total_votes_received`) and the karma
+  labels go. #78 already moved the count into the database and stopped
+  withdrawn votes from changing a tally; #88 removes the points and builds the
+  track record and "Betrouwbare bronnen".
+- Expired rumours ("Niet bevestigd") are neutral (owner, 2026-10-17): the
+  track record counts confirmed against denied only, as in point 1.
+- Resolution is moderator-only (D-020), so a track record can't be moved by
+  votes or by the contributor.
 
 ## D-006 — Admin role for moderation
 
@@ -473,12 +492,12 @@ although J-08 lets a team state one. Owner's calls, 2026-10-15.
 too. Older ads keep whatever they hold; their trainer diploma moved out of
 `position`. J-08 no longer mentions "gemengd".
 
-## O-001 — Rumour confirmation authority (Open)
+## D-020 — Only moderators resolve a rumour (was O-001)
 
 **Question.** Who turns an approved rumour into a confirmed transfer, and who
-marks it denied?
+marks it denied? (#46)
 
-**Options considered so far.**
+**Options considered.**
 - **A. Moderators only**, requiring an official source URL (club, federation,
   press) for confirmation. Simplest; reuses the moderator role from D-006.
 - **B. Moderators plus verified club representatives** for transfers involving
@@ -491,4 +510,132 @@ marks it denied?
 transfer window closes: mark them **expired** ("Niet bevestigd") rather than
 denied, so contributors are not penalised for unresolved rumours.
 
-**Leaning:** A for launch, with B as a post-launch option. To be decided.
+**Decision** (owner, 2026-10-17): **A, moderators only.**
+- Staff (D-006) resolve a lopend rumour as **confirmed**, **denied** or
+  **expired** ("Niet bevestigd"). Confirming needs an official source URL
+  (club, federation or press). Every resolution is a staff action with an
+  audit log entry (D-011), checked in the database.
+- At the end of a transfer window, staff can mark all open rumours expired at
+  once (#70).
+- Expired rumours are neutral in the track record (D-005).
+- B (verified club representatives) can be revisited after launch; it needs
+  club-level verification, which D-001 leaves out.
+
+**Consequences.** Unblocks #70 (resolution) and, with D-005, #88 (track
+record). Voting already closes on resolved rumours (#78).
+
+## D-021 — Deleting an account deletes its zoekertjes
+
+**Context.** On account deletion (J-11), zoekertjes were kept and anonymised,
+but titles and descriptions often contain the poster's real name, and free
+text can't be scrubbed reliably (#49).
+
+**Decision** (owner, 2026-10-17). **Delete them.** When an account is
+deleted, its zoekertjes are deleted too.
+
+**Consequences.** No personal data is left behind in ads. Conversations about
+a deleted ad stay and show "Verwijderd zoekertje", as they already do when an
+owner deletes an ad (#72). #76 implements this as part of making deletion
+complete.
+
+## D-022 — Messaging is the only way to reach a zoekertje's poster
+
+**Context.** Every zoekertje's contact email was readable by anyone through
+the API, also on inactive ads, so it could be scraped (R-7, #50).
+
+**Decision** (owner, 2026-10-17). **Messaging only.** Other users and visitors
+never see a poster's email address; they contact the poster through in-app
+messaging (D-004), which has blocking (D-018) and reports (D-015). Revealing
+the email after login was considered and turned down, because any account
+could still harvest it.
+
+**Consequences.** Contacting a poster needs an account. #83 closes the
+column(s) to other users. Because there's no email fallback, posters depend
+on noticing new messages, which D-025 covers.
+
+## D-023 — Datadog is removed
+
+**Context.** Datadog RUM recorded 20% of production sessions on replay,
+including private chats, and the privacy page didn't mention it (X-7, #51).
+
+**Decision** (owner, 2026-10-17). **Remove Datadog entirely**: no session
+replay and no third-party RUM. Turning replay off and keeping RUM, or keeping
+replay with masking, were considered.
+
+**Consequences.** One processor fewer on the privacy page (#77). Production
+errors are only visible through Vercel's logs and analytics. Removing the
+provider, the packages and the test workarounds that block `datadoghq.eu` is
+its own chore.
+
+## D-024 — Zoekertjes expire at the end of the season
+
+**Context.** J-01 and J-04 assume zoekertjes expire, so the list doesn't fill
+up with stale ads (#52).
+
+**Decision** (owner, 2026-10-17).
+- **An ad expires on the next 31 August**, the end of the volleyball season.
+- **It always runs at least 30 days** (agent call): an ad posted after
+  1 August runs 30 days, so a summer ad doesn't expire within days.
+- **The owner can renew** an expired ad, which sets a new expiry date by the
+  same rule.
+
+**Consequences.** #84 adds the expiry date, hides expired ads from the list
+and search, and lets the owner renew from "Mijn zoekertjes". A fixed 90 days,
+the earlier of both, and no expiry were considered.
+
+## D-025 — Minimal email notifications
+
+**Context.** No email was sent anywhere. With contact through messaging only
+(D-022), a poster who isn't on the site would miss replies (#53).
+
+**Decision** (owner, 2026-10-17). **Yes, minimal and content-free.**
+- Emails for a new conversation or message ("Je hebt een nieuw bericht" with a
+  link) and for a rumour's approval or rejection. Never the message text.
+- Users can turn notifications off on their profile.
+- Dutch templates.
+
+**Consequences.** Adds an email provider, a new processor on the privacy page
+(#77); which one is picked in #98. #98 builds the notifications.
+
+## D-026 — A new message unarchives a conversation
+
+**Context.** #91 made archiving per user and, as an agent call, brought an
+archived conversation back to the inbox when a new message arrives (the
+`unarchive_for_recipient` trigger). The owner asked for a recommendation
+(Q14).
+
+**Decision** (2026-10-17). **Keep it.** Archiving tidies the inbox; it isn't
+a mute. Missing a reply about an ad costs more than a conversation coming
+back, and users who don't want to hear from someone block them (D-018), which
+stops the messages altogether.
+
+**Consequences.** None; this is how #91 already works.
+
+## D-027 — French and English, the simple way
+
+**Context.** The competitor offers French (#55). The site is Dutch only, with
+the copy hard-coded in components. The owner sees French, and maybe English,
+as a nice-to-have and asked for the easiest common approach (2026-10-17).
+
+**Decision.**
+- **Nice-to-have, not a launch blocker.** Launch can go ahead in Dutch only.
+- **next-intl, the usual library for the Next.js App Router.** UI strings move
+  into one message file per language (`messages/nl.json`, `fr.json`,
+  `en.json`); components read them with `useTranslations`/
+  `getTranslations`. Dutch is the default and the fallback for a missing
+  string.
+- **First without language URLs** (agent call): the language comes from a
+  language switch (stored in a cookie), or else from the browser's language,
+  else Dutch. This leaves the routes and the coming-soon gate alone. Most
+  multilingual sites use `/fr/...` paths so search engines index each
+  language; next-intl can add that later without touching the strings.
+- **Only the interface is translated.** Rumours, zoekertjes and messages stay
+  in the language they were written in. Moderators judge French and English
+  content too (D-002).
+- Legal pages, emails (D-025) and validation messages are translated before a
+  language is switched on.
+
+**Consequences.** Extracting the Dutch strings comes first and is useful on
+its own: it finds the English strings that leak into the UI (#90). Then
+French and English are added as translations: #143 and #144 in M3.
+
