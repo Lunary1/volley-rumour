@@ -1,8 +1,7 @@
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { Ban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UnblockButton } from "@/components/block-user-dialog";
+import { formatDate } from "@/lib/dates";
 
 export interface BlockedUser {
   id: string;
@@ -40,10 +39,7 @@ export function BlockedUsersCard({ users }: { users: BlockedUser[] }) {
                     {user.username}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Geblokkeerd op{" "}
-                    {format(new Date(user.blockedAt), "d MMMM yyyy", {
-                      locale: nl,
-                    })}
+                    Geblokkeerd op {formatDate(user.blockedAt, "d MMMM yyyy")}
                   </p>
                 </div>
                 <UnblockButton

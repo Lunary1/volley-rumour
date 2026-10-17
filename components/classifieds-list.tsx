@@ -13,8 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
 import { ContactModal } from "@/components/contact-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { getExistingConversation } from "@/app/actions/messages";
@@ -28,6 +26,7 @@ import {
   CLASSIFIED_TYPE_LABELS,
   CLASSIFIED_TYPE_COLORS,
 } from "@/lib/classifieds-utils";
+import { RelativeTime } from "@/components/relative-time";
 
 interface Classified {
   id: string;
@@ -441,13 +440,7 @@ export function ClassifiedsList({
                           <div className="flex flex-col gap-2 pt-6 border-t border-border">
                             <div className="flex items-center justify-between">
                               <p className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(
-                                  new Date(classified.created_at),
-                                  {
-                                    addSuffix: true,
-                                    locale: nl,
-                                  },
-                                )}
+                                <RelativeTime date={classified.created_at} />
                               </p>
                             </div>
                             <p className="text-xs text-foreground/60 flex items-center gap-2 flex-wrap">
@@ -552,13 +545,7 @@ export function ClassifiedsList({
                         {/* Date + author + trust */}
                         <div className="text-xs text-muted-foreground mb-3 border-t border-border pt-3 space-y-2">
                           <p>
-                            {formatDistanceToNow(
-                              new Date(classified.created_at),
-                              {
-                                addSuffix: true,
-                                locale: nl,
-                              },
-                            )}
+                            <RelativeTime date={classified.created_at} />
                           </p>
                           <p className="text-foreground/60 flex items-center gap-2 flex-wrap">
                             Door{" "}

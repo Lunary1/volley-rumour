@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { ArrowRight, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/server";
 import { PUBLIC_RUMOUR_STATUSES, RUMOUR_CATEGORY_LABELS } from "@/lib/rumours";
 import { TakedownForm } from "./takedown-form";
+import { formatDate } from "@/lib/dates";
 
 // Takedown requests (#68, J-12, D-014). Reached from a rumour's detail view
 // (?gerucht=<id>) or from the footer and privacy page, where the visitor
@@ -46,8 +45,7 @@ function RumourSummary({ rumour }: { rumour: PublicRumour }) {
           {RUMOUR_CATEGORY_LABELS[rumour.category] ?? rumour.category}
         </Badge>
         <span className="text-xs text-muted-foreground">
-          Geplaatst op{" "}
-          {format(new Date(rumour.created_at), "d MMMM yyyy", { locale: nl })}
+          Geplaatst op {formatDate(rumour.created_at, "d MMMM yyyy")}
         </span>
       </div>
       <p className="font-semibold">{rumour.player_name}</p>

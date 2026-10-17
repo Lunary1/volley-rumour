@@ -1,8 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Calendar, UserCircle } from "lucide-react";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
+import { formatDate } from "@/lib/dates";
 
 interface TransferCardProps {
   transfer: {
@@ -99,9 +98,7 @@ export function TransferCard({ transfer }: TransferCardProps) {
           <span>
             {transfer.transfer_date &&
             !isNaN(new Date(transfer.transfer_date).getTime())
-              ? format(new Date(transfer.transfer_date), "d MMMM yyyy", {
-                  locale: nl,
-                })
+              ? formatDate(transfer.transfer_date, "d MMMM yyyy")
               : "Datum onbekend"}
           </span>
         </div>

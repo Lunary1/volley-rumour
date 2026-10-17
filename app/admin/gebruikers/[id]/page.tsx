@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
@@ -12,6 +10,7 @@ import {
 } from "@/lib/sanctions";
 import { UserActions } from "./user-actions";
 import { UserStatusBadges } from "../user-status";
+import { formatDate } from "@/lib/dates";
 
 // One user as staff see them (#80): status, reports about them and what
 // staff did to them. Admins also get the controls (D-016).
@@ -104,10 +103,7 @@ export default async function UserPage(props: {
         <h2 className="text-2xl font-semibold">{user.username}</h2>
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           {user.display_name && <span>{user.display_name}</span>}
-          <span>
-            Lid sinds{" "}
-            {format(new Date(user.created_at), "d MMMM yyyy", { locale: nl })}
-          </span>
+          <span>Lid sinds {formatDate(user.created_at, "d MMMM yyyy")}</span>
           <UserStatusBadges user={user} />
         </div>
       </div>
@@ -191,10 +187,7 @@ export default async function UserPage(props: {
                       {detail && <> {detail}</>}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(entry.created_at), "d MMM yyyy HH:mm", {
-                        locale: nl,
-                      })}{" "}
-                      · door{" "}
+                      {formatDate(entry.created_at, "d MMM yyyy HH:mm")} · door{" "}
                       {usernames.get(entry.actor_id) ?? "Verwijderd account"}
                     </p>
                     {entry.reason && (

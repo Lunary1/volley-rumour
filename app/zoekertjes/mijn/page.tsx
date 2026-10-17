@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { ArrowLeft, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -14,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MyClassifiedActions } from "@/components/my-classified-actions";
+import { formatDate } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Mijn zoekertjes" };
 
@@ -123,10 +122,7 @@ export default async function MyClassifiedsPage() {
                       {details.join(" · ")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Geplaatst op{" "}
-                      {format(new Date(ad.created_at), "d MMMM yyyy", {
-                        locale: nl,
-                      })}
+                      Geplaatst op {formatDate(ad.created_at, "d MMMM yyyy")}
                     </p>
                   </div>
                   <Badge

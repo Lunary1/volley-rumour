@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createHash } from "node:crypto";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createAdminClient } from "@/lib/supabase/server";
 import { TAKEDOWN_STATUS_LABELS, type TakedownStatus } from "@/lib/takedown";
+import { formatDate } from "@/lib/dates";
 
 // Status of a takedown request (#68, D-014). The token in the link is the
 // only key: whoever has it may see this request, so the page reads it with
@@ -80,20 +79,12 @@ export default async function TakedownStatusPage({
             <dt className="text-muted-foreground">Gerucht over</dt>
             <dd>{request.rumour?.player_name ?? "Onbekend"}</dd>
             <dt className="text-muted-foreground">Ingediend op</dt>
-            <dd>
-              {format(new Date(request.created_at), "d MMMM yyyy 'om' HH:mm", {
-                locale: nl,
-              })}
-            </dd>
+            <dd>{formatDate(request.created_at, "d MMMM yyyy 'om' HH:mm")}</dd>
             {request.decided_at && (
               <>
                 <dt className="text-muted-foreground">Beslist op</dt>
                 <dd>
-                  {format(
-                    new Date(request.decided_at),
-                    "d MMMM yyyy 'om' HH:mm",
-                    { locale: nl },
-                  )}
+                  {formatDate(request.decided_at, "d MMMM yyyy 'om' HH:mm")}
                 </dd>
               </>
             )}

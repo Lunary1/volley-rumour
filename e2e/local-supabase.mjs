@@ -36,4 +36,7 @@ export const E2E_SERVER_ENV = {
   NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL: `${E2E_BASE_URL}/auth/callback`,
   NEXT_PUBLIC_COMING_SOON: "false",
   NEXT_TELEMETRY_DISABLED: "1",
+  // Render in UTC like Vercel and CI, also on a developer's machine in
+  // Belgium; the browser runs in Europe/Brussels (#142).
+  TZ: "UTC",
 };

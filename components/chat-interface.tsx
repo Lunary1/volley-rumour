@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatDistanceToNow, format } from "date-fns";
-import { nl } from "date-fns/locale";
+import { dayLabel, isSameBelgianDay } from "@/lib/dates";
+import { RelativeTime } from "@/components/relative-time";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -258,20 +258,10 @@ export function ChatInterface({
   // Check if we should show a date separator
   function shouldShowDateSeparator(index: number): boolean {
     if (index === 0) return true;
-    const current = new Date(messages[index].created_at);
-    const previous = new Date(messages[index - 1].created_at);
-    return current.toDateString() !== previous.toDateString();
-  }
-
-  function formatDateSeparator(dateStr: string): string {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) return "Vandaag";
-    if (date.toDateString() === yesterday.toDateString()) return "Gisteren";
-    return format(date, "d MMMM yyyy", { locale: nl });
+    return !isSameBelgianDay(
+      messages[index].created_at,
+      messages[index - 1].created_at,
+    );
   }
 
   return (
@@ -310,8 +300,12 @@ export function ChatInterface({
                 {/* Date separator */}
                 {showDate && (
                   <div className="flex items-center justify-center my-4">
-                    <div className="px-3 py-1 rounded-full bg-muted/80 text-xs text-muted-foreground font-medium">
-                      {formatDateSeparator(msg.created_at)}
+                    {/* Server and browser can straddle midnight. */}
+                    <div
+                      className="px-3 py-1 rounded-full bg-muted/80 text-xs text-muted-foreground font-medium"
+                      suppressHydrationWarning
+                    >
+                      {dayLabel(msg.created_at)}
                     </div>
                   </div>
                 )}
@@ -366,16 +360,8 @@ export function ChatInterface({
                         className={`text-[10px] text-muted-foreground ${
                           showAvatar ? "opacity-100" : "opacity-0"
                         }`}
-                        title={format(
-                          new Date(msg.created_at),
-                          "d MMM yyyy HH:mm",
-                          { locale: nl },
-                        )}
                       >
-                        {formatDistanceToNow(new Date(msg.created_at), {
-                          addSuffix: false,
-                          locale: nl,
-                        })}
+                        <RelativeTime date={msg.created_at} addSuffix={false} />
                       </span>
 
                       {/* Read receipt for own messages */}
