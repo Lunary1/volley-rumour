@@ -22,6 +22,9 @@ const actionLabels: Record<string, string> = {
   badge_granted: "Badge toegekend",
   badge_revoked: "Badge ingetrokken",
   contact_handled: "Contactbericht afgehandeld",
+  transfer_created: "Transfer toegevoegd",
+  transfer_updated: "Transfer aangepast",
+  transfer_deleted: "Transfer verwijderd",
 };
 
 const targetLabels: Record<string, string> = {
@@ -32,6 +35,7 @@ const targetLabels: Record<string, string> = {
   user: "Gebruiker",
   takedown_request: "Verwijderverzoek",
   contact_message: "Contactbericht",
+  transfer: "Transfer",
 };
 
 interface StaffAction {

@@ -2,7 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { RumourCard } from "@/components/rumour-card";
 import { voteOnRumour } from "@/app/actions/vote";
 import { getUserVotes } from "@/lib/votes";
-import { TransferCard } from "@/components/transfer-card";
+import {
+  TRANSFER_CARD_COLUMNS,
+  TransferCard,
+  type TransferCardData,
+} from "@/components/transfer-card";
 import { LeaderboardPeek } from "@/components/leaderboard-peek";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +19,6 @@ export const dynamic = "force-dynamic";
 
 import { TrendingUp, Users, ArrowRight, Plus, Flame } from "lucide-react";
 import Link from "next/link";
-import type { ComponentProps } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 /* ------------------------------------------------------------------ */
@@ -43,11 +46,11 @@ async function getLatestTransfers() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("transfers")
-    .select("*")
+    .select(TRANSFER_CARD_COLUMNS)
     .order("confirmed_at", { ascending: false })
     .limit(6);
 
-  return data || [];
+  return (data ?? []) as TransferCardData[];
 }
 
 async function getTopContributors() {
@@ -99,14 +102,6 @@ export default async function HomePage() {
       getSiteCounts(),
     ]);
   const userVotes = await getUserVotes(featuredRumours.map((r) => r.id));
-
-  // Normalise transfer date for TransferCard (DB may use confirmed_at or transfer_date)
-  const transfersForDisplay = latestTransfers.map(
-    (t: Record<string, unknown>) => ({
-      ...t,
-      transfer_date: t.transfer_date ?? t.confirmed_at ?? "",
-    }),
-  ) as Array<Record<string, unknown> & { id: string; transfer_date: string }>;
 
   return (
     <div className="min-h-screen">
@@ -268,15 +263,10 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {transfersForDisplay.length > 0 ? (
+          {latestTransfers.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {transfersForDisplay.map((transfer) => (
-                <TransferCard
-                  key={transfer.id}
-                  transfer={
-                    transfer as ComponentProps<typeof TransferCard>["transfer"]
-                  }
-                />
+              {latestTransfers.map((transfer) => (
+                <TransferCard key={transfer.id} transfer={transfer} />
               ))}
             </div>
           ) : (

@@ -1,43 +1,55 @@
 import { createClient } from "@/lib/supabase/server";
-import { TransferCardInteractive } from "@/components/transfer-card-interactive";
+import {
+  TRANSFER_CARD_COLUMNS,
+  TransferCard,
+  type TransferCardData,
+} from "@/components/transfer-card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { ArrowRight, UserPlus, UserMinus, Users } from "lucide-react";
-import { getCurrentUser } from "@/app/actions/auth";
+import { TRANSFER_TABS, type TransferCategory } from "@/lib/transfers";
 
-// Cache transfers for 60 seconds - moderately frequent updates
+// Cache transfers for 60 seconds; moderators' changes revalidate the page.
 export const revalidate = 60;
 
-async function getTransfers(type?: string) {
+const tabIcons = {
+  all: Users,
+  players: UserPlus,
+  trainers: Users,
+  retirements: UserMinus,
+} as const;
+
+const emptyMessages = {
+  all: "Nog geen transfers geregistreerd",
+  players: "Nog geen spelerstransfers",
+  trainers: "Nog geen trainerstransfers",
+  retirements: "Nog geen afscheidsberichten",
+} as const;
+
+// One set of transfer types everywhere (#82): each tab lists the categories
+// in TRANSFER_TABS.
+async function getTransfers(
+  categories: readonly TransferCategory[] | null,
+): Promise<TransferCardData[]> {
   const supabase = await createClient();
   let query = supabase
     .from("transfers")
-    .select(
-      `
-      *,
-      creator:profiles!transfers_creator_id_fkey(id, username, is_verified_source)
-    `,
-    )
+    .select(TRANSFER_CARD_COLUMNS)
     .order("confirmed_at", { ascending: false });
 
-  if (type) {
-    query = query.eq("transfer_type", type);
+  if (categories) {
+    query = query.in("category", categories);
   }
 
   const { data } = await query.limit(50);
-  return data || [];
+  return (data ?? []) as TransferCardData[];
 }
 
 export default async function TransfersPage() {
-  const user = await getCurrentUser();
-  const [allTransfers, playerTransfers, coachTransfers, retirements] =
-    await Promise.all([
-      getTransfers(),
-      getTransfers("player"),
-      getTransfers("coach"),
-      getTransfers("retirement"),
-    ]);
+  const lists = await Promise.all(
+    TRANSFER_TABS.map((tab) => getTransfers(tab.categories)),
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -50,115 +62,34 @@ export default async function TransfersPage() {
 
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary">
-          <TabsTrigger
-            value="all"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Alles
-          </TabsTrigger>
-          <TabsTrigger
-            value="players"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Spelers
-          </TabsTrigger>
-          <TabsTrigger
-            value="coaches"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Trainers
-          </TabsTrigger>
-          <TabsTrigger
-            value="retirements"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <UserMinus className="w-4 h-4 mr-2" />
-            Gestopt
-          </TabsTrigger>
+          {TRANSFER_TABS.map((tab) => {
+            const Icon = tabIcons[tab.value];
+            return (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <Icon className="w-4 h-4 mr-2" />
+                {tab.label}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
-        <TabsContent value="all">
-          {allTransfers.length === 0 ? (
-            <EmptyState message="Nog geen transfers geregistreerd" />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {allTransfers.map((transfer) => (
-                <TransferCardInteractive
-                  key={transfer.id}
-                  transfer={{
-                    ...transfer,
-                    creator_name: transfer.creator?.username,
-                    is_verified_source: transfer.creator?.is_verified_source,
-                  }}
-                  currentUserId={user?.id}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="players">
-          {playerTransfers.length === 0 ? (
-            <EmptyState message="Nog geen spelerstransfers" />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {playerTransfers.map((transfer) => (
-                <TransferCardInteractive
-                  key={transfer.id}
-                  transfer={{
-                    ...transfer,
-                    creator_name: transfer.creator?.username,
-                    is_verified_source: transfer.creator?.is_verified_source,
-                  }}
-                  currentUserId={user?.id}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="coaches">
-          {coachTransfers.length === 0 ? (
-            <EmptyState message="Nog geen trainerstransfers" />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {coachTransfers.map((transfer) => (
-                <TransferCardInteractive
-                  key={transfer.id}
-                  transfer={{
-                    ...transfer,
-                    creator_name: transfer.creator?.username,
-                    is_verified_source: transfer.creator?.is_verified_source,
-                  }}
-                  currentUserId={user?.id}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="retirements">
-          {retirements.length === 0 ? (
-            <EmptyState message="Nog geen afscheidsberichten" />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {retirements.map((transfer) => (
-                <TransferCardInteractive
-                  key={transfer.id}
-                  transfer={{
-                    ...transfer,
-                    creator_name: transfer.creator?.username,
-                    is_verified_source: transfer.creator?.is_verified_source,
-                  }}
-                  currentUserId={user?.id}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+        {TRANSFER_TABS.map((tab, i) => (
+          <TabsContent key={tab.value} value={tab.value}>
+            {lists[i].length === 0 ? (
+              <EmptyState message={emptyMessages[tab.value]} />
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {lists[i].map((transfer) => (
+                  <TransferCard key={transfer.id} transfer={transfer} share />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        ))}
       </Tabs>
 
       <div className="mt-12 text-center">
@@ -184,7 +115,7 @@ function EmptyState({ message }: { message: string }) {
     <div className="text-center py-12 bg-card rounded-lg border border-border">
       <p className="text-muted-foreground">{message}</p>
       <p className="text-sm text-muted-foreground mt-2">
-        Transfers worden toegevoegd wanneer Transfer Talk bevestigd wordt
+        Transfers worden toegevoegd wanneer een moderator een gerucht bevestigt
       </p>
     </div>
   );

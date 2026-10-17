@@ -35,6 +35,14 @@ async function getRumours(status?: string) {
   return data || [];
 }
 
+// "Geen ... geruchten" per filter.
+const emptyTitles: Record<string, string> = {
+  rumour: "Geen lopende geruchten",
+  confirmed: "Geen bevestigde geruchten",
+  denied: "Geen ontkrachte geruchten",
+  expired: "Geen niet bevestigde geruchten",
+};
+
 interface SearchParams {
   status?: string;
 }
@@ -49,13 +57,19 @@ export default async function GeruchtenPage(props: {
       : undefined;
 
   // Fetch only the rumours we need based on status filter
-  const [allRumours, pendingRumours, confirmedRumours, deniedRumours] =
-    await Promise.all([
-      getRumours(status),
-      getRumours("rumour"),
-      getRumours("confirmed"),
-      getRumours("denied"),
-    ]);
+  const [
+    allRumours,
+    pendingRumours,
+    confirmedRumours,
+    deniedRumours,
+    expiredRumours,
+  ] = await Promise.all([
+    getRumours(status),
+    getRumours("rumour"),
+    getRumours("confirmed"),
+    getRumours("denied"),
+    getRumours("expired"),
+  ]);
 
   const displayRumours = allRumours;
   const userVotes = await getUserVotes(displayRumours.map((r) => r.id));
@@ -123,6 +137,16 @@ export default async function GeruchtenPage(props: {
               Ontkracht ({deniedRumours.length})
             </Button>
           </Link>
+          <Link href="/geruchten?status=expired">
+            <Button
+              variant={status === "expired" ? "default" : "outline"}
+              className={
+                status === "expired" ? "bg-primary text-primary-foreground" : ""
+              }
+            >
+              Niet bevestigd ({expiredRumours.length})
+            </Button>
+          </Link>
         </div>
 
         {/* Rumours Grid - 1 col mobile, 2–3 desktop */}
@@ -140,6 +164,7 @@ export default async function GeruchtenPage(props: {
                   description: rumour.description,
                   source_type: rumour.source_type,
                   source_url: rumour.source_url,
+                  resolution_source_url: rumour.resolution_source_url,
                   votes_true: rumour.votes_true,
                   votes_false: rumour.votes_false,
                   created_at: rumour.created_at,
@@ -158,9 +183,7 @@ export default async function GeruchtenPage(props: {
             <CardContent className="py-16 text-center">
               <Flame className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-xl font-semibold mb-2">
-                {status
-                  ? `Geen ${status === "confirmed" ? "bevestigde" : status === "denied" ? "ontkrachte" : "lopende"} geruchten`
-                  : "Nog geen geruchten"}
+                {status ? emptyTitles[status] : "Nog geen geruchten"}
               </h3>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                 {status

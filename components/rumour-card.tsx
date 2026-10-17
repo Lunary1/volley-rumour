@@ -46,6 +46,8 @@ interface RumourCardProps {
     // Where the rumour comes from (#67); null on rumours from before sources
     source_type?: string | null;
     source_url?: string | null;
+    // The official source a moderator confirmed or denied it with (#70)
+    resolution_source_url?: string | null;
     votes_true: number;
     votes_false: number;
     created_at: string;
@@ -82,11 +84,13 @@ const categoryColors: Record<string, string> = {
   trainer_retirement: "bg-muted text-muted-foreground border-muted",
 };
 
-// Status: pending (rumour), confirmed, debunked (denied)
+// Public statuses; a moderator resolves a lopend rumour (#70). Expired is
+// neutral (D-005), so it gets no colour.
 const statusLabels: Record<string, string> = {
   rumour: "Lopend",
   confirmed: "Bevestigd ✓",
   denied: "Ontkracht ✗",
+  expired: "Niet bevestigd",
 };
 
 const statusColors: Record<string, string> = {
@@ -96,6 +100,7 @@ const statusColors: Record<string, string> = {
     "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
   denied:
     "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
+  expired: "bg-muted text-muted-foreground border-border",
 };
 
 export function RumourCard({
@@ -323,6 +328,22 @@ export function RumourCard({
             {sourceLabel && (
               <p className="text-xs text-muted-foreground mb-2">
                 Bron: {sourceLabel}
+              </p>
+            )}
+
+            {/* The official source a moderator resolved it with (#70) */}
+            {rumour.resolution_source_url && (
+              <p className="text-xs text-muted-foreground mb-2">
+                {rumour.status === "confirmed" ? "Bevestigd" : "Afgesloten"} op
+                basis van{" "}
+                <a
+                  href={rumour.resolution_source_url}
+                  target="_blank"
+                  rel="nofollow noopener noreferrer"
+                  className="text-primary underline underline-offset-2"
+                >
+                  een officiële bron
+                </a>
               </p>
             )}
 
