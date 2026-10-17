@@ -69,8 +69,10 @@ for (const [device, viewport] of [
   test(`the message box is on screen without scrolling on ${device}`, async ({
     page,
   }) => {
-    await page.setViewportSize(viewport);
+    // Log in first: loginAs waits for the username in the header, which a
+    // phone hides behind the menu.
     await loginAs(page, "jana");
+    await page.setViewportSize(viewport);
     await page.goto(conversationUrl);
     await expect(page.getByText(seed.conversation.firstMessage)).toBeVisible();
 
