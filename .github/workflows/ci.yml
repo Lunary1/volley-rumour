@@ -48,6 +48,11 @@ jobs:
     name: e2e
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      # The CLI pulls from public.ecr.aws by default, which rate-limits the
+      # runners (toomanyrequests on every run, up to 26 s of retries before
+      # it falls back to ghcr.io anyway). Pull from ghcr.io directly (#136).
+      SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
     steps:
       - uses: actions/checkout@v4
 
@@ -59,6 +64,18 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Cache Supabase images
+        id: supabase-images
+        uses: actions/cache@v4
+        with:
+          path: ~/supabase-images.tar
+          # The CLI version pins the image versions.
+          key: supabase-images-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Load Supabase images
+        if: steps.supabase-images.outputs.cache-hit == 'true'
+        run: docker load -i ~/supabase-images.tar
+
       - name: Start Supabase
         # Same services as locally: db:start leaves out what the tests don't use.
         run: npm run db:start
@@ -66,8 +83,40 @@ jobs:
       - name: Database tests
         run: npm run db:test
 
+      - name: Save Supabase images
+        # After db:test, so the pg_prove image is in it too.
+        if: steps.supabase-images.outputs.cache-hit != 'true'
+        run: docker save -o ~/supabase-images.tar $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^ghcr.io/supabase/')
+
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browser
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        # The tests run headless, so the headless shell is all they need.
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Cache Next build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          # Separate from a Vercel build: the e2e build inlines the local
+          # Supabase values. A source change falls back to the newest cache.
+          key: next-e2e-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('app/**', 'components/**', 'lib/**', 'public/**', '*.ts', '*.mjs', '*.json') }}
+          restore-keys: |
+            next-e2e-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
 
       - name: Playwright
         # Builds the app with the local Supabase values and starts it on :3100.
