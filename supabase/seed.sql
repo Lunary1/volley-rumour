@@ -16,6 +16,7 @@
 --   beheerder@example.test beheerder_vr     admin      suspends users, manages badges and roles (#80)
 --   geschorst@example.test test_geschorst   user       only for suspension tests (#80)
 --   kandidaat@example.test test_kandidaat   user       only for badge and role tests (#80)
+--   bron@example.test      trouwe_bron      user       5 van 6 bevestigd: a Betrouwbare bron (#88)
 --
 -- Logging out ends every session of that user (Supabase's default global
 -- sign-out), so a test that logs out would break parallel tests using the
@@ -51,7 +52,8 @@ FROM (VALUES
   ('a0000000-0000-4000-8000-000000000008'::uuid, 'wachtrij@example.test',  'volle_wachtrij', 'Volle Wachtrij', interval '20 days'),
   ('a0000000-0000-4000-8000-000000000009'::uuid, 'beheerder@example.test', 'beheerder_vr', 'Beheerder VR',    interval '150 days'),
   ('a0000000-0000-4000-8000-00000000000a'::uuid, 'geschorst@example.test', 'test_geschorst', 'Test Geschorst', interval '15 days'),
-  ('a0000000-0000-4000-8000-00000000000b'::uuid, 'kandidaat@example.test', 'test_kandidaat', 'Test Kandidaat', interval '12 days')
+  ('a0000000-0000-4000-8000-00000000000b'::uuid, 'kandidaat@example.test', 'test_kandidaat', 'Test Kandidaat', interval '12 days'),
+  ('a0000000-0000-4000-8000-00000000000c'::uuid, 'bron@example.test',      'trouwe_bron',  'Trouwe Bron',     interval '200 days')
 ) AS u (id, email, username, full_name, age);
 
 INSERT INTO auth.identities (
@@ -220,7 +222,28 @@ SELECT 'a0000000-0000-4000-8000-000000000008', 'Wachtende Trainer ' || n, 'VBC F
        'own_observation', true, true, now() - n * interval '10 minutes'
 FROM generate_series(1, 5) AS n;
 
--- Votes; the on_vote_change trigger fills the vote counts and trust scores.
+-- trouwe_bron's resolved rumours (#88): 5 confirmed and 1 denied make
+-- "5 van 6 bevestigd", enough for Betrouwbare bronnen (at least 5 resolved).
+-- The expired one is neutral (D-005). Old, so they sit at the bottom of
+-- Transfer Talk. The on_rumour_resolution_change trigger fills the counts.
+INSERT INTO public.rumours (
+  creator_id, player_name, from_club_name, to_club_name, description, category,
+  status, source_type, declared_good_faith, declared_senior, created_at
+)
+SELECT 'a0000000-0000-4000-8000-00000000000c', r.player_name, 'VBC Fictief',
+       'Volley Voorbeeld', 'Uit een betrouwbare bron.', 'transfer', r.status,
+       'media', true, true, now() - r.age
+FROM (VALUES
+  ('Bas Bronvast',     'confirmed', interval '100 days'),
+  ('Cleo Controle',    'confirmed', interval '105 days'),
+  ('Dirk Degelijk',    'confirmed', interval '110 days'),
+  ('Ellen Echtheid',   'confirmed', interval '115 days'),
+  ('Fien Feitelijk',   'confirmed', interval '120 days'),
+  ('Gert Gemist',      'denied',    interval '125 days'),
+  ('Hanne Halverwege', 'expired',   interval '130 days')
+) AS r (player_name, status, age);
+
+-- Votes; the on_vote_change trigger fills the vote counts.
 INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type) VALUES
   ('e0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002', true),
   ('e0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000003', true),

@@ -19,7 +19,6 @@ interface UserMenuProps {
   user: {
     id: string;
     username: string;
-    trust_score: number;
     avatar_url: string | null;
     is_staff?: boolean;
   } | null;
@@ -162,9 +161,6 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
         <CurrentUserAvatar imageUrl={user.avatar_url} name={user.username} />
         <div className={isMobile ? "" : "hidden sm:block"}>
           <p className="text-sm font-medium text-foreground">{user.username}</p>
-          <p className="text-xs text-muted-foreground">
-            {user.trust_score} pts
-          </p>
         </div>
       </div>
       <form action={logout} suppressHydrationWarning>

@@ -21,7 +21,7 @@ async function getRumours(status?: string) {
     .select(
       `
       *,
-      creator:creator_id(username, trust_score, is_verified_source)
+      creator:creator_id(username, is_verified_source, rumours_confirmed, rumours_denied)
     `,
     )
     .in("status", PUBLIC_RUMOUR_STATUSES)

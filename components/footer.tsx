@@ -63,10 +63,10 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/leaderboard"
+                    href="/betrouwbare-bronnen"
                     className="hover:text-foreground transition-colors"
                   >
-                    Leaderboard
+                    Betrouwbare bronnen
                   </Link>
                 </li>
               </ul>

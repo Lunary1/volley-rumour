@@ -19,7 +19,6 @@ interface HeaderClientProps {
   user: {
     id: string;
     username: string;
-    trust_score: number;
     avatar_url: string | null;
     is_staff?: boolean;
   } | null;

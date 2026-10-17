@@ -7,7 +7,8 @@ import {
   TransferCard,
   type TransferCardData,
 } from "@/components/transfer-card";
-import { LeaderboardPeek } from "@/components/leaderboard-peek";
+import { TrustedSourcesPeek } from "@/components/trusted-sources-peek";
+import { getTrustedSources } from "@/lib/trusted-sources";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ComingSoonPage } from "@/components/coming-soon-page";
@@ -32,7 +33,7 @@ async function getFeaturedRumours() {
     .select(
       `
       *,
-      creator:creator_id(username, trust_score)
+      creator:creator_id(username, is_verified_source, rumours_confirmed, rumours_denied)
     `,
     )
     .eq("status", "rumour")
@@ -51,17 +52,6 @@ async function getLatestTransfers() {
     .limit(6);
 
   return (data ?? []) as TransferCardData[];
-}
-
-async function getTopContributors() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("profiles")
-    .select("id, username, trust_score, avatar_url, is_verified_source")
-    .order("trust_score", { ascending: false })
-    .limit(3);
-
-  return data || [];
 }
 
 /** Real site-wide counts (not array lengths). */
@@ -94,11 +84,11 @@ export default async function HomePage() {
     return <ComingSoonPage />;
   }
 
-  const [featuredRumours, latestTransfers, topContributors, counts] =
+  const [featuredRumours, latestTransfers, trustedSources, counts] =
     await Promise.all([
       getFeaturedRumours(),
       getLatestTransfers(),
-      getTopContributors(),
+      getTrustedSources(3),
       getSiteCounts(),
     ]);
   const userVotes = await getUserVotes(featuredRumours.map((r) => r.id));
@@ -141,9 +131,9 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Right — leaderboard peek (above the fold) */}
+            {/* Right — Betrouwbare bronnen (above the fold) */}
             <div className="lg:col-span-4">
-              <LeaderboardPeek users={topContributors} />
+              <TrustedSourcesPeek sources={trustedSources} />
             </div>
           </div>
         </div>
@@ -293,7 +283,7 @@ export default async function HomePage() {
           </h2>
           <p className="text-muted-foreground mb-8 leading-relaxed">
             Sluit aan bij de volleybalcommunity. Deel insider info, stem op
-            transfers en verdien punten voor betrouwbare tips.
+            geruchten en bouw een track record op met tips die kloppen.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/auth/sign-up">

@@ -143,3 +143,40 @@ export function labelFor<T extends Record<string, string>>(
 ): string | null {
   return value && value in labels ? labels[value as keyof T] : null;
 }
+
+// ------------------------------------------------------- track record (#88)
+// D-005: reputation is how often a contributor was right, counted by the
+// database on moderator-resolved rumours only (profiles.rumours_confirmed and
+// rumours_denied). Expired rumours are neutral. Votes award nothing.
+
+export type TrackRecord = {
+  rumours_confirmed: number;
+  rumours_denied: number;
+};
+
+/** The profile columns that hold a contributor's track record. */
+export const TRACK_RECORD_COLUMNS = "rumours_confirmed, rumours_denied";
+
+/** Resolved rumours needed for Betrouwbare bronnen; trusted_sources() checks it. */
+export const TRUSTED_SOURCE_MIN_RESOLVED = 5;
+
+/** "5 van 6 bevestigd", or null before any rumour was confirmed or denied. */
+export function formatTrackRecord(record: TrackRecord): string | null {
+  const resolved = record.rumours_confirmed + record.rumours_denied;
+  if (resolved === 0) return null;
+  return `${record.rumours_confirmed} van ${resolved} bevestigd`;
+}
+
+/** Share of voters who believe the rumour, or null without votes. */
+export function belief(votesTrue: number, votesFalse: number): number | null {
+  const total = votesTrue + votesFalse;
+  return total > 0 ? Math.round((votesTrue / total) * 100) : null;
+}
+
+/** The neutral community signal under a rumour (D-005). */
+export function formatBelief(votesTrue: number, votesFalse: number): string {
+  const share = belief(votesTrue, votesFalse);
+  return share === null
+    ? "Nog geen stemmen"
+    : `${share}% van de stemmers denkt dat dit klopt`;
+}

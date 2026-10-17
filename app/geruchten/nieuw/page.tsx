@@ -202,8 +202,8 @@ export default function NewRumourPage() {
               </CardTitle>
             </div>
             <CardDescription>
-              Deel een transfer of stopzetting met de community. Als je tip
-              klopt, verdien je punten!
+              Deel een transfer of stopzetting met de community. Klopt je tip,
+              dan groeit je track record.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -215,10 +215,10 @@ export default function NewRumourPage() {
                   💡 Hoe werkt het?
                 </p>
                 <p>
-                  Voor elke <strong>bevestigde transfer</strong> ontvang je{" "}
-                  <strong>+5 punten</strong>. Hoe sneller en nauwkeuriger je
-                  tip, hoe groter je impact op het klassement. Klim naar de top
-                  van de leaderboard en word dé transferinsider van België!
+                  Als een moderator je gerucht bevestigt of ontkracht, telt het
+                  mee voor je <strong>track record</strong>: hoeveel van je
+                  geruchten bevestigd werden. Vanaf 5 afgeronde geruchten kan je
+                  bij de <strong>betrouwbare bronnen</strong> staan.
                 </p>
                 <p className="mt-2">
                   Een moderator kijkt elk gerucht na voor het online komt.

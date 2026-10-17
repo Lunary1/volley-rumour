@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +24,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Trophy,
   Flame,
   MessageSquare,
   CheckCircle,
@@ -34,7 +32,6 @@ import {
   Shield,
   Activity,
   Zap,
-  Award,
   Target,
   Mail,
   Instagram,
@@ -46,38 +43,19 @@ import { BlockedUsersCard, type BlockedUser } from "./blocked-users-card";
 import {
   REJECTION_REASONS,
   RUMOUR_STATUS_LABELS,
+  TRUSTED_SOURCE_MIN_RESOLVED,
+  formatTrackRecord,
   type RejectionReason,
   type RumourStatus,
+  type TrackRecord,
 } from "@/lib/rumours";
 import { RelativeTime } from "@/components/relative-time";
 
-const TRUST_TIERS = [
-  { min: 100, label: "Legende", color: "bg-yellow-500 text-yellow-950" },
-  { min: 50, label: "Expert", color: "bg-primary text-primary-foreground" },
-  { min: 20, label: "Betrouwbaar", color: "bg-blue-500 text-blue-950" },
-  { min: 5, label: "Actief", color: "bg-secondary text-secondary-foreground" },
-  { min: 0, label: "Nieuwkomer", color: "bg-muted text-muted-foreground" },
-] as const;
-
-const TRUST_CAP = 100; // For progress bar display
-
-function getTrustBadge(score: number) {
-  const tier =
-    TRUST_TIERS.find((t) => score >= t.min) ??
-    TRUST_TIERS[TRUST_TIERS.length - 1];
-  return { label: tier.label, color: tier.color };
-}
-
-function getTrustProgress(score: number) {
-  return Math.min(score, TRUST_CAP);
-}
-
-export interface Profile {
+export interface Profile extends TrackRecord {
   id: string;
   username: string;
   avatar_url: string | null;
   email?: string;
-  trust_score: number;
   is_verified_source?: boolean;
   instagram_url?: string | null;
   source_description?: string | null;
@@ -86,51 +64,7 @@ export interface Profile {
 export interface Stats {
   rumourCount: number;
   voteCount: number;
-  confirmedCount: number;
   classifiedCount: number;
-}
-
-// Achievements derived from stats (no backend table)
-function getAchievements(stats: Stats | null) {
-  if (!stats) return [];
-  const a: {
-    id: string;
-    label: string;
-    icon: React.ReactNode;
-    earned: boolean;
-  }[] = [
-    {
-      id: "first-rumour",
-      label: "Eerste gerucht",
-      icon: <Flame className="h-4 w-4" />,
-      earned: stats.rumourCount >= 1,
-    },
-    {
-      id: "ten-confirmed",
-      label: "10 bevestigd",
-      icon: <CheckCircle className="h-4 w-4" />,
-      earned: stats.confirmedCount >= 10,
-    },
-    {
-      id: "active-voter",
-      label: "Actieve stemmer",
-      icon: <MessageSquare className="h-4 w-4" />,
-      earned: stats.voteCount >= 10,
-    },
-    {
-      id: "classifieds-seller",
-      label: "Zoekertjes",
-      icon: <ShoppingBag className="h-4 w-4" />,
-      earned: stats.classifiedCount >= 1,
-    },
-    {
-      id: "trusted-source",
-      label: "Betrouwbare bron",
-      icon: <Award className="h-4 w-4" />,
-      earned: stats.confirmedCount >= 1 && stats.rumourCount >= 1,
-    },
-  ];
-  return a;
 }
 
 interface ProfileViewProps {
@@ -236,23 +170,13 @@ export function ProfileView({
     setSubmitting(false);
   }
 
-  const trustScore = profile.trust_score ?? 0;
-  const trustBadge = getTrustBadge(trustScore);
-  const trustProgress = getTrustProgress(trustScore);
-  const achievements = getAchievements(stats);
+  // D-005: how often this contributor was right, counted by the database
+  const trackRecord = formatTrackRecord(profile);
+  const resolvedCount = profile.rumours_confirmed + profile.rumours_denied;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        {/* Back link */}
-        <div className="mb-6">
-          <Link href="/leaderboard">
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
-              ← Leaderboard
-            </Button>
-          </Link>
-        </div>
-
         {/* Profile header */}
         <Card className="mb-6 overflow-hidden border-border bg-card">
           <div className="bg-muted/30 px-6 pt-6 pb-4 sm:px-8 sm:pt-8 sm:pb-6">
@@ -277,7 +201,6 @@ export function ProfileView({
                     <span>{profile.email}</span>
                   </div>
                 )}
-                <Badge className={trustBadge.color}>{trustBadge.label}</Badge>
               </div>
               <Button
                 variant="outline"
@@ -314,59 +237,6 @@ export function ProfileView({
           )}
         </Card>
 
-        {/* Trust score visualization */}
-        <Card className="mb-6 border-border bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <Trophy className="h-5 w-5 text-accent" />
-              Trust Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-foreground">
-                {trustScore}
-              </span>
-              <span className="text-muted-foreground">punten</span>
-            </div>
-            <div className="space-y-2">
-              <Progress value={trustProgress} className="h-3" />
-              <p className="text-xs text-muted-foreground">
-                +5 bij bevestigd gerucht, +1 per upvote. Streef naar 100 voor
-                Legende.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Achievements / badges */}
-        <Card className="mb-6 border-border bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <Award className="h-5 w-5 text-accent" />
-              Prestaties
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {achievements.map((a) => (
-                <Badge
-                  key={a.id}
-                  variant={a.earned ? "default" : "outline"}
-                  className={
-                    a.earned
-                      ? "gap-1 bg-primary/90 text-primary-foreground"
-                      : "gap-1 opacity-60"
-                  }
-                >
-                  {a.icon}
-                  {a.label}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Statistics panel */}
         <Card className="mb-6 border-border bg-card">
           <CardHeader className="pb-2">
@@ -394,7 +264,7 @@ export function ProfileView({
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
                 <CheckCircle className="mb-2 h-6 w-6 text-green-500" />
                 <p className="text-2xl font-bold text-foreground">
-                  {stats?.confirmedCount ?? 0}
+                  {profile.rumours_confirmed}
                 </p>
                 <p className="text-xs text-muted-foreground">Bevestigd</p>
               </div>
@@ -412,30 +282,32 @@ export function ProfileView({
           </CardContent>
         </Card>
 
-        {/* Recent activity */}
+        {/* My rumours and track record (J-10, #88, D-005) */}
         <Card className="mb-6 border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <Activity className="h-5 w-5 text-accent" />
-              Recente activiteit
+              <CheckCircle className="h-5 w-5 text-accent" />
+              Mijn geruchten
             </CardTitle>
           </CardHeader>
-          {/* Profile → "Mijn zoekertjes" (#72, J-05). */}
-          <div className="px-6 pb-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/zoekertjes/mijn">
-                <ShoppingBag className="h-4 w-4" aria-hidden />
-                Mijn zoekertjes
-              </Link>
-            </Button>
-          </div>
           <CardContent className="space-y-4">
-            {recentActivity?.rumours && recentActivity.rumours.length > 0 && (
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <p className="text-sm font-medium text-muted-foreground">
+                Track record
+              </p>
+              <p className="text-2xl font-bold text-foreground">
+                {trackRecord ?? "Nog geen afgeronde geruchten"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Telt de geruchten die een moderator bevestigde of ontkrachtte.
+                Niet bevestigde geruchten en stemmen tellen niet mee.
+                {resolvedCount < TRUSTED_SOURCE_MIN_RESOLVED &&
+                  ` Vanaf ${TRUSTED_SOURCE_MIN_RESOLVED} afgeronde geruchten kan je bij de betrouwbare bronnen staan.`}
+              </p>
+            </div>
+            {recentActivity?.rumours && recentActivity.rumours.length > 0 ? (
               <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">
-                  Geruchten
-                </p>
-                <ul className="space-y-2">
+                <ul aria-label="Mijn geruchten" className="space-y-2">
                   {recentActivity.rumours.map((r) => (
                     <li key={r.id}>
                       <Link
@@ -478,7 +350,32 @@ export function ProfileView({
                   ))}
                 </ul>
               </div>
+            ) : (
+              <p className="py-2 text-center text-sm text-muted-foreground">
+                Je hebt nog geen geruchten gedeeld.
+              </p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Recent activity */}
+        <Card className="mb-6 border-border bg-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
+              <Activity className="h-5 w-5 text-accent" />
+              Recente zoekertjes
+            </CardTitle>
+          </CardHeader>
+          {/* Profile → "Mijn zoekertjes" (#72, J-05). */}
+          <div className="px-6 pb-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/zoekertjes/mijn">
+                <ShoppingBag className="h-4 w-4" aria-hidden />
+                Mijn zoekertjes
+              </Link>
+            </Button>
+          </div>
+          <CardContent className="space-y-4">
             {recentActivity?.classifieds &&
               recentActivity.classifieds.length > 0 && (
                 <div>
@@ -522,13 +419,11 @@ export function ProfileView({
                   </ul>
                 </div>
               )}
-            {!recentActivity?.rumours?.length &&
-              !recentActivity?.classifieds?.length && (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  Nog geen recente activiteit. Deel een gerucht of plaats een
-                  zoekertje!
-                </p>
-              )}
+            {!recentActivity?.classifieds?.length && (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                Nog geen zoekertjes. Plaats er een!
+              </p>
+            )}
           </CardContent>
         </Card>
 

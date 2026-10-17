@@ -15,7 +15,7 @@ export default async function ProfilePage() {
     ? await supabase
         .from("profiles")
         .select(
-          "id, username, avatar_url, trust_score, is_verified_source, instagram_url, source_description",
+          "id, username, avatar_url, rumours_confirmed, rumours_denied, is_verified_source, instagram_url, source_description",
         )
         .eq("id", user.id)
         .single()
@@ -34,7 +34,7 @@ export default async function ProfilePage() {
     );
   }
 
-  const [rumours, votes, confirmed, classifieds, recentActivity, blocks] =
+  const [rumours, votes, classifieds, recentActivity, blocks] =
     await Promise.all([
       supabase
         .from("rumours")
@@ -44,11 +44,6 @@ export default async function ProfilePage() {
         .from("rumour_votes")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id),
-      supabase
-        .from("rumours")
-        .select("id", { count: "exact", head: true })
-        .eq("creator_id", user.id)
-        .eq("status", "confirmed"),
       supabase
         .from("classifieds")
         .select("id", { count: "exact", head: true })
@@ -81,7 +76,6 @@ export default async function ProfilePage() {
       stats={{
         rumourCount: rumours.count || 0,
         voteCount: votes.count || 0,
-        confirmedCount: confirmed.count || 0,
         classifiedCount: classifieds.count || 0,
       }}
       recentActivity={recentActivity}

@@ -7,14 +7,17 @@ import {
   RUMOUR_DIVISIONS,
   RUMOUR_GENDERS,
   RUMOUR_SOURCE_TYPES,
+  formatTrackRecord,
   labelFor,
+  type TrackRecord,
 } from "@/lib/rumours";
 import { ModerationActions } from "./moderation-actions";
 import { RelativeTime } from "@/components/relative-time";
 
 // Pending rumours, oldest first (#66). The admin layout already let only
 // staff through; RLS shows pending rumours to staff (and their authors) only.
-// The author's track record waits for #88 (D-012).
+// The author's track record informs the decision, it doesn't make it (D-005,
+// #88).
 
 const PAGE_SIZE = 50;
 
@@ -33,7 +36,7 @@ interface PendingRumour {
   from_division: string | null;
   to_division: string | null;
   created_at: string;
-  creator: { username: string } | null;
+  creator: ({ username: string } & TrackRecord) | null;
 }
 
 /** "VC Testdorp (Nationale 2 Heren)", or just the club. */
@@ -47,7 +50,7 @@ export default async function ModerationQueuePage() {
   const { data, error, count } = await supabase
     .from("rumours")
     .select(
-      "id, player_name, category, from_club_name, to_club_name, description, source_type, source_url, declared_good_faith, declared_senior, gender, from_division, to_division, created_at, creator:creator_id(username)",
+      "id, player_name, category, from_club_name, to_club_name, description, source_type, source_url, declared_good_faith, declared_senior, gender, from_division, to_division, created_at, creator:creator_id(username, rumours_confirmed, rumours_denied)",
       { count: "exact" },
     )
     .eq("status", "pending")
@@ -89,6 +92,8 @@ export default async function ModerationQueuePage() {
                       <span className="text-xs text-muted-foreground">
                         Ingediend <RelativeTime date={rumour.created_at} /> door{" "}
                         {rumour.creator?.username ?? "een verwijderd account"}
+                        {rumour.creator &&
+                          ` · ${formatTrackRecord(rumour.creator) ?? "nog geen afgeronde geruchten"}`}
                       </span>
                     </div>
                     <CardTitle className="text-lg">

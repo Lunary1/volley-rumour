@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ThumbsUp,
   ThumbsDown,
-  TrendingUp,
+  CheckCircle,
   User,
   ArrowRight,
   MessageSquare,
@@ -28,8 +28,12 @@ import {
   OWN_RUMOUR_MESSAGE,
   RUMOUR_SOURCE_SHORT_LABELS,
   VOTING_CLOSED_MESSAGE,
+  belief,
+  formatBelief,
+  formatTrackRecord,
   isVotingOpen,
   labelFor,
+  type TrackRecord,
 } from "@/lib/rumours";
 import type { ActionResponse } from "@/lib/response";
 import type { VoteCounts } from "@/app/actions/vote";
@@ -54,11 +58,13 @@ interface RumourCardProps {
     status: string;
     // null once the creator's account is deleted (deleteAccount keeps the rumour)
     creator_id: string | null;
-    creator: {
-      username: string;
-      trust_score: number;
-      is_verified_source?: boolean;
-    } | null;
+    // The author's track record (#88, D-005)
+    creator:
+      | ({
+          username: string;
+          is_verified_source?: boolean;
+        } & TrackRecord)
+      | null;
   };
   onVote?: (
     rumourId: string,
@@ -230,51 +236,14 @@ export function RumourCard({
 
   const sourceLabel = labelFor(RUMOUR_SOURCE_SHORT_LABELS, rumour.source_type);
 
-  // Infamous Karma meter: 0% = evil (red), 50% = neutral, 100% = good (blue)
-  const karma =
-    localUpvotes + localDownvotes > 0
-      ? Math.round((localUpvotes / (localUpvotes + localDownvotes)) * 100)
-      : 50;
-
-  const getKarmaColor = (karmaValue: number) => {
-    if (karmaValue < 35) return "text-red-600"; // Evil
-    if (karmaValue < 50) return "text-orange-500"; // Slightly evil
-    if (karmaValue === 50) return "text-gray-500"; // Neutral
-    if (karmaValue < 65) return "text-blue-500"; // Slightly good
-    return "text-blue-600"; // Good
-  };
-
-  const getKarmaLabel = (karmaValue: number) => {
-    if (karmaValue < 35) return "Evil";
-    if (karmaValue < 50) return "Corrupt";
-    if (karmaValue === 50) return "Neutral";
-    if (karmaValue < 65) return "Heroic";
-    return "Legendary";
-  };
-
-  const getKarmaBarColor = (karmaValue: number) => {
-    if (karmaValue < 35) return "bg-red-600";
-    if (karmaValue < 50) return "bg-orange-500";
-    if (karmaValue === 50) return "bg-gray-500";
-    if (karmaValue < 65) return "bg-blue-500";
-    return "bg-blue-600";
-  };
-
-  // Color-code card border by confidence (karma) and creator trust
-  const getCardBorderClass = () => {
-    if (karma < 35) return "border-l-4 border-l-red-500 dark:border-l-red-400";
-    if (karma < 50)
-      return "border-l-4 border-l-orange-500 dark:border-l-orange-400";
-    if (karma === 50) return "border-l-4 border-l-muted-foreground/50";
-    if (karma < 65)
-      return "border-l-4 border-l-blue-400 dark:border-l-blue-300";
-    return "border-l-4 border-l-blue-600 dark:border-l-blue-400";
-  };
+  // A neutral belief signal (D-005): no good/evil wording, no colours.
+  const beliefShare = belief(localUpvotes, localDownvotes);
+  const trackRecord = rumour.creator ? formatTrackRecord(rumour.creator) : null;
 
   return (
     <>
       <Card
-        className={`bg-card border-border hover:border-primary/40 transition-all h-full flex flex-col hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group ${getCardBorderClass()}`}
+        className={`bg-card border-border hover:border-primary/40 transition-all h-full flex flex-col hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group`}
       >
         <CardContent className="p-5 flex flex-col h-full">
           {/* Top Section: Category & Status Badges + Time */}
@@ -355,26 +324,20 @@ export function RumourCard({
             )}
           </div>
 
-          {/* Karma Meter - Centered and Prominent */}
-          <div className="flex flex-col items-center gap-3 my-4 py-4 border-y border-border">
-            {/* Karma Bar */}
-            <div className="w-24 h-4 bg-muted rounded-full overflow-hidden border border-border shadow-sm">
+          {/* What voters think (D-005) */}
+          <div className="flex flex-col items-center gap-2 my-4 py-4 border-y border-border">
+            <div
+              className="w-24 h-2 bg-muted rounded-full overflow-hidden"
+              aria-hidden
+            >
               <div
-                className={`h-full transition-all duration-300 ${getKarmaBarColor(
-                  karma,
-                )}`}
-                style={{ width: `${karma}%` }}
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${beliefShare ?? 0}%` }}
               />
             </div>
-            {/* Karma Percentage */}
-            <div className="flex flex-col items-center">
-              <div className={`text-3xl font-bold ${getKarmaColor(karma)}`}>
-                {karma}%
-              </div>
-              <div className={`text-xs font-semibold ${getKarmaColor(karma)}`}>
-                {getKarmaLabel(karma)}
-              </div>
-            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              {formatBelief(localUpvotes, localDownvotes)}
+            </p>
           </div>
 
           {/* Voting Section */}
@@ -423,7 +386,7 @@ export function RumourCard({
             </p>
           )}
 
-          {/* Footer: Creator + Trust + Discussion */}
+          {/* Footer: author, their track record, actions */}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-2 border-t border-border">
             <div className="flex items-center gap-1.5">
               <User className="h-3.5 w-3.5" />
@@ -434,12 +397,10 @@ export function RumourCard({
                 <VerifiedBadge size="sm" />
               )}
             </div>
-            {rumour.creator && (
+            {trackRecord && (
               <div className="flex items-center gap-1.5">
-                <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                <span className="font-semibold">
-                  {rumour.creator.trust_score}
-                </span>
+                <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                <span>{trackRecord}</span>
               </div>
             )}
             <ReportDialog

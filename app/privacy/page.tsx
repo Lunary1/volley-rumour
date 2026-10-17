@@ -63,28 +63,31 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        {/* Betrouwbaarheidsscore */}
+        {/* Track record (#88, D-005) */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            Betrouwbaarheidsscore en Trust Score
+            Track record
           </h2>
           <div className="space-y-4 text-muted-foreground">
             <p>
-              Je betrouwbaarheidsscore wordt automatisch bijgewerkt op basis van
-              je bijdragen aan de community:
+              Bij je geruchten tonen we je track record: hoeveel van je
+              afgeronde geruchten een moderator bevestigde. Afgerond betekent
+              bevestigd of ontkracht.
             </p>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
-                <strong>Punten verdienen:</strong> Wanneer je geruchten die je
-                deelt door de community als waar worden bevestigd.
+                <strong>Berekening:</strong> Alleen de beslissingen van
+                moderators tellen. Stemmen en niet bevestigde geruchten tellen
+                niet mee.
               </li>
               <li>
-                <strong>Zichtbaarheid:</strong> Je score is openbaar en helpt
-                andere gebruikers je betrouwbaarheid in te schatten.
+                <strong>Zichtbaarheid:</strong> Je track record is openbaar, bij
+                je geruchten en, vanaf 5 afgeronde geruchten, op de lijst met
+                betrouwbare bronnen.
               </li>
               <li>
-                <strong>Geen persoonlijke gebruik:</strong> We gebruiken deze
-                score alleen voor community-ranglijsten en zichtbaarheid.
+                <strong>Stemmen:</strong> Wie op welk gerucht stemde, is niet
+                zichtbaar voor andere gebruikers.
               </li>
             </ul>
           </div>

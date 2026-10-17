@@ -20,12 +20,10 @@ export interface Conversation {
   initiator: {
     username: string;
     avatar_url: string | null;
-    trust_score: number;
   };
   recipient: {
     username: string;
     avatar_url: string | null;
-    trust_score: number;
   };
   created_at: string;
   updated_at: string;
@@ -261,8 +259,8 @@ export async function getConversations({ archived = false } = {}) {
     .select(
       `
       *,
-      initiator:initiator_id(id, username, avatar_url, trust_score),
-      recipient:recipient_id(id, username, avatar_url, trust_score)
+      initiator:initiator_id(id, username, avatar_url),
+      recipient:recipient_id(id, username, avatar_url)
     `,
     )
     .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`);

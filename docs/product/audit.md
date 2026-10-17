@@ -47,7 +47,7 @@ ran without Supabase credentials, which is what CI will face.
 | Journey | Title                                    | Overall     | Top gap                                                                     |
 | ------- | ---------------------------------------- | ----------- | --------------------------------------------------------------------------- |
 | J-01    | Find a matching zoekertje                | **PARTIAL** | Logged-out contact dead-ends (search crash fixed in #59)    |
-| J-02    | Read Transfer Talk / transfers           | **PARTIAL** | Karma labels instead of a track record (#88); no pagination (X-9). Transfer tabs fixed (#70, #82) |
+| J-02    | Read Transfer Talk / transfers           | **PARTIAL** | No pagination (X-9). Track record on cards (#88), transfer tabs fixed (#70, #82) |
 | J-03    | Create an account                        | **PARTIAL** | No 16+ / terms confirmation; raw English errors                             |
 | J-04    | Post "speler zoekt team"                 | **PARTIAL** | Server action, gender stored, login first, public notice (#71); expiry left (#84) |
 | J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status waits on #84 |
@@ -55,14 +55,14 @@ ran without Supabase credentials, which is what CI will face.
 | J-07    | Block / report                           | **WORKS**   | Block, unblock and report work (#73, #87); archiving is per user (#91) |
 | J-08    | Club recruits player/trainer             | **WORKS**   | Gender and diploma stored and shown (#71); ads closed as gevonden (#72)   |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
-| J-10    | Own rumours, track record, voting        | **PARTIAL** | Voting fixed (#78); track record and reputation wait on #47 (D-005)          |
+| J-10    | Own rumours, track record, voting        | **WORKS**   | Track record and all own rumours on the profile (#88, D-005); voting fixed (#78) |
 | J-11    | Account and personal data                | **BROKEN**  | Account deletion can leave a half-deleted state (password reset fixed in #58) |
 | J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
-| J-13    | Pre-moderation queue                     | **PARTIAL** | Queue, approve/reject and audit log work (#66); no track record (#88) or email (#53) |
-| J-14    | Resolve a rumour                         | **PARTIAL** | Confirm, deny, expire, bulk expire and transfer edits work (#70); the track record waits on #88 |
+| J-13    | Pre-moderation queue                     | **PARTIAL** | Queue with the author's track record, approve/reject and audit log work (#66, #88); no email (#53) |
+| J-14    | Resolve a rumour                         | **WORKS**   | Confirm, deny, expire, bulk expire and transfer edits work (#70); each decision updates the author's track record (#88) |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
-**Count:** 4 WORKS · 10 PARTIAL · 1 BROKEN · 0 MISSING.
+**Count:** 6 WORKS · 8 PARTIAL · 1 BROKEN · 0 MISSING.
 
 ---
 
@@ -105,7 +105,7 @@ items.
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Only moderator-approved rumours visible | **WORKS** | [geruchten/page.tsx:12-30](../../app/geruchten/page.tsx#L12-L30), [rumour.ts:47-58](../../app/actions/rumour.ts#L47-L58) | Fixed in #65: RLS hides pending and rejected rumours; Transfer Talk lists approved statuses only. Moderators approve in the queue (#66) |
-| Card shows neutral belief %, author track record, no good/evil labels | PARTIAL | [rumour-card.tsx:184-212](../../components/rumour-card.tsx#L184-L212) | Shows the "Evil/Corrupt/Heroic/Legendary" karma label and trust points instead of a track record (D-005) |
+| Card shows neutral belief %, author track record, no good/evil labels | **FIXED** (#88) | [rumour-card.tsx](../../components/rumour-card.tsx), [track-record.spec.ts](../../e2e/track-record.spec.ts) | "63% van de stemmers denkt dat dit klopt" (or "Nog geen stemmen") in neutral colours, and the author's "5 van 6 bevestigd", on the card and in the detail view. The karma labels and trust points are gone (D-005) |
 | Card renders for anonymised authors | **FIXED** (#57) | [rumour-card.tsx](../../components/rumour-card.tsx), [geruchten-deleted-creator.spec.ts](../../e2e/geruchten-deleted-creator.spec.ts) | Shows "Verwijderd account" without a trust score, in the card and the detail modal (X-2) |
 | Source type and link shown | **WORKS** | [rumour-card.tsx](../../components/rumour-card.tsx), [rumour-sources.spec.ts](../../e2e/rumour-sources.spec.ts) | #67: "Bron: …" and the link on the card and in the detail view. A resolved rumour also links the official source the moderator used (#70) |
 | "Melden" link on each card | **WORKS** | [rumour-card.tsx](../../components/rumour-card.tsx), [report-dialog.tsx](../../components/report-dialog.tsx), [reports.spec.ts](../../e2e/reports.spec.ts) | #79: "Melden" on every card and in the detail view; logged-out visitors go to login and back. The dialog also offers the takedown form (J-12) |
@@ -186,15 +186,15 @@ items.
 | Notified on approve/reject | MISSING | — | |
 | Login required | **WORKS** | [geruchten/nieuw/page.tsx](../../app/geruchten/nieuw/page.tsx), [login/page.tsx](../../app/auth/login/page.tsx) | Fixed in #67: login returns to the form (`?next=`, also through Google) |
 
-### J-10 — Own rumours, track record, voting · PARTIAL
+### J-10 — Own rumours, track record, voting · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| See status of each of my rumours | PARTIAL | [profile.ts:151-184](../../app/actions/profile.ts#L151-L184) | 5 most recent only; only the statuses `rumour/confirmed/denied` exist |
-| Track record = confirmed vs denied | MISSING | [profile/page.tsx:50-130](../../app/profile/page.tsx#L50-L130) | Trust points plus derived achievements instead (D-005) |
+| See status of each of my rumours | **FIXED** (#88) | [profile-view.tsx](../../app/profile/profile-view.tsx), [track-record.spec.ts](../../e2e/track-record.spec.ts) | "Mijn geruchten" on the profile lists all of them with every status (wordt nagekeken, afgewezen + reden, lopend, bevestigd, ontkracht, niet bevestigd, verwijderd) |
+| Track record = confirmed vs denied | **FIXED** (#88) | [track_record migration](../../supabase/migrations/20261017115222_contributor_track_record.sql), [track_record.test.sql](../../supabase/tests/database/track_record.test.sql) | `profiles.rumours_confirmed` and `rumours_denied`, recounted by a trigger on rumours whenever a status or author changes: the one place it's calculated. Expired, pending, rejected and removed rumours don't count. Shown on the profile, on cards and in the moderation queue; "Betrouwbare bronnen" (`trusted_sources()`) lists contributors with at least 5 resolved rumours, most accurate first. Trust points, tiers and achievements are gone |
 | Vote once, change vote, correct under concurrency | **FIXED** (#78) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql), [vote.ts](../../app/actions/vote.ts), [votes.spec.ts](../../e2e/votes.spec.ts) | The `on_vote_change` trigger counts in the database. It locks the rumour row first, so concurrent votes all count, and it recounts when a vote is deleted (account deletion). Votes are private: users read only their own. Pages load the user's votes in one query (#129). A visitor who votes gets "Log in om te stemmen" with a button to the login page, which returns to the page |
 | Can't vote on own rumour | **FIXED** (#78) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql), [rumour-card.tsx](../../components/rumour-card.tsx) | `check_vote_allowed` refuses it (`VR009`); the card disables the buttons and says why |
-| Votes don't change reputation | **BROKEN** (vs D-005) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql) | Each vote still moves the creator's trust score (net votes over their rumours). Since #78 the database computes it, not the voter's session. What votes mean for reputation follows #47 |
+| Votes don't change reputation | **FIXED** (#88) | [track_record migration](../../supabase/migrations/20261017115222_contributor_track_record.sql), [vote_integrity.test.sql](../../supabase/tests/database/vote_integrity.test.sql) | The vote trigger counts on the rumour only; `trust_score` and `total_votes_received` are dropped |
 | Voting closed when not live | **FIXED** (#78) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql), [rumour-card.tsx](../../components/rumour-card.tsx) | Only lopende rumours take votes, new or changed (`VR010`); confirmed and denied cards show "Stemmen kan alleen op lopende geruchten" |
 
 ### J-11 — Account and personal data · BROKEN
@@ -224,18 +224,18 @@ items.
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Non-staff get 404/403 on `/admin` and admin actions | **WORKS** | [admin/layout.tsx](../../app/admin/layout.tsx), [staff.ts](../../lib/staff.ts) | #63: the layout 404s for non-staff; admin actions use `requireStaff()`, and the moderation functions check `is_staff()` again |
-| Pending list oldest first with track record | **PARTIAL** | [admin/wachtrij/page.tsx](../../app/admin/wachtrij/page.tsx) | #66: oldest first with the author's username. Track record waits for #88 (D-012); the source field for #67 |
+| Pending list oldest first with track record | **WORKS** | [admin/wachtrij/page.tsx](../../app/admin/wachtrij/page.tsx), [track-record.spec.ts](../../e2e/track-record.spec.ts) | #66: oldest first; #88: "speler_jana · 1 van 1 bevestigd" next to each author (D-005). Sources since #67 |
 | Approve → live, author notified | **PARTIAL** | [moderation.ts](../../app/actions/moderation.ts), `approve_rumour()` | #66: approved rumours go live and the author's profile shows "Lopend". Email notification waits on #53 |
 | Reject with reason | **WORKS** | `reject_rumour()`, [profile-view.tsx](../../app/profile/profile-view.tsx) | #66: fixed list of reasons (note required for "Andere"); the author sees the reason on their profile |
 | Audit log | **WORKS** | `log_staff_action()`, [admin/logboek](../../app/admin/logboek/page.tsx) | #64, #66: approve and reject log in the same transaction as the decision |
 
-### J-14 — Resolve a rumour · PARTIAL
+### J-14 — Resolve a rumour · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Confirm with source → typed transfer linked to rumour | **WORKS** | [rumour_resolution migration](../../supabase/migrations/20261017110217_rumour_resolution.sql), [admin/geruchten](../../app/admin/geruchten/page.tsx), [rumour-resolution.spec.ts](../../e2e/rumour-resolution.spec.ts) | #70: `resolve_rumour()` is staff-only (D-020), needs an http(s) source and a type that fits the rumour (preselected from its gender), and makes the transfer with the clubs, division and date in the same transaction as the log entry |
 | No duplicate transfer on re-confirm | **WORKS** | [rumour_resolution.test.sql](../../supabase/tests/database/rumour_resolution.test.sql) | Only lopende rumours can be resolved (row lock), and `source_rumour_id` is unique |
-| Deny / expire, close voting, update track record | PARTIAL | `resolve_rumour()`, [votes](../../supabase/migrations/20261016224117_vote_integrity.sql) | Status changes, voting closes (#78), the author sees it on their profile and Transfer Talk filters "Niet bevestigd". The track record itself waits on #88 |
+| Deny / expire, close voting, update track record | **WORKS** | `resolve_rumour()`, [track_record migration](../../supabase/migrations/20261017115222_contributor_track_record.sql), [track-record.spec.ts](../../e2e/track-record.spec.ts) | Status changes, voting closes (#78), the author sees it on their profile and Transfer Talk filters "Niet bevestigd". A confirmation or denial updates the author's track record at once (#88); expiring is neutral |
 | Bulk "niet bevestigd" at window close | **WORKS** | `expire_open_rumours()`, [expire-all.tsx](../../app/admin/geruchten/expire-all.tsx) | One button with a confirmation; one log entry per rumour |
 | Add transfer directly | **WORKS** | `create_transfer()`, [admin/transfers](../../app/admin/transfers/page.tsx) | Needs an official source; dated in Belgian time |
 | Correct or remove a transfer, audited | **WORKS** | `update_transfer()`, `delete_transfer()` | The log keeps what the transfer said before. Removing a rumour's transfer makes the rumour lopend again, so a wrong confirmation can be redone |

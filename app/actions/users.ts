@@ -168,7 +168,7 @@ export async function setVerifiedSource(input: {
   if (error) return sanctionError(error, "De badge kan niet gewijzigd worden");
 
   revalidateUserPages(parsed.data.userId);
-  // The badge shows on ads, rumours, the leaderboard and the profile.
+  // The badge shows on ads, rumours, Betrouwbare bronnen and the profile.
   revalidatePath("/", "layout");
   return successResponse(null);
 }

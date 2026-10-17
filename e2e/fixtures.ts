@@ -25,6 +25,9 @@ export const seedUsers = {
   // suspension and resets the badge and role before every run.
   geschorst: { email: "geschorst@example.test", username: "test_geschorst" },
   kandidaat: { email: "kandidaat@example.test", username: "test_kandidaat" },
+  // A Betrouwbare bron: 5 confirmed, 1 denied, 1 expired rumour (#88). Only
+  // track-record tests use it.
+  bron: { email: "bron@example.test", username: "trouwe_bron" },
 } as const;
 
 export type SeedUser = keyof typeof seedUsers;
@@ -59,6 +62,16 @@ export const seed = {
   // Submitted before rumours had a source (#67).
   rumourWithoutSource: { playerName: "Sara Steekproef" },
   confirmedRumour: { playerName: "Koen Kladversie" },
+  // trouwe_bron's rumours (#88): "5 van 6 bevestigd"; the expired one is
+  // neutral.
+  trustedSource: {
+    trackRecord: "5 van 6 bevestigd",
+    accuracy: "83%",
+    confirmedRumour: "Bas Bronvast",
+    deniedRumour: "Gert Gemist",
+    expiredRumour: "Hanne Halverwege",
+    rumourCount: 7,
+  },
   // creator_id is null, as after the creator deleted their account
   rumourWithoutCreator: { playerName: "Wout Weesgerucht" },
   // Not approved by a moderator (#65): Jana's is pending, Tom's rejected.

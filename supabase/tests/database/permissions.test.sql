@@ -43,19 +43,21 @@ SELECT throws_ok(
   $$UPDATE public.profiles SET role = 'admin' WHERE id = '00000000-0000-0000-0000-00000000000a'$$,
   '42501', NULL, 'users cannot change their role');
 SELECT throws_ok(
-  $$UPDATE public.profiles SET trust_score = 999 WHERE id = '00000000-0000-0000-0000-00000000000a'$$,
-  '42501', NULL, 'users cannot set their trust score');
+  $$UPDATE public.profiles SET rumours_confirmed = 99 WHERE id = '00000000-0000-0000-0000-00000000000a'$$,
+  '42501', NULL, 'users cannot set their track record');
 SELECT throws_ok(
   $$UPDATE public.profiles SET is_verified_source = true WHERE id = '00000000-0000-0000-0000-00000000000a'$$,
   '42501', NULL, 'users cannot verify themselves');
 
 -- --------------------------------------------------------------- functions
 SELECT throws_ok(
-  $$SELECT public.increment_trust_score('00000000-0000-0000-0000-00000000000a', 100)$$,
-  '42501', NULL, 'signed-in users cannot call increment_trust_score');
-SELECT throws_ok(
-  $$SELECT public.decrement_trust_score('00000000-0000-0000-0000-00000000000b', 100)$$,
-  '42501', NULL, 'signed-in users cannot call decrement_trust_score');
+  $$SELECT public.recount_track_record('00000000-0000-0000-0000-00000000000a')$$,
+  '42501', NULL, 'signed-in users cannot call recount_track_record');
+SELECT ok(
+  NOT EXISTS (SELECT 1 FROM pg_proc
+               WHERE proname IN ('increment_trust_score', 'decrement_trust_score',
+                                 'update_creator_trust_score')),
+  'the trust-point functions are gone (#88)');
 
 -- ----------------------------------------------------------------- rumours
 SELECT lives_ok(
@@ -149,8 +151,8 @@ SELECT is(
 -- -------------------------------------------------------------------- anon
 SET LOCAL ROLE anon;
 SELECT throws_ok(
-  $$SELECT public.increment_trust_score('00000000-0000-0000-0000-00000000000a', 100)$$,
-  '42501', NULL, 'anonymous visitors cannot call increment_trust_score');
+  $$SELECT public.recount_track_record('00000000-0000-0000-0000-00000000000a')$$,
+  '42501', NULL, 'anonymous visitors cannot call recount_track_record');
 SELECT lives_ok(
   $$SELECT public.get_interest_count()$$,
   'anonymous visitors can read the interest count');
