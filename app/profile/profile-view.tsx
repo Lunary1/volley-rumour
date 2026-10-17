@@ -41,8 +41,6 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { BlockedUsersCard, type BlockedUser } from "./blocked-users-card";
 import {
@@ -51,6 +49,7 @@ import {
   type RejectionReason,
   type RumourStatus,
 } from "@/lib/rumours";
+import { RelativeTime } from "@/components/relative-time";
 
 const TRUST_TIERS = [
   { min: 100, label: "Legende", color: "bg-yellow-500 text-yellow-950" },
@@ -455,10 +454,7 @@ export function ProfileView({
                             r.status}
                         </Badge>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(r.created_at), {
-                            addSuffix: true,
-                            locale: nl,
-                          })}
+                          <RelativeTime date={r.created_at} />
                         </span>
                       </Link>
                       {r.status === "rejected" && r.rejection_reason && (
@@ -511,10 +507,7 @@ export function ProfileView({
                           <span
                             className={`${c.removed_at ? "" : "ml-auto "}shrink-0 text-xs text-muted-foreground`}
                           >
-                            {formatDistanceToNow(new Date(c.created_at), {
-                              addSuffix: true,
-                              locale: nl,
-                            })}
+                            <RelativeTime date={c.created_at} />
                           </span>
                         </Link>
                         {c.removed_at && (

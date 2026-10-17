@@ -15,13 +15,12 @@ import {
   User,
   ArrowRight,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
 import { ReportDialog } from "@/components/report-dialog";
 import Link from "next/link";
 import { RUMOUR_SOURCE_TYPES, labelFor } from "@/lib/rumours";
+import { RelativeTime } from "@/components/relative-time";
 
 export type RumourForModal = {
   id: string;
@@ -136,10 +135,7 @@ export function RumourDetailModal({
               {statusLabels[rumour.status]}
             </Badge>
             <span className="text-xs text-muted-foreground ml-auto">
-              {formatDistanceToNow(new Date(rumour.created_at), {
-                addSuffix: true,
-                locale: nl,
-              })}
+              <RelativeTime date={rumour.created_at} />
             </span>
           </div>
           <DialogTitle className="text-xl pt-2">

@@ -274,6 +274,18 @@ INSERT INTO public.messages (id, conversation_id, sender_id, content, is_read, c
    'a0000000-0000-4000-8000-000000000001',
    'Dag Tom, zoek je nog iemand voor de jeugdtrainingen?', true, now() - interval '4 days');
 
+-- test_kandidaat answers the VC Testdorp ad. Only the date tests use it
+-- (#142): its one message was sent at 23:30 UTC on 10 March, which is already
+-- 11 March in Belgium. Read, so unread counts in other tests don't change.
+INSERT INTO public.conversations (id, ad_id, ad_type, initiator_id, recipient_id, created_at, updated_at)
+VALUES ('f0000000-0000-4000-8000-000000000004', 'd0000000-0000-4000-8000-000000000001', 'classified',
+        'a0000000-0000-4000-8000-00000000000b', 'a0000000-0000-4000-8000-000000000003',
+        '2026-03-10 23:30:00+00', '2026-03-10 23:30:00+00');
+
+INSERT INTO public.messages (conversation_id, sender_id, content, is_read, created_at) VALUES
+  ('f0000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-00000000000b',
+   'Is de plaats als hulptrainer nog vrij?', true, '2026-03-10 23:30:00+00');
+
 -- ------------------------------------------------------- takedown request
 -- An open request about Lotte Lorem (#68), so the inbox isn't empty locally.
 -- Its status page: /verwijderverzoek/status/seedtokenvoorlokaletestsVolleyRumours000001

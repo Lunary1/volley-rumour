@@ -109,6 +109,12 @@ export const seed = {
     id: "f0000000-0000-4000-8000-000000000003",
     message: "Dag Tom, zoek je nog iemand voor de jeugdtrainingen?",
   },
+  // test_kandidaat (initiator) and VC Testdorp. Only date tests use it (#142):
+  // one message at 23:30 UTC on 10 March, 00:30 on 11 March in Belgium.
+  lateConversation: {
+    id: "f0000000-0000-4000-8000-000000000004",
+    message: "Is de plaats als hulptrainer nog vrij?",
+  },
   // An open contact message from Jana (#81). Tests read it, never handle it.
   contactMessage: {
     senderName: "Jana Voorbeeld",

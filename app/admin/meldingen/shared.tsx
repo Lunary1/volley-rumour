@@ -1,5 +1,3 @@
-import { format, formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,6 +7,7 @@ import {
   labelFor,
   type RumourStatus,
 } from "@/lib/rumours";
+import { RelativeTime } from "@/components/relative-time";
 
 // Pieces the takedown and report cards in /admin/meldingen share.
 
@@ -29,11 +28,7 @@ export const RUMOUR_SUMMARY_COLUMNS =
 
 /** A relative time with the exact time on hover. */
 export function When({ date }: { date: string }) {
-  return (
-    <span title={format(new Date(date), "d MMM yyyy HH:mm", { locale: nl })}>
-      {formatDistanceToNow(new Date(date), { addSuffix: true, locale: nl })}
-    </span>
-  );
+  return <RelativeTime date={date} />;
 }
 
 /** The rumour a request or report is about, as the moderator needs it. */

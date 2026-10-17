@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   readReportedConversation,
   type ReportedMessage,
 } from "@/app/actions/reports";
+import { formatDate } from "@/lib/dates";
 
 /**
  * The messages of a reported conversation, loaded only when the moderator
@@ -69,10 +68,7 @@ export function ReportedConversation({ reportId }: { reportId: string }) {
                 <span className="font-medium text-foreground">
                   {message.sender_username ?? "Verwijderd account"}
                 </span>{" "}
-                ·{" "}
-                {format(new Date(message.sent_at), "d MMM yyyy HH:mm", {
-                  locale: nl,
-                })}
+                · {formatDate(message.sent_at, "d MMM yyyy HH:mm")}
               </p>
               <p className="whitespace-pre-line wrap-break-word">
                 {message.body}

@@ -6,12 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, UserCircle, MessageSquare } from "lucide-react";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { ContactModal } from "@/components/contact-modal";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
 import { getExistingConversation } from "@/app/actions/messages";
+import { formatDate } from "@/lib/dates";
 
 interface TransferCardInteractiveProps {
   transfer: {
@@ -147,9 +146,7 @@ export function TransferCardInteractive({
             <span>
               {transfer.transfer_date &&
               !isNaN(new Date(transfer.transfer_date).getTime())
-                ? format(new Date(transfer.transfer_date), "d MMMM yyyy", {
-                    locale: nl,
-                  })
+                ? formatDate(transfer.transfer_date, "d MMMM yyyy")
                 : "Datum onbekend"}
             </span>
           </div>

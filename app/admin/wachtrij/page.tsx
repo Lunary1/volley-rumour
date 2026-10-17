@@ -1,5 +1,3 @@
-import { format, formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +10,7 @@ import {
   labelFor,
 } from "@/lib/rumours";
 import { ModerationActions } from "./moderation-actions";
+import { RelativeTime } from "@/components/relative-time";
 
 // Pending rumours, oldest first (#66). The admin layout already let only
 // staff through; RLS shows pending rumours to staff (and their authors) only.
@@ -87,20 +86,8 @@ export default async function ModerationQueuePage() {
                         {RUMOUR_CATEGORY_LABELS[rumour.category] ??
                           rumour.category}
                       </Badge>
-                      <span
-                        className="text-xs text-muted-foreground"
-                        title={format(
-                          new Date(rumour.created_at),
-                          "d MMM yyyy HH:mm",
-                          { locale: nl },
-                        )}
-                      >
-                        Ingediend{" "}
-                        {formatDistanceToNow(new Date(rumour.created_at), {
-                          addSuffix: true,
-                          locale: nl,
-                        })}{" "}
-                        door{" "}
+                      <span className="text-xs text-muted-foreground">
+                        Ingediend <RelativeTime date={rumour.created_at} /> door{" "}
                         {rumour.creator?.username ?? "een verwijderd account"}
                       </span>
                     </div>

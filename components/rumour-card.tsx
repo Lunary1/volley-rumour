@@ -13,8 +13,6 @@ import {
   ArrowRight,
   MessageSquare,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
@@ -35,6 +33,7 @@ import {
 } from "@/lib/rumours";
 import type { ActionResponse } from "@/lib/response";
 import type { VoteCounts } from "@/app/actions/vote";
+import { RelativeTime } from "@/components/relative-time";
 
 interface RumourCardProps {
   rumour: {
@@ -285,10 +284,7 @@ export function RumourCard({
               {statusLabels[rumour.status]}
             </Badge>
             <span className="text-xs text-muted-foreground ml-auto">
-              {formatDistanceToNow(new Date(rumour.created_at), {
-                addSuffix: true,
-                locale: nl,
-              })}
+              <RelativeTime date={rumour.created_at} />
             </span>
           </div>
 

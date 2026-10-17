@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/server";
+import { formatDate } from "@/lib/dates";
 
 // The admin layout already let only staff through; RLS on staff_actions
 // checks again (#64).
@@ -113,9 +112,7 @@ export default async function AuditLogPage() {
               {entries.map((entry) => (
                 <tr key={entry.id} className="border-t align-top">
                   <td className="whitespace-nowrap px-3 py-2">
-                    {format(new Date(entry.created_at), "d MMM yyyy HH:mm", {
-                      locale: nl,
-                    })}
+                    {formatDate(entry.created_at, "d MMM yyyy HH:mm")}
                   </td>
                   <td className="px-3 py-2">
                     {usernames.get(entry.actor_id) ?? "Verwijderd account"}
