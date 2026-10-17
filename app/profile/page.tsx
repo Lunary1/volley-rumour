@@ -11,23 +11,39 @@ export default async function ProfilePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: profile } = user
-    ? await supabase
-        .from("profiles")
-        .select(
-          "id, username, avatar_url, rumours_confirmed, rumours_denied, is_verified_source, instagram_url, source_description",
-        )
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-
-  if (!user || !profile) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">Je bent niet ingelogd</p>
           <Link href="/auth/login">
             <Button>Inloggen</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select(
+      "id, username, avatar_url, rumours_confirmed, rumours_denied, is_verified_source, instagram_url, source_description",
+    )
+    .eq("id", user.id)
+    .single();
+
+  // Logged in, but the profile didn't load: say so instead of asking the
+  // user to log in again (#149).
+  if (!profile) {
+    console.error("Error fetching profile:", error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <p className="text-destructive mb-4">
+            Je profiel kon niet geladen worden.
+          </p>
+          <Link href="/profile">
+            <Button variant="outline">Opnieuw proberen</Button>
           </Link>
         </div>
       </div>
