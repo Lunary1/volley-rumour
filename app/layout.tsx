@@ -17,7 +17,7 @@ const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "VolleyRumours - Belgische Volleybal Transfers & Transfer Talk",
   description:
-    "Ontdek de nieuwste volleybal transfers, Transfer Talk en zoekertjes in België. Stem op transfers, verdien punten en word een betrouwbare bron in de community.",
+    "Ontdek de nieuwste volleybal transfers, Transfer Talk en zoekertjes in België. Stem op geruchten en bouw een track record op als betrouwbare bron.",
   icons: {
     icon: [
       {

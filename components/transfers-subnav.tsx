@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 const TRANSFERS_SUBTABS = [
   { href: "/geruchten", label: "Transfer Talk" },
   { href: "/transfers", label: "Confirmed" },
-  { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/betrouwbare-bronnen", label: "Betrouwbare bronnen" },
 ];
 
 export function TransfersSubnav() {

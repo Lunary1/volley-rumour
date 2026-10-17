@@ -75,7 +75,7 @@ export const getCurrentUser = cache(async () => {
     await Promise.all([
       supabase
         .from("profiles")
-        .select("username, trust_score, avatar_url")
+        .select("username, avatar_url")
         .eq("id", user.id)
         .single(),
       supabase.rpc("is_staff"),
@@ -95,7 +95,6 @@ export const getCurrentUser = cache(async () => {
     id: user.id,
     email: user.email,
     username: profile?.username,
-    trust_score: profile?.trust_score || 0,
     avatar_url: profile?.avatar_url,
     // Only shows the "Beheer" link; admin pages check is_staff() themselves.
     is_staff: isStaff === true,

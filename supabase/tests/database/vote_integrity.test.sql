@@ -25,8 +25,9 @@ CREATE FUNCTION pg_temp.counts() RETURNS text LANGUAGE sql AS $$
    WHERE id = '00000000-0000-0000-0000-0000000078e1';
 $$;
 
+-- The creator's track record (#88): votes never move it (D-005).
 CREATE FUNCTION pg_temp.maker_score() RETURNS text LANGUAGE sql AS $$
-  SELECT trust_score || '/' || total_votes_received FROM public.profiles
+  SELECT rumours_confirmed || '/' || rumours_denied FROM public.profiles
    WHERE id = '00000000-0000-0000-0000-00000000078a';
 $$;
 
@@ -35,7 +36,7 @@ SELECT ok(
   AND NOT has_function_privilege('authenticated', 'public.check_vote_allowed()', 'EXECUTE'),
   'the counting and checking functions are not callable through the API');
 
--- A vote is counted on the rumour and the creator's score.
+-- A vote is counted on the rumour, not in the creator's track record.
 SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000078b');
 SELECT lives_ok(
   $$INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type)
@@ -43,7 +44,8 @@ SELECT lives_ok(
   'a user can vote on someone else''s lopend rumour');
 RESET ROLE;
 SELECT is(pg_temp.counts(), '1/0', 'the vote is counted');
-SELECT is(pg_temp.maker_score(), '1/1', 'the creator''s score follows');
+-- The maker starts with one confirmed rumour (Bevestigd Gerucht).
+SELECT is(pg_temp.maker_score(), '1/0', 'the vote doesn''t change the creator''s track record');
 
 -- Changing the vote moves it to the other side.
 SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000078b');
@@ -109,7 +111,7 @@ RESET ROLE;
 DELETE FROM public.rumour_votes
  WHERE user_id = '00000000-0000-0000-0000-00000000078b';
 SELECT is(pg_temp.counts(), '1/0', 'a deleted vote is no longer counted');
-SELECT is(pg_temp.maker_score(), '1/1', 'nor in the creator''s score');
+SELECT is(pg_temp.maker_score(), '2/0', 'the track record counts the confirmation, not the votes');
 
 SELECT * FROM finish();
 ROLLBACK;

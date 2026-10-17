@@ -9,7 +9,7 @@ const navItems: NavItem[] = [
     submenu: [
       { href: "/geruchten", label: "Transfer Talk" },
       { href: "/transfers", label: "Bevestigde Transfers" },
-      { href: "/leaderboard", label: "Leaderboard" },
+      { href: "/betrouwbare-bronnen", label: "Betrouwbare bronnen" },
     ],
   },
   { href: "/zoekertjes", label: "Zoekertjes" },

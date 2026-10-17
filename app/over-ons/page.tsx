@@ -55,9 +55,8 @@ export default function OverOnsPage() {
               </h3>
               <p className="text-muted-foreground">
                 Deel wat je hebt gehoord over transfers en marktbewegingen. De
-                community stemt erop en geverifieerde moderators bevestigen
-                transfernieuws op basis van officiële informatie. Hoe meer van
-                jouw geruchten bevestigd worden, hoe hoger je betrouwbaarheid!
+                community stemt erop en moderators bevestigen of ontkrachten
+                geruchten op basis van officiële informatie.
               </p>
             </div>
 
@@ -73,15 +72,15 @@ export default function OverOnsPage() {
               </p>
             </div>
 
-            {/* Leaderboard */}
+            {/* Betrouwbare bronnen (#88) */}
             <div className="border-l-4 border-primary pl-6">
               <h3 className="text-lg font-semibold mb-2 text-foreground">
-                Leaderboard
+                Betrouwbare bronnen
               </h3>
               <p className="text-muted-foreground">
-                Bekijk wie de meest betrouwbare leden van onze community zijn.
-                De leaderboard weerspiegelt wie de beste transfernieuws heeft
-                gedeeld en door hun peers wordt vertrouwd.
+                Bekijk welke bijdragers het vaakst gelijk hadden: wie minstens 5
+                afgeronde geruchten heeft, gerangschikt op het aandeel dat
+                bevestigd werd.
               </p>
             </div>
 
@@ -98,41 +97,41 @@ export default function OverOnsPage() {
           </div>
         </div>
 
-        {/* Trust Score System */}
+        {/* Track record (#88, D-005) */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            Het Betrouwbaarheidssysteem
+            Je track record
           </h2>
           <div className="space-y-4 text-muted-foreground">
             <p>
-              Je betrouwbaarheidsscore is het hart van VolleyRumours. Het
-              weerspiegelt hoe goed je transfernieuws is:
+              We zeggen nooit dat een gerucht klopt. We tonen wel hoe vaak een
+              bijdrager in het verleden gelijk had, bijvoorbeeld “12 van 15
+              bevestigd”.
             </p>
             <div className="bg-card border border-border rounded-lg p-6 space-y-3">
               <div>
                 <p className="font-semibold text-foreground mb-1">
-                  ✓ Bevestigde Geruchten
+                  ✓ Bevestigd of ontkracht
                 </p>
                 <p className="text-sm">
-                  +1 punt wanneer je gerucht officieel bevestigd wordt als
-                  transfer
+                  Telt mee zodra een moderator het gerucht afrondt op basis van
+                  een officiële bron.
                 </p>
               </div>
               <div>
                 <p className="font-semibold text-foreground mb-1">
-                  ✕ Ontkrachte Geruchten
+                  – Niet bevestigd
                 </p>
                 <p className="text-sm">
-                  Geen punten afgetrokken; je mag fouten maken—dat is normaal
+                  Geruchten die niet bevestigd en niet ontkracht raakten, tellen
+                  niet mee.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-foreground mb-1">
-                  ⭐ Zichtbaarheid
-                </p>
+                <p className="font-semibold text-foreground mb-1">Stemmen</p>
                 <p className="text-sm">
-                  Gebruikers zien je score op je profiel en op geruchten die je
-                  deelt
+                  Tonen wat de community denkt, maar tellen niet mee voor
+                  iemands track record.
                 </p>
               </div>
             </div>

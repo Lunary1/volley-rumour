@@ -131,8 +131,8 @@ function SignUpPageInner() {
                 Registreren
               </CardTitle>
               <CardDescription>
-                Maak een account aan om geruchten te delen en punten te
-                verdienen
+                Maak een account aan om geruchten te delen en zoekertjes te
+                plaatsen
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -1,4 +1,4 @@
-import { Flame, MessageSquare, Trophy, Search, Users } from "lucide-react";
+import { CheckCircle, Flame, MessageSquare, Search, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { WaitlistForm } from "@/components/waitlist-form";
@@ -18,9 +18,10 @@ const FEATURES = [
     description: "Vind spelers, trainers of teams via onze marktplaats.",
   },
   {
-    icon: Trophy,
-    title: "Leaderboard",
-    description: "Verdien punten en word een betrouwbare bron in de community.",
+    icon: CheckCircle,
+    title: "Betrouwbare bronnen",
+    description:
+      "Zie hoe vaak een bijdrager gelijk had: bevestigde geruchten tellen, geen punten.",
   },
   {
     icon: MessageSquare,

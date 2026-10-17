@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ThumbsUp,
   ThumbsDown,
-  TrendingUp,
+  CheckCircle,
   User,
   ArrowRight,
 } from "lucide-react";
@@ -19,7 +19,14 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
 import { ReportDialog } from "@/components/report-dialog";
 import Link from "next/link";
-import { RUMOUR_SOURCE_TYPES, labelFor } from "@/lib/rumours";
+import {
+  RUMOUR_SOURCE_TYPES,
+  belief,
+  formatBelief,
+  formatTrackRecord,
+  labelFor,
+  type TrackRecord,
+} from "@/lib/rumours";
 import { RelativeTime } from "@/components/relative-time";
 
 export type RumourForModal = {
@@ -34,11 +41,13 @@ export type RumourForModal = {
   created_at: string;
   status: string;
   // null once the creator's account is deleted (deleteAccount keeps the rumour)
-  creator: {
-    username: string;
-    trust_score: number;
-    is_verified_source?: boolean;
-  } | null;
+  // The author's track record (#88, D-005)
+  creator:
+    | ({
+        username: string;
+        is_verified_source?: boolean;
+      } & TrackRecord)
+    | null;
 };
 
 /** Author label for a rumour whose creator deleted their account. */
@@ -98,24 +107,10 @@ export function RumourDetailModal({
   votingClosedReason = null,
 }: RumourDetailModalProps) {
   const total = votes.up + votes.down;
-  const karma = total > 0 ? Math.round((votes.up / total) * 100) : 50;
+  // A neutral belief signal (D-005): no good/evil wording, no colours.
+  const beliefShare = belief(votes.up, votes.down);
+  const trackRecord = rumour.creator ? formatTrackRecord(rumour.creator) : null;
   const sourceLabel = labelFor(RUMOUR_SOURCE_TYPES, rumour.source_type);
-
-  const getKarmaColor = (k: number) => {
-    if (k < 35) return "text-red-600 dark:text-red-400";
-    if (k < 50) return "text-orange-500 dark:text-orange-400";
-    if (k === 50) return "text-gray-500 dark:text-gray-400";
-    if (k < 65) return "text-blue-500 dark:text-blue-300";
-    return "text-blue-600 dark:text-blue-400";
-  };
-
-  const getKarmaBarColor = (k: number) => {
-    if (k < 35) return "bg-red-600";
-    if (k < 50) return "bg-orange-500";
-    if (k === 50) return "bg-gray-500";
-    if (k < 65) return "bg-blue-500";
-    return "bg-blue-600";
-  };
 
   const handleVote = (voteType: "up" | "down") => {
     if (userVote === voteType || isVoting) return;
@@ -202,13 +197,16 @@ export function RumourDetailModal({
           )}
 
           <div className="flex flex-col items-center gap-2 py-4 border-y border-border">
-            <div className="text-2xl font-bold">
-              <span className={getKarmaColor(karma)}>{karma}%</span> vertrouwen
-            </div>
-            <div className="w-full max-w-[200px] h-3 bg-muted rounded-full overflow-hidden">
+            <p className="text-sm text-muted-foreground text-center">
+              {formatBelief(votes.up, votes.down)}
+            </p>
+            <div
+              className="w-full max-w-[200px] h-2 bg-muted rounded-full overflow-hidden"
+              aria-hidden
+            >
               <div
-                className={`h-full transition-all duration-300 ${getKarmaBarColor(karma)}`}
-                style={{ width: `${karma}%` }}
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${beliefShare ?? 0}%` }}
               />
             </div>
           </div>
@@ -266,12 +264,10 @@ export function RumourDetailModal({
                 <VerifiedBadge size="sm" />
               )}
             </div>
-            {rumour.creator && (
+            {trackRecord && (
               <div className="flex items-center gap-1.5">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span className="font-semibold">
-                  Trust {rumour.creator.trust_score}
-                </span>
+                <CheckCircle className="h-4 w-4 text-primary" />
+                <span>{trackRecord}</span>
               </div>
             )}
           </div>

@@ -97,8 +97,9 @@ export default function VoorwaardenPage() {
               vermaak en communitaire discussie.
             </p>
             <p>
-              <strong>Betrouwbaarheid:</strong> Hoe meer van jouw geruchten
-              worden bevestigd, hoe hoger je betrouwbaarheidsscore stijgt.
+              <strong>Track record:</strong> Bij je geruchten tonen we hoeveel
+              van je afgeronde geruchten (bevestigd of ontkracht) een moderator
+              bevestigde.
             </p>
           </div>
         </div>
@@ -171,9 +172,9 @@ export default function VoorwaardenPage() {
               botting) leidt tot accountschorsing.
             </p>
             <p>
-              <strong>Reputatie:</strong> Je betrouwbaarheidsscore is openbaar
-              en gebaseerd op bevestigde geruchten. Dit is een
-              community-initiatief, niet officieel.
+              <strong>Reputatie:</strong> Je track record is openbaar en
+              gebaseerd op de beslissingen van moderators, niet op stemmen. Dit
+              is een community-initiatief, niet officieel.
             </p>
           </div>
         </div>

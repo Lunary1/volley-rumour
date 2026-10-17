@@ -125,8 +125,8 @@ export async function getRecentActivity(): Promise<{
         "id, player_name, status, created_at, rejection_reason, rejection_note, removal_note",
       )
       .eq("creator_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(5),
+      // All of them, with their status (J-10, #88)
+      .order("created_at", { ascending: false }),
     supabase
       .from("classifieds")
       .select("id, title, type, created_at, removed_at, removal_note")

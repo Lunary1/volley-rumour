@@ -150,6 +150,15 @@ considered and turned down.
 - Resolution is moderator-only (D-020), so a track record can't be moved by
   votes or by the contributor.
 
+**Built in #88** (2026-10-17). The database keeps the track record
+(`profiles.rumours_confirmed` and `rumours_denied`, recounted by a trigger
+on rumours) and lists "Betrouwbare bronnen" (`trusted_sources()`, at least 5
+resolved, ranked by accuracy, then by how many were resolved). The points
+columns, `xp`/`level` and the karma labels are gone; `/leaderboard` redirects
+to `/betrouwbare-bronnen`. A rumour removed after a takedown or report no
+longer counts, and removing a confirmed rumour's transfer undoes the
+confirmation (#70).
+
 ## D-006 — Admin role for moderation
 
 **Context.** D-001 keeps one *user* account type, but pre-moderation (D-002)
@@ -273,7 +282,8 @@ about the author while the track record (D-005, #88) isn't built?
   records who decided (#64), so it stays traceable. This works with a single
   moderator.
 - **The queue shows the author's username only** until #88 brings the track
-  record. No vote-based trust score, since D-005 isn't signed off.
+  record. No vote-based trust score, since D-005 isn't signed off. Since #88
+  the queue shows the track record next to the username.
 - **Rejection reasons are a fixed list** (Moderation Policy), stored as a code
   with an optional note; "Andere" requires the note. The author sees the
   reason and note on their profile. The audit log keeps the reason as the
