@@ -59,3 +59,32 @@ test("a message arrives live and the sender sees it was read", async ({
   await janaContext.close();
   await clubContext.close();
 });
+
+// #104: the conversation fits under the site header, so the message box is
+// on screen without scrolling the page, also on a phone.
+for (const [device, viewport] of [
+  ["a phone", { width: 390, height: 844 }],
+  ["a desktop", { width: 1280, height: 720 }],
+] as const) {
+  test(`the message box is on screen without scrolling on ${device}`, async ({
+    page,
+  }) => {
+    // Log in first: loginAs waits for the username in the header, which a
+    // phone hides behind the menu.
+    await loginAs(page, "jana");
+    await page.setViewportSize(viewport);
+    await page.goto(conversationUrl);
+    await expect(page.getByText(seed.conversation.firstMessage)).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: seedUsers.club.username }),
+    ).toBeInViewport();
+    await expect(page.getByPlaceholder("Type je bericht...")).toBeInViewport({
+      ratio: 1,
+    });
+    await expect(
+      page.getByRole("button", { name: "Verstuur bericht" }),
+    ).toBeInViewport({ ratio: 1 });
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+}
