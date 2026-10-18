@@ -27,7 +27,7 @@ export default async function ProfilePage() {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select(
-      "id, username, avatar_url, rumours_confirmed, rumours_denied, is_verified_source, instagram_url, source_description",
+      "id, username, avatar_path, rumours_confirmed, rumours_denied, is_verified_source, instagram_url, source_description",
     )
     .eq("id", user.id)
     .single();

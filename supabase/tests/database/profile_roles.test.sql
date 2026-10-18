@@ -39,7 +39,7 @@ SELECT throws_ok(
   $$SELECT role FROM public.profiles WHERE id = '00000000-0000-0000-0000-00000000006a'$$,
   '42501', NULL, 'a user cannot read their own role either');
 SELECT lives_ok(
-  $$SELECT id, username, avatar_url, is_verified_source, rumours_confirmed, rumours_denied
+  $$SELECT id, username, avatar_path, is_verified_source, rumours_confirmed, rumours_denied
       FROM public.profiles$$,
   'a user still reads username, avatar, verified badge and track record');
 RESET ROLE;

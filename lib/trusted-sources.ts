@@ -8,7 +8,7 @@ import type { TrackRecord } from "@/lib/rumours";
 export type TrustedSource = {
   id: string;
   username: string;
-  avatar_url: string | null;
+  avatar_path: string | null;
   is_verified_source: boolean;
 } & TrackRecord;
 

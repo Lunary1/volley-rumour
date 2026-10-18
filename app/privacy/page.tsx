@@ -13,7 +13,7 @@ const processors = [
   {
     name: "Supabase",
     purpose:
-      "Onze database: je account, profiel, geruchten, zoekertjes, berichten en avatar, en de live berichten in gesprekken. De servers staan in de EU (Parijs).",
+      "Onze database: je account, profiel, geruchten, zoekertjes, berichten, en de live berichten in gesprekken. In Supabase Storage bewaren we ook de profielfoto die je zelf uploadt. De servers staan in de EU (Parijs).",
   },
   {
     name: "Vercel",
@@ -28,7 +28,7 @@ const processors = [
   {
     name: "Google",
     purpose:
-      "Alleen als je inlogt met Google. We krijgen dan je e-mailadres, naam en profielfoto van je Google-account.",
+      "Alleen als je inlogt met Google. We krijgen dan je e-mailadres, naam en profielfoto van je Google-account. Die profielfoto tonen we niet op de site.",
   },
 ];
 
@@ -63,10 +63,12 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
                 <strong>Accountgegevens:</strong> E-mailadres, wachtwoord
-                (beveiligd opgeslagen), gebruikersnaam, weergavenaam en avatar.
-                Log je in met Google, dan nemen we je naam en profielfoto van
-                Google over. Ook wanneer je bevestigde dat je 16 jaar of ouder
-                bent en welke versie van de voorwaarden je aanvaardde.
+                (beveiligd opgeslagen), gebruikersnaam, weergavenaam en de
+                profielfoto die je zelf uploadt. Bij het uploaden verwijderen we
+                de gegevens in het bestand, zoals de plaats waar de foto genomen
+                is. Log je in met Google, dan nemen we je naam van Google over.
+                Ook wanneer je bevestigde dat je 16 jaar of ouder bent en welke
+                versie van de voorwaarden je aanvaardde.
               </li>
               <li>
                 <strong>Inhoudsgegevens:</strong> Geruchten, zoekertjes en
@@ -217,7 +219,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Account verwijderen:</strong> We wissen in één keer je
-                profiel, avatar, zoekertjes, stemmen, blokkeringen, je
+                profiel, profielfoto, zoekertjes, stemmen, blokkeringen, je
                 gesprekken met alle berichten erin, en je geruchten die nog niet
                 gepubliceerd zijn. Je gepubliceerde geruchten blijven staan,
                 zonder je naam. Je meldingen blijven bewaard, zonder je naam. We

@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import sharp from "sharp";
 import { SEED_PASSWORD, test, expect, loginAs, seedUsers } from "./fixtures";
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
 
@@ -55,6 +56,22 @@ test("a user deletes their account and everything personal goes", async ({
     .insert([rumour(published, "rumour"), rumour(pending, "pending")]);
   expect(rumourError).toBeNull();
 
+  // And a profile picture (#92): a file in Storage rather than a row.
+  const avatarPath = `${userId}/${crypto.randomUUID()}.webp`;
+  const picture = await sharp({
+    create: { width: 400, height: 400, channels: 3, background: "#16a085" },
+  })
+    .webp()
+    .toBuffer();
+  const { error: uploadError } = await admin.storage
+    .from("avatars")
+    .upload(avatarPath, picture, { contentType: "image/webp" });
+  expect(uploadError).toBeNull();
+  await admin
+    .from("profiles")
+    .update({ avatar_path: avatarPath })
+    .eq("id", userId);
+
   try {
     await page.goto("/auth/login");
     await page.getByLabel("E-mailadres").fill(email);
@@ -101,6 +118,10 @@ test("a user deletes their account and everything personal goes", async ({
       .select("player_name, creator_id")
       .in("player_name", [published, pending]);
     expect(rumours).toEqual([{ player_name: published, creator_id: null }]);
+    const { data: avatarFiles } = await admin.storage
+      .from("avatars")
+      .list(userId);
+    expect(avatarFiles).toHaveLength(0);
 
     // The zoekertje's page is gone too.
     const response = await page.goto(`/zoekertjes/${ad!.id}`);
@@ -121,6 +142,7 @@ test("a user deletes their account and everything personal goes", async ({
       .delete()
       .in("player_name", [published, pending]);
     await admin.from("classifieds").delete().eq("id", ad!.id);
+    await admin.storage.from("avatars").remove([avatarPath]);
     await admin.auth.admin.deleteUser(userId).catch(() => {});
   }
 });

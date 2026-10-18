@@ -4,6 +4,21 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
 import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/schemas";
+import sharp from "sharp";
+import {
+  AVATAR_ACCEPTED_TYPES,
+  AVATAR_BUCKET,
+  AVATAR_MAX_BYTES,
+  AVATAR_SIZE_MESSAGE,
+  AVATAR_TYPE_MESSAGE,
+  avatarUrl,
+} from "@/lib/avatar";
+import {
+  errorResponse,
+  extractErrorMessage,
+  successResponse,
+  type ActionResponse,
+} from "@/lib/response";
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
@@ -17,7 +32,6 @@ export async function updateProfile(formData: FormData) {
   }
 
   const username = formData.get("username") as string;
-  const avatarUrl = formData.get("avatar_url") as string;
 
   if (!username || username.length < 2) {
     return { error: "Gebruikersnaam moet minimaal 2 tekens zijn" };
@@ -25,10 +39,7 @@ export async function updateProfile(formData: FormData) {
 
   const { error } = await supabase
     .from("profiles")
-    .update({
-      username: username.trim(),
-      avatar_url: avatarUrl || null,
-    })
+    .update({ username: username.trim() })
     .eq("id", user.id);
 
   if (error) {
@@ -140,4 +151,113 @@ export async function getRecentActivity(): Promise<{
     rumours: rumoursRes.data || [],
     classifieds: classifiedsRes.data || [],
   };
+}
+
+/**
+ * Uploads a new profile picture (#92). The picture is re-encoded to a
+ * 400x400 WebP, which also drops its metadata (camera, location), and stored
+ * in the user's own folder under a new name, so browsers never show a stale
+ * cached one. The old file is removed afterwards.
+ */
+export async function uploadAvatar(
+  formData: FormData,
+): Promise<ActionResponse<{ avatarUrl: string }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return errorResponse("Je moet ingelogd zijn");
+
+  const file = formData.get("avatar");
+  if (!(file instanceof File) || file.size === 0) {
+    return errorResponse(AVATAR_TYPE_MESSAGE);
+  }
+  if (file.size > AVATAR_MAX_BYTES) return errorResponse(AVATAR_SIZE_MESSAGE);
+  if (!AVATAR_ACCEPTED_TYPES.includes(file.type)) {
+    return errorResponse(AVATAR_TYPE_MESSAGE);
+  }
+
+  // The browser's type is only a claim; sharp reads the actual file.
+  let picture: Buffer;
+  try {
+    const image = sharp(Buffer.from(await file.arrayBuffer()));
+    const { format } = await image.metadata();
+    if (!format || !["jpeg", "png", "webp"].includes(format)) {
+      return errorResponse(AVATAR_TYPE_MESSAGE);
+    }
+    picture = await image
+      .rotate() // apply the EXIF orientation before the metadata goes
+      .resize(400, 400, { fit: "cover" })
+      .webp({ quality: 80 })
+      .toBuffer();
+  } catch {
+    return errorResponse("Deze foto kon niet gelezen worden. Kies een andere.");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("avatar_path")
+    .eq("id", user.id)
+    .single();
+
+  const path = `${user.id}/${crypto.randomUUID()}.webp`;
+  const bucket = supabase.storage.from(AVATAR_BUCKET);
+  const { error: uploadError } = await bucket.upload(path, picture, {
+    contentType: "image/webp",
+    cacheControl: "31536000",
+  });
+  if (uploadError) {
+    return errorResponse(
+      "Je foto kon niet opgeslagen worden. Probeer het opnieuw.",
+    );
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_path: path })
+    .eq("id", user.id);
+  if (error) {
+    // Suspended users can't change their profile (#80); nothing links to
+    // the new file, so it goes.
+    await bucket.remove([path]);
+    return errorResponse(
+      extractErrorMessage(error, "Je profielfoto kon niet bijgewerkt worden."),
+    );
+  }
+
+  if (profile?.avatar_path) await bucket.remove([profile.avatar_path]);
+
+  revalidatePath("/", "layout");
+  return successResponse({ avatarUrl: avatarUrl(path)! });
+}
+
+/** Removes the profile picture; the initials show again. */
+export async function removeAvatar(): Promise<ActionResponse> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return errorResponse("Je moet ingelogd zijn");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("avatar_path")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.avatar_path) return successResponse(undefined);
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_path: null })
+    .eq("id", user.id);
+  if (error) {
+    return errorResponse(
+      extractErrorMessage(error, "Je profielfoto kon niet verwijderd worden."),
+    );
+  }
+
+  await supabase.storage.from(AVATAR_BUCKET).remove([profile.avatar_path]);
+
+  revalidatePath("/", "layout");
+  return successResponse(undefined);
 }

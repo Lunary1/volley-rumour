@@ -51,7 +51,7 @@ export interface StaffUserRow {
   id: string;
   username: string;
   display_name: string | null;
-  avatar_url: string | null;
+  avatar_path: string | null;
   created_at: string;
   role: string;
   is_verified_source: boolean;
