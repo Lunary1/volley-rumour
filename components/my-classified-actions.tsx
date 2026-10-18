@@ -16,13 +16,17 @@ import {
 } from "@/components/ui/dialog";
 import {
   deleteClassified,
+  renewClassified,
   setClassifiedActive,
 } from "@/app/actions/classifieds";
+import { classifiedLastDay } from "@/lib/classifieds-utils";
 
 interface MyClassifiedActionsProps {
   id: string;
   title: string;
   isActive: boolean;
+  /** Past its expiry date (#84): renewing replaces "gevonden"/back online. */
+  isExpired: boolean;
   /** A moderator removed it (#69): it can only be deleted. */
   isRemoved: boolean;
 }
@@ -35,6 +39,7 @@ export function MyClassifiedActions({
   id,
   title,
   isActive,
+  isExpired,
   isRemoved,
 }: MyClassifiedActionsProps) {
   const router = useRouter();
@@ -52,6 +57,20 @@ export function MyClassifiedActions({
         isActive
           ? "Gemarkeerd als gevonden. Je zoekertje staat niet meer in de lijst."
           : "Je zoekertje staat weer online",
+      );
+      router.refresh();
+    });
+  }
+
+  function renew() {
+    startTransition(async () => {
+      const result = await renewClassified(id);
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(
+        `Je zoekertje staat weer online tot ${classifiedLastDay(result.data.expiresAt)}`,
       );
       router.refresh();
     });
@@ -80,25 +99,38 @@ export function MyClassifiedActions({
               Bewerken
             </Link>
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={toggleActive}
-            disabled={pending}
-          >
-            {isActive ? (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-                Gevonden
-              </>
-            ) : (
-              <>
-                <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-                Weer online zetten
-              </>
-            )}
-          </Button>
+          {isExpired ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={renew}
+              disabled={pending}
+            >
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+              Verlengen
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleActive}
+              disabled={pending}
+            >
+              {isActive ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                  Gevonden
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+                  Weer online zetten
+                </>
+              )}
+            </Button>
+          )}
         </>
       )}
       <Button

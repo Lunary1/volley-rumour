@@ -23,6 +23,8 @@ import {
   CLASSIFIED_TYPE_LABELS,
   CLASSIFIED_TYPE_COLORS,
   TRAINER_DIPLOMA_LABELS,
+  classifiedLastDay,
+  isClassifiedExpired,
 } from "@/lib/classifieds-utils";
 import { labelFor } from "@/lib/rumours";
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
@@ -56,6 +58,7 @@ async function getClassified(id: string) {
       created_at,
       user_id,
       is_active,
+      expires_at,
       is_featured,
       featured_until,
       profiles(username, is_verified_source)
@@ -82,7 +85,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const classified = await getClassified(id);
-  if (!classified?.is_active) return { title: "Zoekertje" };
+  if (!classified?.is_active || isClassifiedExpired(classified.expires_at)) {
+    return { title: "Zoekertje" };
+  }
   return { title: `${classified.title || "Zoekertje"} | Zoekertjes` };
 }
 
@@ -98,8 +103,11 @@ export default async function ClassifiedDetailPage({
   if (!classified) notFound();
 
   const isOwn = user?.id === classified.user_id;
-  // An ad marked "gevonden" is gone for everyone but its owner (#72).
-  if (!classified.is_active && !isOwn) notFound();
+  const expired = isClassifiedExpired(classified.expires_at);
+  // An ad marked "gevonden" or expired is gone for everyone but its owner
+  // (#72, #84). RLS already hides it; staff still read it there.
+  if ((!classified.is_active || expired) && !isOwn) notFound();
+  const lastDay = classifiedLastDay(classified.expires_at);
   const title = classified.title || "Zoekertje";
   // Team ads use the team name as contact name, already shown below the title.
   const showContactName =
@@ -119,9 +127,11 @@ export default async function ClassifiedDetailPage({
       {isOwn && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 p-3 text-sm text-muted-foreground">
           <p>
-            {classified.is_active
-              ? "Dit is jouw zoekertje."
-              : "Je hebt dit zoekertje als gevonden gemarkeerd. Het staat niet meer in de lijst."}
+            {expired
+              ? `Je zoekertje is verlopen op ${lastDay} en staat niet meer in de lijst. Verleng het via Mijn zoekertjes.`
+              : classified.is_active
+                ? "Dit is jouw zoekertje."
+                : "Je hebt dit zoekertje als gevonden gemarkeerd. Het staat niet meer in de lijst."}
           </p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -154,6 +164,11 @@ export default async function ClassifiedDetailPage({
                 locale: nl,
               })}
             </span>
+            {!expired && (
+              <span className="text-sm text-muted-foreground">
+                · Online tot {lastDay}
+              </span>
+            )}
           </div>
 
           <header>

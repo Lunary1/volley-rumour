@@ -244,6 +244,43 @@ export async function setClassifiedActive(
 }
 
 /**
+ * Renews the user's own expired zoekertje (#84, D-024): it is back online
+ * until the next 31 August, or for 30 days when that is later. The database
+ * refuses ads that haven't expired, other people's and removed ones.
+ */
+export async function renewClassified(
+  id: string,
+): Promise<ActionResponse<{ expiresAt: string }>> {
+  const parsedId = classifiedIdSchema.safeParse(id);
+  if (!parsedId.success) return errorResponse(NOT_FOUND);
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return errorResponse("Je moet ingelogd zijn");
+  }
+
+  const { data, error } = await supabase.rpc("renew_classified", {
+    p_classified_id: parsedId.data,
+  });
+
+  if (error?.code === "P0002") return errorResponse(NOT_FOUND);
+  if (error || !data) {
+    return writeError(
+      error,
+      "Error renewing classified:",
+      "Er ging iets mis bij het verlengen van je zoekertje",
+    );
+  }
+
+  revalidateClassified(parsedId.data);
+  return successResponse({ expiresAt: data as string });
+}
+
+/**
  * Deletes the user's own zoekertje for good (#72, J-05). Conversations about
  * it stay; reports about it go with it (D-015). Suspended users may still
  * delete (D-016).

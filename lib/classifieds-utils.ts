@@ -1,4 +1,5 @@
 import { RUMOUR_DIVISIONS, labelFor } from "@/lib/rumours";
+import { formatDate } from "@/lib/dates";
 
 /** Senior divisions only (D-003), the same list as rumours. */
 export const DIVISION_LABELS: Record<string, string> = RUMOUR_DIVISIONS;
@@ -97,6 +98,41 @@ export const PROVINCE_LABELS = {
 export type ClassifiedProvince = keyof typeof PROVINCE_LABELS;
 
 export const CLASSIFIED_DESCRIPTION_MAX_LENGTH = 2000;
+
+/**
+ * Whether an ad is past its expiry date (#84, D-024). The database sets the
+ * date; expired ads are hidden from everyone but their owner and staff.
+ */
+export function isClassifiedExpired(expiresAt: string): boolean {
+  return new Date(expiresAt).getTime() <= Date.now();
+}
+
+/**
+ * The last day an ad is online, e.g. "31 augustus 2027". An ad that runs to
+ * the end of the season expires at midnight on 1 September, so this is the
+ * day before that moment.
+ */
+export function classifiedLastDay(expiresAt: string): string {
+  return formatDate(new Date(expiresAt).getTime() - 1000, "d MMMM yyyy");
+}
+
+/**
+ * SQLSTATE the database raises for a new conversation about a zoekertje that
+ * isn't online, or with someone other than its poster (#83).
+ */
+export const CLASSIFIED_OFFLINE_ERROR_CODE = "VR011";
+
+export const CLASSIFIED_OFFLINE_MESSAGE =
+  "Dit zoekertje staat niet meer online";
+
+/** Featured only until `featured_until`, when it has one (#84). */
+export function isFeaturedNow(ad: {
+  is_featured?: boolean | null;
+  featured_until?: string | null;
+}): boolean {
+  if (!ad.is_featured) return false;
+  return !ad.featured_until || new Date(ad.featured_until) > new Date();
+}
 
 export function getDivisionLabel(value: string | null): string {
   if (!value) return "";

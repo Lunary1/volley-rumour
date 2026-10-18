@@ -5,6 +5,8 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   CLASSIFIED_TYPE_LABELS,
+  classifiedLastDay,
+  isClassifiedExpired,
   getDivisionLabel,
   getProvinceLabel,
 } from "@/lib/classifieds-utils";
@@ -16,11 +18,12 @@ import { formatDate } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Mijn zoekertjes" };
 
-type Status = "online" | "found" | "removed";
+type Status = "online" | "found" | "expired" | "removed";
 
 const STATUS_LABELS: Record<Status, string> = {
   online: "Online",
   found: "Gevonden",
+  expired: "Verlopen",
   removed: "Verwijderd door een moderator",
 };
 
@@ -28,6 +31,8 @@ const STATUS_CLASSES: Record<Status, string> = {
   online:
     "border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-400",
   found: "border-border bg-muted text-muted-foreground",
+  expired:
+    "border-amber-600/30 bg-amber-600/10 text-amber-700 dark:text-amber-400",
   removed: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
@@ -44,7 +49,7 @@ export default async function MyClassifiedsPage() {
   const { data: ads, error } = await supabase
     .from("classifieds")
     .select(
-      "id, title, type, division, province, is_active, removed_at, removal_note, created_at",
+      "id, title, type, division, province, is_active, removed_at, removal_note, created_at, expires_at",
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -87,9 +92,12 @@ export default async function MyClassifiedsPage() {
           {ads.map((ad) => {
             const status: Status = ad.removed_at
               ? "removed"
-              : ad.is_active
-                ? "online"
-                : "found";
+              : isClassifiedExpired(ad.expires_at)
+                ? "expired"
+                : ad.is_active
+                  ? "online"
+                  : "found";
+            const lastDay = classifiedLastDay(ad.expires_at);
             const details = [
               CLASSIFIED_TYPE_LABELS[ad.type] ?? ad.type,
               ad.division && getDivisionLabel(ad.division),
@@ -123,6 +131,7 @@ export default async function MyClassifiedsPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Geplaatst op {formatDate(ad.created_at, "d MMMM yyyy")}
+                      {status === "online" && ` · Online tot ${lastDay}`}
                     </p>
                   </div>
                   <Badge
@@ -139,6 +148,12 @@ export default async function MyClassifiedsPage() {
                     bewaard.
                   </p>
                 )}
+                {status === "expired" && (
+                  <p className="text-sm text-muted-foreground">
+                    Verlopen op {lastDay}. Staat niet meer in de lijst. Verleng
+                    het om het weer online te zetten.
+                  </p>
+                )}
                 {/* Neutral on purpose, as on the profile (Takedown Process). */}
                 {status === "removed" && (
                   <p className="text-sm text-muted-foreground">
@@ -151,6 +166,7 @@ export default async function MyClassifiedsPage() {
                   id={ad.id}
                   title={ad.title}
                   isActive={!!ad.is_active}
+                  isExpired={status === "expired"}
                   isRemoved={status === "removed"}
                 />
               </li>

@@ -64,13 +64,21 @@ export default async function ConversationPage({
   }
 
   // Fetch the ad details
-  const adTableName =
-    conversation.ad_type === "transfer" ? "transfers" : "classifieds";
-  const { data: adData } = await supabase
-    .from(adTableName)
-    .select("id, title")
-    .eq("id", conversation.ad_id)
-    .single();
+  // A zoekertje that went offline is hidden by RLS, but the conversation
+  // still shows its title, without a link (#84).
+  const { data: adData } =
+    conversation.ad_type === "transfer"
+      ? await supabase
+          .from("transfers")
+          .select("id, title")
+          .eq("id", conversation.ad_id)
+          .single<{ id: string; title: string; online?: boolean }>()
+      : await supabase
+          .rpc("conversation_classified_titles", {
+            p_ids: [conversation.ad_id],
+          })
+          .maybeSingle<{ id: string; title: string; online?: boolean }>();
+  const adOnline = adData?.online !== false;
 
   // Fetch the other user's details
   const otherUserId =
@@ -192,7 +200,11 @@ export default async function ConversationPage({
                 >
                   {adTypeBadge}
                 </Badge>
-                {adData ? (
+                {adData && !adOnline ? (
+                  <span className="text-xs text-muted-foreground truncate">
+                    {adData.title} (niet meer online)
+                  </span>
+                ) : adData ? (
                   <Link
                     href={adLink}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors truncate flex items-center gap-1"

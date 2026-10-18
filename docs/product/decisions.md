@@ -36,6 +36,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-027 | 2026-10-17 | Accepted | French and English are a nice-to-have, not a launch blocker; built with next-intl, Dutch the default |
 | D-028 | 2026-10-18 | Accepted | Waitlist emails are used for the launch email only, then wiped    |
 | D-029 | 2026-10-18 | Accepted | Account deletion also deletes unpublished rumours; zoekertjes left ownerless by earlier deletions are deleted |
+| D-030 | 2026-10-18 | Accepted | Stored zoekertje contact emails are deleted; ads online at the expiry rollout run until 31 August 2027 |
 
 ---
 
@@ -686,3 +687,24 @@ pending one stayed in the moderation queue with nobody behind it.
 what moderators did. Rumours now outlive their author even when a user is
 deleted outside the site (the foreign key is `ON DELETE SET NULL`). The privacy
 page and the delete dialog say what goes and what stays.
+
+## D-030 — Old contact emails are deleted; existing ads start a fresh season
+
+**Context.** Applying D-022 and D-024 (#83, #84) left two questions about data
+already in production. Zoekertjes posted before #71 still store the poster's
+contact email, which nothing reads any more. And by the D-024 rule, every ad
+posted before 1 September 2026 would count as expired the moment the expiry
+date is added.
+
+**Decision** (owner, 2026-10-18).
+- **The contact emails are deleted**: the migration drops the
+  `contact_email` column, so the stored addresses are gone for good. Hiding
+  the column and keeping the data was considered.
+- **Ads online at the rollout count as posted that day**: they run until
+  31 August 2027. Applying the rule from each ad's posting date, which would
+  hide older ads at once, was considered.
+
+**Consequences.** Nobody, owners included, can see an old contact email, and
+there's nothing left to leak. No ad disappears at launch; stale ads leave the
+list when their posters mark them gevonden or delete them, or at the end of
+the season.
