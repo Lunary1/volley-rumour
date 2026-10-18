@@ -4,13 +4,22 @@ import { useState } from "react";
 import {
   updateProfile,
   updatePassword,
+  uploadAvatar,
+  removeAvatar,
   type RecentRumour,
   type RecentClassified,
 } from "@/app/actions/profile";
 import { deleteAccount, sendPasswordSetupLink } from "@/app/actions/auth";
 import { handleServerActionResponse } from "@/lib/client-utils";
+import {
+  AVATAR_ACCEPTED_TYPES,
+  AVATAR_MAX_BYTES,
+  AVATAR_SIZE_MESSAGE,
+  avatarUrl,
+} from "@/lib/avatar";
 import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/schemas";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,7 +66,7 @@ import { RelativeTime } from "@/components/relative-time";
 export interface Profile extends TrackRecord {
   id: string;
   username: string;
-  avatar_url: string | null;
+  avatar_path: string | null;
   email?: string;
   is_verified_source?: boolean;
   instagram_url?: string | null;
@@ -93,7 +102,10 @@ export function ProfileView({
   const [success, setSuccess] = useState<string | null>(null);
 
   const [username, setUsername] = useState(initialProfile.username);
-  const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar_url || "");
+  const [avatarSrc, setAvatarSrc] = useState(
+    avatarUrl(initialProfile.avatar_path),
+  );
+  const [avatarBusy, setAvatarBusy] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -112,7 +124,6 @@ export function ProfileView({
 
     const formData = new FormData();
     formData.append("username", username);
-    formData.append("avatar_url", avatarUrl);
 
     const result = await updateProfile(formData);
 
@@ -120,11 +131,49 @@ export function ProfileView({
       setError(result.error);
     } else {
       setSuccess("Profiel bijgewerkt!");
-      setProfile((p) => ({ ...p, username, avatar_url: avatarUrl || null }));
+      setProfile((p) => ({ ...p, username }));
       setEditModalOpen(false);
     }
 
     setSubmitting(false);
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // picking the same file again still uploads
+    if (!file) return;
+    // Checked here for a quick answer; the server checks again.
+    if (file.size > AVATAR_MAX_BYTES) {
+      handleServerActionResponse({
+        success: false,
+        error: AVATAR_SIZE_MESSAGE,
+      });
+      return;
+    }
+    setAvatarBusy(true);
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const data = handleServerActionResponse(await uploadAvatar(formData), {
+      successMessage: "Je profielfoto is bijgewerkt.",
+    });
+    if (data) {
+      setAvatarSrc(data.avatarUrl);
+      router.refresh();
+    }
+    setAvatarBusy(false);
+  }
+
+  async function handleAvatarRemove() {
+    setAvatarBusy(true);
+    const result = await removeAvatar();
+    handleServerActionResponse(result, {
+      successMessage: "Je profielfoto is verwijderd.",
+    });
+    if (result.success) {
+      setAvatarSrc(null);
+      router.refresh();
+    }
+    setAvatarBusy(false);
   }
 
   async function handleDeleteAccount(e: React.FormEvent) {
@@ -191,7 +240,7 @@ export function ProfileView({
             <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-end sm:text-left">
               <Avatar className="h-24 w-24 border-4 border-background shadow-md sm:h-28 sm:w-28">
                 <AvatarImage
-                  src={profile.avatar_url || undefined}
+                  src={avatarSrc ?? undefined}
                   alt={profile.username}
                 />
                 <AvatarFallback className="text-2xl bg-primary/20 text-primary">
@@ -215,6 +264,7 @@ export function ProfileView({
                 size="sm"
                 className="shrink-0 border-border"
                 onClick={() => setEditModalOpen(true)}
+                disabled={!isClient}
               >
                 <Pencil className="mr-2 h-4 w-4" />
                 Bewerk profiel
@@ -617,26 +667,59 @@ export function ProfileView({
           <DialogHeader>
             <DialogTitle>Bewerk profiel</DialogTitle>
             <DialogDescription>
-              Wijzig je gebruikersnaam of profielfoto (URL).
+              Wijzig je profielfoto of gebruikersnaam.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div>
-              <Label>Avatar URL</Label>
-              <div className="mt-2 flex gap-3">
+              <span className="text-sm font-medium">Profielfoto</span>
+              <div className="mt-2 flex items-center gap-3">
                 <Avatar className="h-14 w-14 shrink-0">
-                  <AvatarImage src={avatarUrl || undefined} alt={username} />
+                  <AvatarImage
+                    src={avatarSrc ?? undefined}
+                    alt="Je profielfoto"
+                  />
                   <AvatarFallback>
                     {username.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <Input
-                  placeholder="https://..."
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="border-border bg-background"
-                />
+                <div className="flex flex-wrap gap-2">
+                  {/* Uploads as soon as a file is picked; no name, so it is
+                      never part of the username form. */}
+                  <input
+                    id="avatar-file"
+                    type="file"
+                    accept={AVATAR_ACCEPTED_TYPES.join(",")}
+                    onChange={handleAvatarChange}
+                    disabled={!isClient || avatarBusy}
+                    className="peer sr-only"
+                  />
+                  <label
+                    htmlFor="avatar-file"
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "sm" }),
+                      "cursor-pointer peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50 peer-disabled:pointer-events-none peer-disabled:opacity-50",
+                    )}
+                  >
+                    {avatarBusy ? "Bezig..." : "Foto kiezen"}
+                  </label>
+                  {avatarSrc && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAvatarRemove}
+                      disabled={!isClient || avatarBusy}
+                    >
+                      Foto verwijderen
+                    </Button>
+                  )}
+                </div>
               </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                JPG, PNG of WebP, maximaal 5 MB. Iedereen kan je profielfoto
+                zien.
+              </p>
             </div>
             <div>
               <Label htmlFor="modal-username">Gebruikersnaam</Label>

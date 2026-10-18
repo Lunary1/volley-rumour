@@ -1,6 +1,7 @@
 "use server";
 
 import { cache } from "react";
+import { AVATAR_BUCKET, avatarUrl } from "@/lib/avatar";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -206,7 +207,7 @@ export const getCurrentUser = cache(async () => {
     await Promise.all([
       supabase
         .from("profiles")
-        .select("username, avatar_url")
+        .select("username, avatar_path")
         .eq("id", user.id)
         .single(),
       supabase.rpc("is_staff"),
@@ -226,7 +227,7 @@ export const getCurrentUser = cache(async () => {
     id: user.id,
     email: user.email,
     username: profile?.username,
-    avatar_url: profile?.avatar_url,
+    avatar_url: avatarUrl(profile?.avatar_path),
     // Only shows the "Beheer" link; admin pages check is_staff() themselves.
     is_staff: isStaff === true,
     // Shown as a notice on every page; the database refuses their writes.
@@ -426,7 +427,7 @@ export async function deleteAccount(): Promise<ActionResponse> {
     return errorResponse("Je bent niet ingelogd.");
   }
 
-  const { data: avatarUrl, error } = await supabase.rpc("delete_own_account");
+  const { data: avatarPath, error } = await supabase.rpc("delete_own_account");
   if (error) {
     return errorResponse(
       "Je account kon niet verwijderd worden. Er is niets gewist; probeer het later opnieuw.",
@@ -434,16 +435,10 @@ export async function deleteAccount(): Promise<ActionResponse> {
   }
 
   // A file in Storage isn't a row, so it goes after the account. If this
-  // fails, nothing links to the file any more.
-  const storagePrefix =
-    process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/";
-  if (typeof avatarUrl === "string" && avatarUrl.startsWith(storagePrefix)) {
-    const [bucket, ...path] = avatarUrl.slice(storagePrefix.length).split("/");
-    if (bucket && path.length > 0) {
-      await createAdminClient()
-        .storage.from(bucket)
-        .remove([path.join("/")]);
-    }
+  // fails, nothing links to the file any more. The user is gone, so the
+  // admin client removes it.
+  if (typeof avatarPath === "string" && avatarPath) {
+    await createAdminClient().storage.from(AVATAR_BUCKET).remove([avatarPath]);
   }
 
   // The user and their sessions are gone; only the cookies are left to clear.

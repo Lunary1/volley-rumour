@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { avatarUrl } from "@/lib/avatar";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendMessageSchema } from "@/lib/schemas";
@@ -19,11 +20,11 @@ export interface Conversation {
   recipient_id: string;
   initiator: {
     username: string;
-    avatar_url: string | null;
+    avatar_path: string | null;
   };
   recipient: {
     username: string;
-    avatar_url: string | null;
+    avatar_path: string | null;
   };
   created_at: string;
   updated_at: string;
@@ -259,8 +260,8 @@ export async function getConversations({ archived = false } = {}) {
     .select(
       `
       *,
-      initiator:initiator_id(id, username, avatar_url),
-      recipient:recipient_id(id, username, avatar_url)
+      initiator:initiator_id(id, username, avatar_path),
+      recipient:recipient_id(id, username, avatar_path)
     `,
     )
     .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`);
@@ -327,11 +328,11 @@ export async function getConversations({ archived = false } = {}) {
       ad_title: "", // Will be fetched separately
       initiator_id: c.initiator_id,
       initiator_name: initiatorUser.username || "Onbekende gebruiker",
-      initiator_avatar_url: initiatorUser.avatar_url,
+      initiator_avatar_url: avatarUrl(initiatorUser.avatar_path),
       other_user_id:
         otherUser.id || (isInitiator ? c.recipient_id : c.initiator_id),
       other_user_name: otherUser.username || "Onbekende gebruiker",
-      other_user_avatar_url: otherUser.avatar_url,
+      other_user_avatar_url: avatarUrl(otherUser.avatar_path),
       last_message: lastMessageMap.get(c.id)?.content,
       last_message_at: c.updated_at,
       unread_count: unreadMap.get(c.id) || 0,

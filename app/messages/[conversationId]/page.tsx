@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { avatarUrl } from "@/lib/avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -88,7 +89,7 @@ export default async function ConversationPage({
 
   const { data: otherUserData } = await supabase
     .from("profiles")
-    .select("id, username, avatar_url")
+    .select("id, username, avatar_path")
     .eq("id", otherUserId)
     .single();
 
@@ -175,9 +176,9 @@ export default async function ConversationPage({
 
             {/* Other user avatar */}
             <Avatar className="h-10 w-10 shrink-0">
-              {otherUserData?.avatar_url && (
+              {otherUserData?.avatar_path && (
                 <AvatarImage
-                  src={otherUserData.avatar_url}
+                  src={avatarUrl(otherUserData.avatar_path) ?? undefined}
                   alt={otherUserData.username}
                 />
               )}
@@ -254,7 +255,7 @@ export default async function ConversationPage({
             currentUserId={user.id}
             otherUserName={otherUserData?.username || "Gebruiker"}
             currentUserName={user.username}
-            otherUserAvatar={otherUserData?.avatar_url}
+            otherUserAvatar={avatarUrl(otherUserData?.avatar_path)}
             currentUserAvatar={user.avatar_url}
             blockedNotice={
               iBlocked ? (

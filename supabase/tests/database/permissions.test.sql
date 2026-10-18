@@ -37,7 +37,7 @@ $$;
 SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
 
 SELECT lives_ok(
-  $$UPDATE public.profiles SET username = 'speler_a2', avatar_url = NULL WHERE id = '00000000-0000-0000-0000-00000000000a'$$,
+  $$UPDATE public.profiles SET username = 'speler_a2', avatar_path = NULL WHERE id = '00000000-0000-0000-0000-00000000000a'$$,
   'users can edit their username and avatar');
 SELECT throws_ok(
   $$UPDATE public.profiles SET role = 'admin' WHERE id = '00000000-0000-0000-0000-00000000000a'$$,

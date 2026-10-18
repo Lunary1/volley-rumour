@@ -56,13 +56,13 @@ ran without Supabase credentials, which is what CI will face.
 | J-08    | Club recruits player/trainer             | **WORKS**   | Gender and diploma stored and shown (#71); ads closed as gevonden (#72)   |
 | J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
 | J-10    | Own rumours, track record, voting        | **WORKS**   | Track record and all own rumours on the profile (#88, D-005); voting fixed (#78) |
-| J-11    | Account and personal data                | **PARTIAL** | Deletion is one transaction and deletes zoekertjes (#76, D-021, D-029); password reset fixed in #58; avatar upload missing (#92) |
+| J-11    | Account and personal data                | **WORKS**   | Deletion is one transaction and deletes zoekertjes (#76, D-021, D-029); password reset fixed in #58; profile pictures uploaded to Storage (#92) |
 | J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
 | J-13    | Pre-moderation queue                     | **PARTIAL** | Queue with the author's track record, approve/reject and audit log work (#66, #88); no email (#53) |
 | J-14    | Resolve a rumour                         | **WORKS**   | Confirm, deny, expire, bulk expire and transfer edits work (#70); each decision updates the author's track record (#88) |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
-**Count:** 8 WORKS · 7 PARTIAL · 0 BROKEN · 0 MISSING.
+**Count:** 9 WORKS · 6 PARTIAL · 0 BROKEN · 0 MISSING.
 
 ---
 
@@ -197,13 +197,13 @@ items.
 | Votes don't change reputation | **FIXED** (#88) | [track_record migration](../../supabase/migrations/20261017115222_contributor_track_record.sql), [vote_integrity.test.sql](../../supabase/tests/database/vote_integrity.test.sql) | The vote trigger counts on the rumour only; `trust_score` and `total_votes_received` are dropped |
 | Voting closed when not live | **FIXED** (#78) | [vote_integrity migration](../../supabase/migrations/20261016224117_vote_integrity.sql), [rumour-card.tsx](../../components/rumour-card.tsx) | Only lopende rumours take votes, new or changed (`VR010`); confirmed and denied cards show "Stemmen kan alleen op lopende geruchten" |
 
-### J-11 — Account and personal data · PARTIAL
+### J-11 — Account and personal data · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Password reset link → set new password | **FIXED** (#58) | [update-password/page.tsx](../../app/auth/update-password/page.tsx), [password-reset.spec.ts](../../e2e/password-reset.spec.ts) | The link opens "Nieuw wachtwoord instellen"; only a session from a reset link may set a password there, and an expired or used link gets a Dutch message. The link works in the browser that requested it (PKCE) |
 | Google-only account can add a password | **FIXED** (#58) | [auth.ts](../../app/actions/auth.ts) (`sendPasswordSetupLink`), [password-reset.spec.ts](../../e2e/password-reset.spec.ts) | Through the same reset link, from "Wachtwoord vergeten?" or the profile's "Stuur me een link". Covered by a seeded Google-only account (password login after; Google login itself isn't testable locally) |
-| Avatar upload with type/size limits | MISSING | [profile/page.tsx:227-231](../../app/profile/page.tsx#L227-L231) | Free-text avatar **URL** (an arbitrary external image URL) |
+| Avatar upload with type/size limits | **FIXED** (#92) | [avatar_uploads migration](../../supabase/migrations/20261018181718_avatar_uploads.sql), [profile.ts](../../app/actions/profile.ts) (`uploadAvatar`), [avatar.spec.ts](../../e2e/avatar.spec.ts) | JPG, PNG or WebP up to 5 MB, checked by reading the file; the server re-encodes it to a 400x400 WebP without metadata (no location). Stored in the public `avatars` bucket, in a folder only its owner can write; profiles store a path, never a URL (a CHECK keeps it in the own folder), so no outside image can track visitors. Existing URLs and Google pictures cleared. Deleting the account removes the file |
 | Account deletion removes or anonymises per spec | **FIXED** (#76) | [delete_own_account migration](../../supabase/migrations/20261018095649_delete_own_account.sql), [account-deletion.spec.ts](../../e2e/account-deletion.spec.ts) | Profile, zoekertjes (D-021), votes, blocks, conversations with their messages and unpublished rumours are deleted; published rumours and reports stay without the user (D-029); a hashed entry in the deletion log |
 | No half-deleted state on failure | **FIXED** (#76) | [delete_own_account.test.sql](../../supabase/tests/database/delete_own_account.test.sql) | One database function, one transaction; pgTAP fails its last step and checks that nothing was deleted |
 | Privacy page lists all processors | **FIXED** (#77) | [privacy/page.tsx](../../app/privacy/page.tsx), [privacy.spec.ts](../../e2e/privacy.spec.ts) | Supabase, Vercel (hosting, Web Analytics, Speed Insights), Resend and Google, with retention per kind of data; Datadog removed (D-023); a test checks the site loads nothing from other hosts |
@@ -269,7 +269,7 @@ is a real hole or merely fragile.
 8. `increment_trust_score` and `get_interest_count`: SECURITY DEFINER? `EXECUTE` granted to whom? Can any user call `increment_trust_score` directly to raise their own score?
 9. Realtime publication membership (`rumours`, `messages`).
 10. Auth settings: confirm-email on, redirect allow-list, Google provider, password min length (UI says 6 on sign-up, 8 on change).
-11. Storage buckets and policies (avatars?).
+11. Storage buckets and policies (avatars?). The `avatars` bucket and its policies now come from a migration (#92).
 12. Whether `is_google_only_account` still exists in production.
 
 ---

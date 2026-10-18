@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { avatarUrl } from "@/lib/avatar";
 import {
   Card,
   CardContent,
@@ -102,7 +103,10 @@ export default async function TrustedSourcesPage() {
                     {index + 1}
                   </span>
                   <Avatar>
-                    <AvatarImage src={source.avatar_url || undefined} alt="" />
+                    <AvatarImage
+                      src={avatarUrl(source.avatar_path) ?? undefined}
+                      alt=""
+                    />
                     <AvatarFallback className="bg-primary/20 text-primary">
                       {source.username[0].toUpperCase()}
                     </AvatarFallback>
