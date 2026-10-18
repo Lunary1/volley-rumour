@@ -38,6 +38,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-029 | 2026-10-18 | Accepted | Account deletion also deletes unpublished rumours; zoekertjes left ownerless by earlier deletions are deleted |
 | D-030 | 2026-10-18 | Accepted | Stored zoekertje contact emails are deleted; ads online at the expiry rollout run until 31 August 2027 |
 | D-031 | 2026-10-18 | Accepted | 16+ and terms are accepted per terms version; anyone without the current one is asked on /welkom |
+| D-032 | 2026-10-18 | Accepted | Notification emails go through Resend over SMTP, one per run of unread messages, never while the recipient is chatting |
 
 ---
 
@@ -737,3 +738,32 @@ existing accounts once.
 launch. Coming-soon mode closes `/welkom` with the other routes, so the gate
 waits for the launch. Changing the terms text without a new version doesn't
 ask anyone again.
+
+## D-032 — How notification emails are sent
+
+**Context.** D-025 accepted minimal emails and left the provider and the
+details to #98: "an offline recipient" needs a working definition, and the
+emails need a sender.
+
+**Decision** (agent calls in #98, flagged in the PR for the owner).
+- **Resend, over SMTP.** Resend already sends the auth emails and is on the
+  privacy page. SMTP (nodemailer) lets the local stack and CI send the same
+  emails to Mailpit, so the tests read real emails. Production needs the
+  `SMTP_*` and `EMAIL_FROM` variables in Vercel and a verified sending domain.
+- **"Not online" means not active in that conversation.** The database
+  (`message_notification_email()`) emails the recipient of a new message only
+  when they have no other unread message in the conversation and didn't send
+  or read a message there in the last 10 minutes. So one email covers a run of
+  unread messages, and two people chatting live get none.
+- **Content-free.** Message emails say only "Je hebt een nieuw bericht" with a
+  link; rumour emails say approved or not published, without the rumour or the
+  reason (that is on the profile). No sender names.
+- **On by default, off on the profile.** A row in `email_opt_outs` turns all
+  notification emails off. Suspended users may still change it.
+- **Sent after the response** (`after()`): a slow or failing email never
+  slows down or fails sending a message or a moderation decision.
+
+**Consequences.** Takedown requesters (no account, D-014) and reporters
+(D-015) still get no email; J-12 and J-15 keep their status links and
+confirmations. A message to a recipient whose browser is open on another page
+still sends an email: the site doesn't track presence.

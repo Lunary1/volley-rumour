@@ -199,8 +199,8 @@ contact them privately.
   time for the recipient, and the conversation shows the ad title and links
   back to it.
 - **Given** the recipient is not online, **then** they receive an email
-  notification of the new conversation (no message content in the email)
-  **[assumption — currently there are no notifications at all]**.
+  notification of the new message (no message content in the email), at most
+  one until they read it, unless they turned emails off (D-025, D-032).
 - **Given** the inbox, **then** conversations are ordered by most recent
   activity, show unread counts, and the header badge matches the total unread.
 - **Given** any user who is not a participant, **then** they can never read the

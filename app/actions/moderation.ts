@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { requireStaff } from "@/lib/staff";
+import { notifyRumourDecision } from "@/lib/notifications";
 import {
   REJECTION_NOTE_MAX_LENGTH,
   REJECTION_REASONS,
@@ -88,6 +90,7 @@ export async function approveRumour(
   });
   if (error) return moderationError(error);
 
+  after(() => notifyRumourDecision(parsed.data, "approved"));
   revalidateRumourPages();
   return successResponse(null);
 }
@@ -110,6 +113,7 @@ export async function rejectRumour(input: {
   });
   if (error) return moderationError(error);
 
+  after(() => notifyRumourDecision(parsed.data.rumourId, "rejected"));
   revalidateRumourPages();
   return successResponse(null);
 }

@@ -36,6 +36,10 @@ export const E2E_SERVER_ENV = {
   NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL: `${E2E_BASE_URL}/auth/callback`,
   NEXT_PUBLIC_COMING_SOON: "false",
   NEXT_TELEMETRY_DISABLED: "1",
+  // Notification emails (#98) go to the stack's Mailpit, like auth emails.
+  SMTP_HOST: "127.0.0.1",
+  SMTP_PORT: "54325",
+  EMAIL_FROM: "VolleyRumours <noreply@volleyrumours.be>",
   // Render in UTC like Vercel and CI, also on a developer's machine in
   // Belgium; the browser runs in Europe/Brussels (#142).
   TZ: "UTC",

@@ -51,18 +51,18 @@ ran without Supabase credentials, which is what CI will face.
 | J-03    | Create an account                        | **PARTIAL** | 16+ and terms gate for every account (#75, D-031); Dutch field errors and the confirmation link returns to the origin page (#89); enumeration depends on the dashboard setting |
 | J-04    | Post "speler zoekt team"                 | **WORKS**   | Server action, gender stored, login first, public notice (#71); expiry date set and shown (#84) |
 | J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status and renewal (#84) |
-| J-06    | Coach contacts a club                    | **PARTIAL** | No notifications; message privacy rests entirely on unverified RLS         |
+| J-06    | Coach contacts a club                    | **WORKS**   | Email to a recipient who is away, without the content (#98, D-025); Realtime scoped and tested (#74) |
 | J-07    | Block / report                           | **WORKS**   | Block, unblock and report work (#73, #87); archiving is per user (#91) |
 | J-08    | Club recruits player/trainer             | **WORKS**   | Gender and diploma stored and shown (#71); ads closed as gevonden (#72)   |
-| J-09    | Submit a sourced rumour                  | **PARTIAL** | Pending, source, declarations and cap done (#65, #67); no notifications     |
+| J-09    | Submit a sourced rumour                  | **WORKS**   | Pending, source, declarations and cap done (#65, #67); emailed on approval or rejection (#98) |
 | J-10    | Own rumours, track record, voting        | **WORKS**   | Track record and all own rumours on the profile (#88, D-005); voting fixed (#78) |
 | J-11    | Account and personal data                | **WORKS**   | Deletion is one transaction and deletes zoekertjes (#76, D-021, D-029); password reset fixed in #58; profile pictures uploaded to Storage (#92) |
 | J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
-| J-13    | Pre-moderation queue                     | **PARTIAL** | Queue with the author's track record, approve/reject and audit log work (#66, #88); no email (#53) |
+| J-13    | Pre-moderation queue                     | **WORKS**   | Queue with the author's track record, approve/reject and audit log work (#66, #88); the author is emailed (#98) |
 | J-14    | Resolve a rumour                         | **WORKS**   | Confirm, deny, expire, bulk expire and transfer edits work (#70); each decision updates the author's track record (#88) |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
-**Count:** 9 WORKS · 6 PARTIAL · 0 BROKEN · 0 MISSING.
+**Count:** 12 WORKS · 3 PARTIAL · 0 BROKEN · 0 MISSING.
 
 ---
 
@@ -145,14 +145,14 @@ items.
 | Delete with confirmation | **WORKS** | [my-classified-actions.tsx](../../components/my-classified-actions.tsx) | #72: confirmation dialog; conversations stay and show "Verwijderd zoekertje"; reports about the ad go with it (D-015). Suspended users can delete but not edit (D-016) |
 | Non-owners refused by RLS and server | **WORKS** | [classified_owner_updates migration](../../supabase/migrations/20261015112454_classified_owner_updates.sql), [classifieds_owner.test.sql](../../supabase/tests/database/classifieds_owner.test.sql) | #72: every action filters on the user; RLS limits UPDATE and DELETE to the owner (pgTAP); the edit page returns 404 to others |
 
-### J-06 — Coach contacts a club · PARTIAL
+### J-06 — Coach contacts a club · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Existing conversation → open it; else modal | WORKS | [classified-detail-contact.tsx:25-40](../../components/classified-detail-contact.tsx#L25-L40), [messages.ts:49-81](../../app/actions/messages.ts#L49-L81) | Logged out: login first and back to the ad (#86) |
 | No contact button on own ad | WORKS | [zoekertjes/[id]/page.tsx:165](../../app/zoekertjes/[id]/page.tsx#L165) | |
 | Real-time delivery; ad title and link in conversation | WORKS | [chat-interface.tsx:98-150](../../components/chat-interface.tsx#L98-L150), [[conversationId]/page.tsx:64-71](../../app/messages/[conversationId]/page.tsx#L64-L71) | Works for zoekertjes; transfer conversations would look in the wrong table (X-8), which is moot under D-004 |
-| Email notification to offline recipient | MISSING | — | No email sending exists anywhere |
+| Email notification to offline recipient | **WORKS** | [email_notifications migration](../../supabase/migrations/20261018200436_email_notifications.sql), [notifications.ts](../../lib/notifications.ts), [notifications.spec.ts](../../e2e/notifications.spec.ts) | #98 (D-025, D-032): "Je hebt een nieuw bericht" with a link, never the text or the sender. One email per run of unread messages; none while the recipient was active in the conversation in the last 10 minutes. Off on the profile |
 | Inbox ordering, unread counts, header badge | WORKS | [messages.ts:244-362](../../app/actions/messages.ts#L244-L362), [user-menu.tsx](../../components/user-menu.tsx), [realtime-scope.spec.ts](../../e2e/realtime-scope.spec.ts) | Inbox: N+1 queries per conversation (X-9). Badge: one count on `recipient_id`, live through a filtered subscription (#74) |
 | Non-participants can never read, incl. Realtime | **WORKS** | [messages_recipient migration](../../supabase/migrations/20261015135308_messages_recipient.sql), [realtime-scope.spec.ts](../../e2e/realtime-scope.spec.ts) | #74: both subscriptions are filtered on the server, and RLS keeps a third user's events out even when they subscribe without a filter or with someone else's (tested) |
 
@@ -174,7 +174,7 @@ items.
 | Close the ad, conversations remain | **WORKS** | [my-classified-actions.tsx](../../components/my-classified-actions.tsx) | #72: "Gevonden" in "Mijn zoekertjes"; see J-05 |
 | Verified badge on ads | WORKS | [classifieds-list.tsx:455-457](../../components/classifieds-list.tsx#L455-L457) | Badge is granted manually in the database (no admin UI) |
 
-### J-09 — Contributor submits a sourced rumour · PARTIAL
+### J-09 — Contributor submits a sourced rumour · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
@@ -183,7 +183,7 @@ items.
 | Stored as pending, invisible, "wordt nagekeken" message | **WORKS** | [rumour.ts:47-70](../../app/actions/rumour.ts#L47-L70), [geruchten/nieuw/page.tsx:128](../../app/geruchten/nieuw/page.tsx#L128) | Fixed in #65: stored as pending, author sees "Je gerucht wordt nagekeken" |
 | All filled fields stored | **WORKS** | [rumour.ts](../../app/actions/rumour.ts) | Fixed in #67: gender, current and destination division are stored |
 | Max N pending per user | **WORKS** | [rumour_sources_and_pending_cap.sql](../../supabase/migrations/20261014145732_rumour_sources_and_pending_cap.sql) | Fixed in #67: 5 per contributor, enforced by `check_new_rumour()` (D-013) |
-| Notified on approve/reject | MISSING | — | |
+| Notified on approve/reject | **WORKS** | [moderation.ts](../../app/actions/moderation.ts), [notifications.spec.ts](../../e2e/notifications.spec.ts) | #98: an email on approval or rejection, without the rumour; the reason is on the profile (#66). Off on the profile |
 | Login required | **WORKS** | [geruchten/nieuw/page.tsx](../../app/geruchten/nieuw/page.tsx), [login/page.tsx](../../app/auth/login/page.tsx) | Fixed in #67: login returns to the form (`?next=`, also through Google) |
 
 ### J-10 — Own rumours, track record, voting · WORKS
@@ -219,13 +219,13 @@ items.
 | Outcome communicated | **WORKS** (#68) | [status page](../../app/verwijderverzoek/status/[token]/page.tsx), `remove_rumour_for_takedown()`, `reject_takedown_request()` | The status link shows the decision and the moderator's note; email waits on #53 |
 | Requests visible only to moderators, retention defined | **WORKS** (#68) | [admin/meldingen](../../app/admin/meldingen/page.tsx), `anonymise_expired_takedown_requests()` | RLS: staff only, hashes never readable. Personal fields wiped after 12 months (D-014); the function still has to be scheduled |
 
-### J-13 — Pre-moderation queue · PARTIAL
+### J-13 — Pre-moderation queue · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Non-staff get 404/403 on `/admin` and admin actions | **WORKS** | [admin/layout.tsx](../../app/admin/layout.tsx), [staff.ts](../../lib/staff.ts) | #63: the layout 404s for non-staff; admin actions use `requireStaff()`, and the moderation functions check `is_staff()` again |
 | Pending list oldest first with track record | **WORKS** | [admin/wachtrij/page.tsx](../../app/admin/wachtrij/page.tsx), [track-record.spec.ts](../../e2e/track-record.spec.ts) | #66: oldest first; #88: "speler_jana · 1 van 1 bevestigd" next to each author (D-005). Sources since #67 |
-| Approve → live, author notified | **PARTIAL** | [moderation.ts](../../app/actions/moderation.ts), `approve_rumour()` | #66: approved rumours go live and the author's profile shows "Lopend". Email notification waits on #53 |
+| Approve → live, author notified | **WORKS** | [moderation.ts](../../app/actions/moderation.ts), `approve_rumour()` | #66: approved rumours go live and the author's profile shows "Lopend". #98: the author is emailed (unless they turned emails off) |
 | Reject with reason | **WORKS** | `reject_rumour()`, [profile-view.tsx](../../app/profile/profile-view.tsx) | #66: fixed list of reasons (note required for "Andere"); the author sees the reason on their profile |
 | Audit log | **WORKS** | `log_staff_action()`, [admin/logboek](../../app/admin/logboek/page.tsx) | #64, #66: approve and reject log in the same transaction as the decision |
 

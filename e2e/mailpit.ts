@@ -35,3 +35,38 @@ export async function getAuthLinkFromEmail(to: string, since: Date) {
   if (!link) throw new Error(`email to ${to} has no auth link`);
   return link.replaceAll("&amp;", "&");
 }
+
+export type Email = { Subject: string; Text: string; HTML: string };
+
+/** The emails to `to` that arrived after `since`, oldest first. */
+export async function emailsTo(to: string, since: Date): Promise<Email[]> {
+  const res = await fetch(
+    `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:${to}`)}`,
+  );
+  const { messages } = (await res.json()) as { messages: MailpitMessage[] };
+  const ids = messages
+    .filter((m) => new Date(m.Created) >= since)
+    .reverse()
+    .map((m) => m.ID);
+  return Promise.all(
+    ids.map(async (id) => {
+      const message = await fetch(`${MAILPIT_URL}/api/v1/message/${id}`);
+      return (await message.json()) as Email;
+    }),
+  );
+}
+
+/** Waits until `count` emails to `to` arrived after `since` and returns them. */
+export async function waitForEmails(to: string, since: Date, count = 1) {
+  let emails: Email[] = [];
+  await expect
+    .poll(
+      async () => {
+        emails = await emailsTo(to, since);
+        return emails.length;
+      },
+      { message: `no email to ${to}`, timeout: 15_000 },
+    )
+    .toBeGreaterThanOrEqual(count);
+  return emails;
+}
