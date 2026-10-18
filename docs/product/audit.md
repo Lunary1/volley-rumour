@@ -46,7 +46,7 @@ ran without Supabase credentials, which is what CI will face.
 
 | Journey | Title                                    | Overall     | Top gap                                                                     |
 | ------- | ---------------------------------------- | ----------- | --------------------------------------------------------------------------- |
-| J-01    | Find a matching zoekertje                | **PARTIAL** | English 404 (#90); filters and pages in the URL (#85), logged-out contact fixed (#86), search crash fixed (#59) |
+| J-01    | Find a matching zoekertje                | **WORKS**   | Dutch 404 (#90); filters and pages in the URL (#85), logged-out contact fixed (#86), search crash fixed (#59) |
 | J-02    | Read Transfer Talk / transfers           | **PARTIAL** | No pagination (X-9). Track record on cards (#88), transfer tabs fixed (#70, #82) |
 | J-03    | Create an account                        | **PARTIAL** | 16+ and terms gate for every account (#75, D-031); raw English errors, email-confirmation return unverified |
 | J-04    | Post "speler zoekt team"                 | **WORKS**   | Server action, gender stored, login first, public notice (#71); expiry date set and shown (#84) |
@@ -62,7 +62,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-14    | Resolve a rumour                         | **WORKS**   | Confirm, deny, expire, bulk expire and transfer edits work (#70); each decision updates the author's track record (#88) |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
-**Count:** 7 WORKS · 8 PARTIAL · 0 BROKEN · 0 MISSING.
+**Count:** 8 WORKS · 7 PARTIAL · 0 BROKEN · 0 MISSING.
 
 ---
 
@@ -89,7 +89,7 @@ items.
 
 ## 4. Journey detail
 
-### J-01 — Visitor finds a matching zoekertje · PARTIAL
+### J-01 — Visitor finds a matching zoekertje · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
@@ -98,7 +98,7 @@ items.
 | No error on empty description / anonymised author | **FIXED** (#59) | [classifieds-list.tsx:113](../../components/classifieds-list.tsx#L113), [zoekertjes-search.spec.ts](../../e2e/zoekertjes-search.spec.ts) | Search skips a `null` description and matches on title; a missing author shows as "Onbekend". Covered by a Playwright test with a seeded ad without description |
 | Detail page shows fields and username, never contact details | WORKS | [zoekertjes/[id]/page.tsx:26-59](../../app/zoekertjes/[id]/page.tsx#L26-L59) | The `contact_email` column is gone (#83, D-022, D-030); other users and visitors only read online ads, and a new conversation must be with the poster of an online ad (`validate_conversation_ad`, VR011) |
 | Logged-out "Contact opnemen" → login → back | **FIXED** (#86) | [classified-detail-contact.tsx](../../components/classified-detail-contact.tsx), [zoekertje-detail.spec.ts](../../e2e/zoekertje-detail.spec.ts) | Logged-out visitors get a link to `/auth/login?next=/zoekertjes/<id>` (works before hydration); after login they are back on the ad and the message form opens there |
-| Removed ad URL → Dutch "niet beschikbaar" page | PARTIAL | [zoekertjes/[id]/page.tsx:82](../../app/zoekertjes/[id]/page.tsx#L82) | `notFound()` falls through to Next's default English 404; there's no `app/not-found.tsx` |
+| Removed ad URL → Dutch "niet beschikbaar" page | **FIXED** (#90) | [zoekertjes/[id]/not-found.tsx](../../app/zoekertjes/[id]/not-found.tsx), [app/not-found.tsx](../../app/not-found.tsx), [not-found.spec.ts](../../e2e/not-found.spec.ts) | A gone, expired or unknown ad shows "Zoekertje niet beschikbaar" with links back (404); any other unknown URL shows "Pagina niet gevonden". A crashing page shows "Er ging iets mis" (`app/error.tsx`) |
 
 ### J-02 — Visitor reads Transfer Talk and transfers · PARTIAL
 

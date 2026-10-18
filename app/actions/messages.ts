@@ -239,7 +239,7 @@ export async function getConversations({ archived = false } = {}) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { success: false, error: "Must be logged in" };
+    return { success: false, error: "Je moet ingelogd zijn" };
   }
 
   // RLS only shows the user's own archive rows.
@@ -326,11 +326,11 @@ export async function getConversations({ archived = false } = {}) {
       ad_type: c.ad_type,
       ad_title: "", // Will be fetched separately
       initiator_id: c.initiator_id,
-      initiator_name: initiatorUser.username || "Unknown User",
+      initiator_name: initiatorUser.username || "Onbekende gebruiker",
       initiator_avatar_url: initiatorUser.avatar_url,
       other_user_id:
         otherUser.id || (isInitiator ? c.recipient_id : c.initiator_id),
-      other_user_name: otherUser.username || "Unknown User",
+      other_user_name: otherUser.username || "Onbekende gebruiker",
       other_user_avatar_url: otherUser.avatar_url,
       last_message: lastMessageMap.get(c.id)?.content,
       last_message_at: c.updated_at,
