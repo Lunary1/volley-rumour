@@ -716,7 +716,7 @@ the season.
 Google sign-ups. #75 adds the terms, the stored timestamp and version, and asks
 existing accounts once.
 
-**Decision** (agent call in #75, 2026-10-18; owner to confirm in the PR).
+**Decision** (agent call in #75, 2026-10-18; confirmed by the owner 2026-10-18: declaration only, a new version asks everyone again, wording left to the legal review #94).
 - **One acceptance covers both**: the 16+ confirmation and the terms are two
   required checkboxes on one form, stored as one row per user and terms
   version, with the time.
