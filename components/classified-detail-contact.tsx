@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
@@ -11,12 +12,15 @@ interface ClassifiedDetailContactProps {
   classifiedId: string;
   userId: string;
   userName: string;
+  /** Logged-out visitors log in first and come back to the ad (#86). */
+  loggedIn: boolean;
 }
 
 export function ClassifiedDetailContact({
   classifiedId,
   userId,
   userName,
+  loggedIn,
 }: ClassifiedDetailContactProps) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
@@ -37,6 +41,21 @@ export function ClassifiedDetailContact({
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!loggedIn) {
+    const next = `/zoekertjes/${classifiedId}`;
+    return (
+      <Button
+        asChild
+        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+      >
+        <Link href={`/auth/login?next=${encodeURIComponent(next)}`}>
+          <MessageSquare className="h-4 w-4 mr-2" />
+          Contact opnemen
+        </Link>
+      </Button>
+    );
   }
 
   return (
