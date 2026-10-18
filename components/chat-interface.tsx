@@ -427,7 +427,7 @@ export function ChatInterface({
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Type je bericht..."
+              placeholder="Typ je bericht..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               disabled={sending}

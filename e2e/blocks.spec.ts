@@ -16,7 +16,7 @@ test("a block refuses messages until it is lifted from the profile", async ({
   const janaPage = await pageFor(browser, "jana");
   await janaPage.goto(conversationUrl);
   await expect(janaPage.getByText(message)).toBeVisible();
-  const box = janaPage.getByPlaceholder("Type je bericht...");
+  const box = janaPage.getByPlaceholder("Typ je bericht...");
   await expect(box).toBeVisible();
 
   // Tom blocks Jana, after a confirmation. Cancelling blocks nothing.
@@ -27,7 +27,7 @@ test("a block refuses messages until it is lifted from the profile", async ({
   await expect(dialog).toContainText("geen berichten meer sturen");
   await dialog.getByRole("button", { name: "Annuleren" }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByPlaceholder("Type je bericht...")).toBeVisible();
+  await expect(page.getByPlaceholder("Typ je bericht...")).toBeVisible();
 
   await page.getByRole("button", { name: "Blokkeren", exact: true }).click();
   await dialog.getByRole("button", { name: `Blokkeer ${jana}` }).click();
@@ -37,7 +37,7 @@ test("a block refuses messages until it is lifted from the profile", async ({
   ).toContainText(`Je hebt ${jana} geblokkeerd.`);
   // The history stays, the message box goes.
   await expect(page.getByText(message)).toBeVisible();
-  await expect(page.getByPlaceholder("Type je bericht...")).toHaveCount(0);
+  await expect(page.getByPlaceholder("Typ je bericht...")).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Blokkeren", exact: true }),
   ).toHaveCount(0);
@@ -56,7 +56,7 @@ test("a block refuses messages until it is lifted from the profile", async ({
     }),
   ).toBeVisible();
   await expect(janaPage.getByText(refused)).toHaveCount(0);
-  await expect(janaPage.getByPlaceholder("Type je bericht...")).toHaveCount(0);
+  await expect(janaPage.getByPlaceholder("Typ je bericht...")).toHaveCount(0);
 
   // Tom lifts the block from his profile.
   await page.goto("/profile");
@@ -70,7 +70,7 @@ test("a block refuses messages until it is lifted from the profile", async ({
   // Jana can write again.
   await janaPage.reload();
   const sent = `Weer welkom ${randomUUID()}`;
-  await janaPage.getByPlaceholder("Type je bericht...").fill(sent);
+  await janaPage.getByPlaceholder("Typ je bericht...").fill(sent);
   await janaPage.getByRole("button", { name: "Verstuur bericht" }).click();
   await expect(janaPage.getByText(sent)).toBeVisible();
   await janaPage.reload();

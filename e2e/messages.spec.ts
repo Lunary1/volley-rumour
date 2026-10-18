@@ -43,7 +43,7 @@ test("a message arrives live and the sender sees it was read", async ({
   await jana.goto(conversationUrl);
   await expect(jana.locator('[data-realtime="ready"]')).toBeAttached();
   const text = `Testbericht ${randomUUID()}`;
-  await jana.getByPlaceholder("Type je bericht...").fill(text);
+  await jana.getByPlaceholder("Typ je bericht...").fill(text);
   await jana.getByRole("button", { name: "Verstuur bericht" }).click();
 
   // Club has the conversation open: the message appears without a reload,
@@ -75,7 +75,7 @@ for (const [device, viewport] of [
     await expect(
       page.getByRole("heading", { level: 1, name: seedUsers.club.username }),
     ).toBeInViewport();
-    await expect(page.getByPlaceholder("Type je bericht...")).toBeInViewport({
+    await expect(page.getByPlaceholder("Typ je bericht...")).toBeInViewport({
       ratio: 1,
     });
     await expect(
