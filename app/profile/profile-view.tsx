@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/profile";
 import { deleteAccount, sendPasswordSetupLink } from "@/app/actions/auth";
 import { handleServerActionResponse } from "@/lib/client-utils";
+import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -157,8 +158,8 @@ export function ProfileView({
       return;
     }
 
-    if (newPassword.length < 8) {
-      setError("Wachtwoord moet minimaal 8 tekens zijn");
+    if (newPassword.length < PASSWORD_MIN_LENGTH) {
+      setError(PASSWORD_MIN_MESSAGE);
       setSubmitting(false);
       return;
     }
@@ -481,11 +482,11 @@ export function ProfileView({
                 <Input
                   id="new-password"
                   type="password"
-                  placeholder="Min. 8 tekens"
+                  placeholder={`Min. ${PASSWORD_MIN_LENGTH} tekens`}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  minLength={8}
+                  minLength={PASSWORD_MIN_LENGTH}
                   disabled={submitting}
                   className="mt-2 border-border bg-background"
                 />

@@ -181,6 +181,38 @@ export const createClassifiedSchema = z
 
 export type CreateClassifiedInput = z.infer<typeof createClassifiedSchema>;
 
+// Accounts (#89): one password minimum for sign-up, reset and change. Supabase
+// Auth enforces the same minimum (`minimum_password_length`).
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MIN_MESSAGE = `Wachtwoord moet minimaal ${PASSWORD_MIN_LENGTH} tekens zijn`;
+
+// The sign-up trigger stores usernames in lowercase.
+export const USERNAME_MIN_LENGTH = 3;
+export const USERNAME_MAX_LENGTH = 30;
+
+export const signUpSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(
+      USERNAME_MIN_LENGTH,
+      `Gebruikersnaam moet minimaal ${USERNAME_MIN_LENGTH} tekens zijn`,
+    )
+    .max(
+      USERNAME_MAX_LENGTH,
+      `Gebruikersnaam mag maximaal ${USERNAME_MAX_LENGTH} tekens zijn`,
+    )
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Gebruik alleen letters, cijfers en _ in je gebruikersnaam",
+    )
+    .transform((v) => v.toLowerCase()),
+  email: z.string().trim().email("Vul een geldig e-mailadres in"),
+  password: z.string().min(PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE),
+});
+
+export type SignUpField = keyof z.infer<typeof signUpSchema>;
+
 // Message schema
 export const sendMessageSchema = z.object({
   conversationId: z.string().uuid("Ongeldig conversatie ID"),

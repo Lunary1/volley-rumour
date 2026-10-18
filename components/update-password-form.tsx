@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setNewPassword } from "@/app/actions/auth";
 import { handleServerActionResponse } from "@/lib/client-utils";
+import { PASSWORD_MIN_LENGTH } from "@/lib/schemas";
 
 export function UpdatePasswordForm() {
   const [password, setPassword] = useState("");
@@ -38,9 +39,9 @@ export function UpdatePasswordForm() {
           id="new-password"
           type="password"
           autoComplete="new-password"
-          placeholder="Min. 8 tekens"
+          placeholder={`Min. ${PASSWORD_MIN_LENGTH} tekens`}
           required
-          minLength={8}
+          minLength={PASSWORD_MIN_LENGTH}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
