@@ -3,9 +3,34 @@ import Link from "next/link";
 import { isComingSoon } from "@/lib/coming-soon";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - VolleyRumours",
+  title: "Privacybeleid - VolleyRumours",
   description: "Lees ons privacybeleid en hoe wij jouw gegevens beschermen.",
 };
+
+// Every service that receives personal data (#77). Datadog was removed in
+// D-023. Copy to be reviewed in #94.
+const processors = [
+  {
+    name: "Supabase",
+    purpose:
+      "Onze database: je account, profiel, geruchten, zoekertjes, berichten en avatar, en de live berichten in gesprekken. De servers staan in de EU (Parijs).",
+  },
+  {
+    name: "Vercel",
+    purpose:
+      "Host de website en ontvangt daarvoor je IP-adres en browsergegevens. Vercel Web Analytics en Speed Insights tellen bezoeken en meten laadtijden, zonder cookies en zonder je IP-adres te bewaren.",
+  },
+  {
+    name: "Resend",
+    purpose:
+      "Verstuurt e-mails over je account, zoals de bevestiging van je e-mailadres of een link voor een nieuw wachtwoord. Resend krijgt je e-mailadres en de inhoud van die e-mail.",
+  },
+  {
+    name: "Google",
+    purpose:
+      "Alleen als je inlogt met Google. We krijgen dan je e-mailadres, naam en profielfoto van je Google-account.",
+  },
+];
 
 export default function PrivacyPage() {
   // Coming-soon mode closes the takedown form, so don't link to it.
@@ -34,30 +59,34 @@ export default function PrivacyPage() {
             Gegevensverzameling
           </h2>
           <div className="space-y-4 text-muted-foreground">
-            <p>
-              VolleyRumours verzamelt verschillende soorten gegevens om je een
-              betere ervaring te bieden:
-            </p>
+            <p>Dit zijn de gegevens die VolleyRumours verzamelt:</p>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
                 <strong>Accountgegevens:</strong> E-mailadres, wachtwoord
-                (beveiligd opgeslagen), profielnaam en avatar.
+                (beveiligd opgeslagen), gebruikersnaam, weergavenaam en avatar.
+                Log je in met Google, dan nemen we je naam en profielfoto van
+                Google over.
               </li>
               <li>
-                <strong>Inhoudsgegevens:</strong> Geruchten, bevestigde
-                transfers, zoekertjes en berichten die je plaatst.
+                <strong>Inhoudsgegevens:</strong> Geruchten, zoekertjes en
+                berichten die je plaatst.
               </li>
               <li>
-                <strong>Interactiegegevens:</strong> Stemmen, reacties, en je
-                actieve deelname aan discussies.
+                <strong>Interactiegegevens:</strong> Je stemmen op geruchten, je
+                meldingen en de gebruikers die je blokkeert.
               </li>
               <li>
-                <strong>Technische gegevens:</strong> IP-adres, browsertype,
-                apparaattype en browsing-gedrag via Vercel Analytics.
+                <strong>Technische gegevens:</strong> Je IP-adres en
+                browsergegevens, die nodig zijn om de site te tonen, en anonieme
+                bezoekcijfers via Vercel Web Analytics en Speed Insights.
               </li>
               <li>
-                <strong>Communicatiegegevens:</strong> Berichten en
-                contactformulier-indieningen.
+                <strong>Communicatiegegevens:</strong> Berichten via het
+                contactformulier en verwijderverzoeken.
+              </li>
+              <li>
+                <strong>Wachtlijst:</strong> Je e-mailadres, als je je
+                inschrijft om te horen wanneer de site opent.
               </li>
             </ul>
           </div>
@@ -93,7 +122,7 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        {/* Conversation Privacy */}
+        {/* Conversation Privacy (reported conversations: D-015) */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
             Privacy van Privéberichten
@@ -102,16 +131,17 @@ export default function PrivacyPage() {
             <p>Privéberichten tussen gebruikers zijn:</p>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
-                <strong>Versleuteld:</strong> Berichten worden veilig opgeslagen
-                in onze database.
-              </li>
-              <li>
-                <strong>Beperkt toegang:</strong> Alleen jij en de ontvanger
-                kunnen berichten zien.
+                <strong>Beperkt toegankelijk:</strong> Alleen jij en de ander in
+                het gesprek kunnen de berichten lezen.
               </li>
               <li>
                 <strong>Niet openbaar:</strong> Berichten worden nooit getoond
                 op je profiel of in publieke feeds.
+              </li>
+              <li>
+                <strong>Bij een melding:</strong> Meldt een van jullie het
+                gesprek, dan kan een moderator het lezen zolang de melding
+                openstaat. Elke keer dat dat gebeurt, wordt het vastgelegd.
               </li>
             </ul>
           </div>
@@ -126,23 +156,85 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
                 <strong>Servicelevering:</strong> Je account beheren, content
-                hosten, en real-time functies mogelijk maken.
+                tonen en live berichten mogelijk maken.
               </li>
               <li>
                 <strong>Verbetering:</strong> Bugs oplossen, prestaties
-                optimaliseren, en nieuwe functies ontwikkelen.
+                verbeteren en nieuwe functies ontwikkelen.
               </li>
               <li>
-                <strong>Analytics:</strong> Begrijpen hoe gebruikers onze
-                platform gebruiken (via Vercel Analytics).
+                <strong>Analytics:</strong> Begrijpen hoe bezoekers de site
+                gebruiken, via Vercel Web Analytics en Speed Insights.
               </li>
               <li>
-                <strong>Communicatie:</strong> Je op de hoogte houden van
-                policywijzigingen of account-gerelateerde zaken.
+                <strong>Communicatie:</strong> E-mails over je account, en één
+                e-mail wanneer de site opent als je op de wachtlijst staat.
               </li>
               <li>
-                <strong>Veiligheid:</strong> Fraude voorkomen en gebruikers
-                beschermen tegen misbruik.
+                <strong>Veiligheid:</strong> Misbruik voorkomen en gebruikers
+                beschermen, met meldingen, blokkeringen en moderatie.
+              </li>
+            </ul>
+            <p>
+              We verkopen je gegevens niet en gebruiken geen advertentie- of
+              trackingdiensten.
+            </p>
+          </div>
+        </div>
+
+        {/* Processors (#77) */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            Wie verwerkt je gegevens
+          </h2>
+          <div className="space-y-4 text-muted-foreground">
+            <p>
+              Deze diensten verwerken gegevens voor ons. Ze gebruiken je
+              gegevens alleen om die dienst te leveren.
+            </p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              {processors.map((processor) => (
+                <li key={processor.name}>
+                  <strong>{processor.name}:</strong> {processor.purpose}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Retention (D-011, D-014, D-016, D-017, D-028) */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            Hoe lang we je gegevens bewaren
+          </h2>
+          <div className="space-y-4 text-muted-foreground">
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>
+                <strong>Account en inhoud:</strong> Je profiel, geruchten,
+                zoekertjes en berichten bewaren we tot je ze verwijdert of je
+                account verwijdert.
+              </li>
+              <li>
+                <strong>Account verwijderen:</strong> We wissen je profiel,
+                avatar, stemmen, blokkeringen, en je gesprekken met alle
+                berichten erin. Je geruchten blijven staan, zonder je naam. Je
+                meldingen blijven bewaard, zonder je naam.
+              </li>
+              <li>
+                <strong>Schorsingen:</strong> Tot je account verwijderd wordt.
+              </li>
+              <li>
+                <strong>Logboek van moderatoracties:</strong> 2 jaar. Daarin
+                staat welke moderator wat deed, en bij welke gebruiker of welke
+                inhoud.
+              </li>
+              <li>
+                <strong>Verwijderverzoeken en contactberichten:</strong> 12
+                maanden, zie hieronder.
+              </li>
+              <li>
+                <strong>Wachtlijst:</strong> Tot we de e-mail over de opening
+                van de site verstuurd hebben. Daarna wissen we de lijst.
               </li>
             </ul>
           </div>
@@ -159,20 +251,17 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
-                <strong>HTTPS versleuteling:</strong> Alle communicatie
+                <strong>HTTPS-versleuteling:</strong> Alle communicatie is
                 versleuteld tijdens verzending.
               </li>
               <li>
-                <strong>Supabase infrastructure:</strong> Beheerd via de
-                enterprise-grade Supabase-platform.
+                <strong>Toegangsregels in de database:</strong> Elke gebruiker
+                kan alleen de gegevens lezen en wijzigen waar hij of zij recht
+                op heeft.
               </li>
               <li>
-                <strong>Row-Level Security:</strong> Databasetechnologie
-                voorkomt ongeautoriseerde toegang.
-              </li>
-              <li>
-                <strong>Wachtwoordbeveiliging:</strong> Wachtwoorden gehashed
-                met veilige algoritmen.
+                <strong>Wachtwoordbeveiliging:</strong> Wachtwoorden worden
+                gehasht met veilige algoritmen.
               </li>
             </ul>
           </div>
@@ -184,18 +273,20 @@ export default function PrivacyPage() {
             Cookies
           </h2>
           <div className="space-y-4 text-muted-foreground">
-            <p>We gebruiken cookies en vergelijkbare trackingtechnologieën:</p>
+            <p>We gebruiken alleen cookies die nodig zijn:</p>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
-                <strong>Authenticatie:</strong> Session-cookies voor inloggen.
+                <strong>Inloggen:</strong> Cookies die bijhouden dat je ingelogd
+                bent.
               </li>
               <li>
-                <strong>Analytics:</strong> Vercel Analytics voor
-                gebruikersgedrag-inzichten (anoniem).
+                <strong>Thema:</strong> Je keuze voor licht of donker, bewaard
+                in je browser.
               </li>
               <li>
-                <strong>Voorkeur:</strong> Thema-voorkeur (donker/licht)
-                opslaan.
+                <strong>Geen tracking:</strong> Vercel Web Analytics en Speed
+                Insights werken zonder cookies. We gebruiken geen advertentie-
+                of trackingcookies.
               </li>
             </ul>
           </div>
@@ -285,8 +376,8 @@ export default function PrivacyPage() {
                 kopie van je gegevens.
               </li>
               <li>
-                <strong>Je account verwijderen:</strong> Je profiel en al je
-                gegevens permanent verwijderen.
+                <strong>Je account verwijderen:</strong> Je profiel en je
+                gegevens wissen, zoals hierboven beschreven.
               </li>
               <li>
                 <strong>Correcties aanvragen:</strong> Onjuiste informatie
