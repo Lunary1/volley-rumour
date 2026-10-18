@@ -99,10 +99,16 @@ SELECT throws_ok(
   '42501', NULL, 'owners cannot feature their zoekertje');
 
 -- -------------------------------------------------- conversations/messages
+-- A contacts B about B's online ad, the only way to start one (#83).
+RESET ROLE;
+INSERT INTO public.classifieds (user_id, type, title, contact_name)
+  VALUES ('00000000-0000-0000-0000-00000000000b', 'team_seeks_player', 'Zoekertje van B', 'Team B');
+SELECT pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
+
 SELECT lives_ok(
   $$INSERT INTO public.conversations (ad_id, ad_type, initiator_id, recipient_id)
     SELECT id, 'classified', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b'
-    FROM public.classifieds WHERE title = 'Zoekertje A'$$,
+    FROM public.classifieds WHERE title = 'Zoekertje van B'$$,
   'users can start a conversation');
 SELECT lives_ok(
   $$INSERT INTO public.messages (conversation_id, sender_id, content)

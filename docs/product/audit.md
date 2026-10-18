@@ -49,8 +49,8 @@ ran without Supabase credentials, which is what CI will face.
 | J-01    | Find a matching zoekertje                | **PARTIAL** | Logged-out contact dead-ends (search crash fixed in #59)    |
 | J-02    | Read Transfer Talk / transfers           | **PARTIAL** | No pagination (X-9). Track record on cards (#88), transfer tabs fixed (#70, #82) |
 | J-03    | Create an account                        | **PARTIAL** | No 16+ / terms confirmation; raw English errors                             |
-| J-04    | Post "speler zoekt team"                 | **PARTIAL** | Server action, gender stored, login first, public notice (#71); expiry left (#84) |
-| J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status waits on #84 |
+| J-04    | Post "speler zoekt team"                 | **WORKS**   | Server action, gender stored, login first, public notice (#71); expiry date set and shown (#84) |
+| J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status and renewal (#84) |
 | J-06    | Coach contacts a club                    | **PARTIAL** | No notifications; message privacy rests entirely on unverified RLS         |
 | J-07    | Block / report                           | **WORKS**   | Block, unblock and report work (#73, #87); archiving is per user (#91) |
 | J-08    | Club recruits player/trainer             | **WORKS**   | Gender and diploma stored and shown (#71); ads closed as gevonden (#72)   |
@@ -62,7 +62,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-14    | Resolve a rumour                         | **WORKS**   | Confirm, deny, expire, bulk expire and transfer edits work (#70); each decision updates the author's track record (#88) |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
 
-**Count:** 6 WORKS · 9 PARTIAL · 0 BROKEN · 0 MISSING.
+**Count:** 7 WORKS · 8 PARTIAL · 0 BROKEN · 0 MISSING.
 
 ---
 
@@ -93,10 +93,10 @@ items.
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Active ads, newest first, featured marked, paginated, not expired | PARTIAL | [zoekertjes/page.tsx:8-31](../../app/zoekertjes/page.tsx#L8-L31), [classifieds-list.tsx:125-160](../../components/classifieds-list.tsx#L125-L160) | Sorting, featured section and 12-per-page work, but all rows are fetched and paginated in the browser; no expiry, and `featured_until` is ignored |
+| Active ads, newest first, featured marked, paginated, not expired | PARTIAL | [zoekertjes/page.tsx:8-31](../../app/zoekertjes/page.tsx#L8-L31), [classifieds-list.tsx:125-160](../../components/classifieds-list.tsx#L125-L160) | Sorting, featured section and 12-per-page work, but all rows are fetched and paginated in the browser. Expired ads are hidden by RLS and the query, and an ad is featured only until `featured_until` (#84, [zoekertjes-expiry.spec.ts](../../e2e/zoekertjes-expiry.spec.ts)) |
 | Filter by type, province, division, position; reflected in URL | PARTIAL | [classifieds-list.tsx:83-121](../../components/classifieds-list.tsx#L83-L121) | Type and province only; filters live in component state, not the URL |
 | No error on empty description / anonymised author | **FIXED** (#59) | [classifieds-list.tsx:113](../../components/classifieds-list.tsx#L113), [zoekertjes-search.spec.ts](../../e2e/zoekertjes-search.spec.ts) | Search skips a `null` description and matches on title; a missing author shows as "Onbekend". Covered by a Playwright test with a seeded ad without description |
-| Detail page shows fields and username, never contact details | WORKS | [zoekertjes/[id]/page.tsx:26-59](../../app/zoekertjes/[id]/page.tsx#L26-L59) | `contact_email` isn't selected. Raw slugs are shown for position/diploma (e.g. `receptiehoek`, `trainer_b`) |
+| Detail page shows fields and username, never contact details | WORKS | [zoekertjes/[id]/page.tsx:26-59](../../app/zoekertjes/[id]/page.tsx#L26-L59) | The `contact_email` column is gone (#83, D-022, D-030); other users and visitors only read online ads, and a new conversation must be with the poster of an online ad (`validate_conversation_ad`, VR011) |
 | Logged-out "Contact opnemen" → login → back | **BROKEN** | [classified-detail-contact.tsx:25-39](../../components/classified-detail-contact.tsx#L25-L39), [messages.ts:97-99](../../app/actions/messages.ts#L97-L99) | The modal opens anyway; the visitor writes a message and then gets a "Je moet ingelogd zijn" toast. No redirect |
 | Removed ad URL → Dutch "niet beschikbaar" page | PARTIAL | [zoekertjes/[id]/page.tsx:82](../../app/zoekertjes/[id]/page.tsx#L82) | `notFound()` falls through to Next's default English 404; there's no `app/not-found.tsx` |
 
@@ -132,14 +132,14 @@ items.
 | Senior divisions only | **WORKS** | [classifieds-utils.ts](../../lib/classifieds-utils.ts), [classified_gender_and_diploma.sql](../../supabase/migrations/20261015093039_classified_gender_and_diploma.sql) | Same list as rumours (`promo4_heren` now labelled); checked by the server action and, for new or changed rows, by the database (#71) |
 | Server-side validation, Dutch messages, all fields stored | **WORKS** | [classifieds.ts](../../app/actions/classifieds.ts), [schemas.ts](../../lib/schemas.ts) | Fixed in #71: `createClassified` validates with `createClassifiedSchema` (Dutch messages); gender and diploma have their own columns and are shown on the ad (D-019) |
 | Lands on new ad's detail page with toast | **WORKS** | [classified-form.tsx](../../components/classified-form.tsx) | Fixed in #71: "Je zoekertje staat online" on the new ad |
-| Expiry date set and shown | MISSING | — | #84 |
+| Expiry date set and shown | **WORKS** | [zoekertjes_privacy_and_expiry.sql](../../supabase/migrations/20261018102058_zoekertjes_privacy_and_expiry.sql), [zoekertjes/[id]/page.tsx](../../app/zoekertjes/[id]/page.tsx) | #84: the database sets `expires_at` (next 31 August, at least 30 days, D-024); users can't change it. "Online tot …" on the ad and in "Mijn zoekertjes" |
 | Notice that name and club will be public | **WORKS** | [classified-form.tsx](../../components/classified-form.tsx) | Fixed in #71: "Je zoekertje is openbaar: …" above the submit button |
 
 ### J-05 — Player manages own zoekertjes · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| "Mijn zoekertjes" with status | **WORKS** | [zoekertjes/mijn/page.tsx](../../app/zoekertjes/mijn/page.tsx), [zoekertjes-mijn.spec.ts](../../e2e/zoekertjes-mijn.spec.ts) | #72: `/zoekertjes/mijn`, linked from the profile, lists every ad as Online, Gevonden or "Verwijderd door een moderator". There is no expired status until ads expire (#84) |
+| "Mijn zoekertjes" with status | **WORKS** | [zoekertjes/mijn/page.tsx](../../app/zoekertjes/mijn/page.tsx), [zoekertjes-mijn.spec.ts](../../e2e/zoekertjes-mijn.spec.ts) | #72: `/zoekertjes/mijn`, linked from the profile, lists every ad as Online, Gevonden, Verlopen or "Verwijderd door een moderator". #84: an expired ad has "Verlengen", which puts it back online by the same rule (`renew_classified()`) |
 | Edit | **WORKS** | [classifieds.ts](../../app/actions/classifieds.ts), [bewerken/page.tsx](../../app/zoekertjes/[id]/bewerken/page.tsx) | #72: `updateClassified` uses the create schema; the change shows at once in the list and on the detail page. The type stays fixed (owners can't update it); an ad a moderator removed can't be edited |
 | Mark "gevonden" (deactivate) | **WORKS** | [my-classified-actions.tsx](../../components/my-classified-actions.tsx) | #72: leaves the list and returns 404 for others; the owner still sees it and can put it back online. Conversations stay |
 | Delete with confirmation | **WORKS** | [my-classified-actions.tsx](../../components/my-classified-actions.tsx) | #72: confirmation dialog; conversations stay and show "Verwijderd zoekertje"; reports about the ad go with it (D-015). Suspended users can delete but not edit (D-016) |

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/app/actions/auth";
 import { ClassifiedsList } from "@/components/classifieds-list";
+import { isFeaturedNow } from "@/lib/classifieds-utils";
 
 async function getClassifieds() {
   const supabase = await createClient();
@@ -28,8 +29,10 @@ async function getClassifieds() {
     `,
     )
     .eq("is_active", true)
-    // RLS still shows removed ads to their author and staff (#69).
+    // RLS still shows removed and expired ads to their author and staff
+    // (#69, #84).
     .is("removed_at", null)
+    .gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -39,6 +42,7 @@ async function getClassifieds() {
   const rows = data ?? [];
   return rows.map((row: (typeof rows)[0]) => ({
     ...row,
+    is_featured: isFeaturedNow(row),
     profiles: Array.isArray(row.profiles)
       ? (row.profiles[0] ?? null)
       : row.profiles,

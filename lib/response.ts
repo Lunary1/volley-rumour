@@ -1,4 +1,8 @@
 import { BLOCKED_ERROR_CODE, BLOCKED_MESSAGE } from "@/lib/blocks";
+import {
+  CLASSIFIED_OFFLINE_ERROR_CODE,
+  CLASSIFIED_OFFLINE_MESSAGE,
+} from "@/lib/classifieds-utils";
 import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
 
 /**
@@ -55,6 +59,11 @@ export function extractErrorMessage(
   // A message or conversation across a block, refused by the database (#73).
   if ((error as { code?: string }).code === BLOCKED_ERROR_CODE) {
     return BLOCKED_MESSAGE;
+  }
+
+  // A new conversation about a zoekertje that went offline (#83, #84).
+  if ((error as { code?: string }).code === CLASSIFIED_OFFLINE_ERROR_CODE) {
+    return CLASSIFIED_OFFLINE_MESSAGE;
   }
 
   if (error instanceof Error) {

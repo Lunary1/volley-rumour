@@ -351,11 +351,15 @@ export async function getConversations({ archived = false } = {}) {
   const adTitles = new Map<string, string>();
 
   for (const [adType, adIds] of adsByType) {
-    const tableName = adType === "transfer" ? "transfers" : "classifieds";
-    const { data: ads } = await supabase
-      .from(tableName)
-      .select("id, title")
-      .in("id", adIds);
+    // A zoekertje that went offline is hidden by RLS, but its conversations
+    // still show its title (#84).
+    const { data } =
+      adType === "classified"
+        ? await supabase.rpc("conversation_classified_titles", {
+            p_ids: adIds,
+          })
+        : await supabase.from("transfers").select("id, title").in("id", adIds);
+    const ads = data as { id: string; title: string }[] | null;
 
     ads?.forEach((ad) => {
       adTitles.set(`${adType}-${ad.id}`, ad.title);
