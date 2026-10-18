@@ -46,7 +46,7 @@ ran without Supabase credentials, which is what CI will face.
 
 | Journey | Title                                    | Overall     | Top gap                                                                     |
 | ------- | ---------------------------------------- | ----------- | --------------------------------------------------------------------------- |
-| J-01    | Find a matching zoekertje                | **PARTIAL** | Logged-out contact dead-ends (search crash fixed in #59)    |
+| J-01    | Find a matching zoekertje                | **PARTIAL** | Filters not in the URL (#85), English 404 (#90); logged-out contact fixed (#86), search crash fixed (#59) |
 | J-02    | Read Transfer Talk / transfers           | **PARTIAL** | No pagination (X-9). Track record on cards (#88), transfer tabs fixed (#70, #82) |
 | J-03    | Create an account                        | **PARTIAL** | 16+ and terms gate for every account (#75, D-031); raw English errors, email-confirmation return unverified |
 | J-04    | Post "speler zoekt team"                 | **WORKS**   | Server action, gender stored, login first, public notice (#71); expiry date set and shown (#84) |
@@ -97,7 +97,7 @@ items.
 | Filter by type, province, division, position; reflected in URL | PARTIAL | [classifieds-list.tsx:83-121](../../components/classifieds-list.tsx#L83-L121) | Type and province only; filters live in component state, not the URL |
 | No error on empty description / anonymised author | **FIXED** (#59) | [classifieds-list.tsx:113](../../components/classifieds-list.tsx#L113), [zoekertjes-search.spec.ts](../../e2e/zoekertjes-search.spec.ts) | Search skips a `null` description and matches on title; a missing author shows as "Onbekend". Covered by a Playwright test with a seeded ad without description |
 | Detail page shows fields and username, never contact details | WORKS | [zoekertjes/[id]/page.tsx:26-59](../../app/zoekertjes/[id]/page.tsx#L26-L59) | The `contact_email` column is gone (#83, D-022, D-030); other users and visitors only read online ads, and a new conversation must be with the poster of an online ad (`validate_conversation_ad`, VR011) |
-| Logged-out "Contact opnemen" → login → back | **BROKEN** | [classified-detail-contact.tsx:25-39](../../components/classified-detail-contact.tsx#L25-L39), [messages.ts:97-99](../../app/actions/messages.ts#L97-L99) | The modal opens anyway; the visitor writes a message and then gets a "Je moet ingelogd zijn" toast. No redirect |
+| Logged-out "Contact opnemen" → login → back | **FIXED** (#86) | [classified-detail-contact.tsx](../../components/classified-detail-contact.tsx), [zoekertje-detail.spec.ts](../../e2e/zoekertje-detail.spec.ts) | Logged-out visitors get a link to `/auth/login?next=/zoekertjes/<id>` (works before hydration); after login they are back on the ad and the message form opens there |
 | Removed ad URL → Dutch "niet beschikbaar" page | PARTIAL | [zoekertjes/[id]/page.tsx:82](../../app/zoekertjes/[id]/page.tsx#L82) | `notFound()` falls through to Next's default English 404; there's no `app/not-found.tsx` |
 
 ### J-02 — Visitor reads Transfer Talk and transfers · PARTIAL
@@ -149,7 +149,7 @@ items.
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
-| Existing conversation → open it; else modal | WORKS | [classified-detail-contact.tsx:25-40](../../components/classified-detail-contact.tsx#L25-L40), [messages.ts:49-81](../../app/actions/messages.ts#L49-L81) | Logged-in path only (see J-01) |
+| Existing conversation → open it; else modal | WORKS | [classified-detail-contact.tsx:25-40](../../components/classified-detail-contact.tsx#L25-L40), [messages.ts:49-81](../../app/actions/messages.ts#L49-L81) | Logged out: login first and back to the ad (#86) |
 | No contact button on own ad | WORKS | [zoekertjes/[id]/page.tsx:165](../../app/zoekertjes/[id]/page.tsx#L165) | |
 | Real-time delivery; ad title and link in conversation | WORKS | [chat-interface.tsx:98-150](../../components/chat-interface.tsx#L98-L150), [[conversationId]/page.tsx:64-71](../../app/messages/[conversationId]/page.tsx#L64-L71) | Works for zoekertjes; transfer conversations would look in the wrong table (X-8), which is moot under D-004 |
 | Email notification to offline recipient | MISSING | — | No email sending exists anywhere |

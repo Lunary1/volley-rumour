@@ -247,6 +247,7 @@ export default async function ClassifiedDetailPage({
                   classifiedId={classified.id}
                   userId={classified.user_id}
                   userName={classified.profiles?.username ?? "deze gebruiker"}
+                  loggedIn={!!user}
                 />
               )}
               <ShareButton

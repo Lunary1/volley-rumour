@@ -1,4 +1,4 @@
-import { test, expect, seed } from "./fixtures";
+import { test, expect, seed, seedUsers, SEED_PASSWORD } from "./fixtures";
 
 // The detail page is about the ad, not the poster (issue #108).
 
@@ -51,4 +51,32 @@ test("sharing a zoekertje uses the ad title", async ({ page }) => {
   const text = new URL(opened[0]).searchParams.get("text");
   expect(text).toContain(`Bekijk dit zoekertje op VolleyRumours: ${ad.title}`);
   expect(text).toContain(`/zoekertjes/${ad.id}`);
+});
+
+test("logged-out contact goes to login and back to the ad (#86)", async ({
+  page,
+}) => {
+  const ad = seed.activeAd;
+  await page.goto(`/zoekertjes/${ad.id}`);
+  await page.getByRole("link", { name: "Contact opnemen" }).click();
+
+  // No message form before login: straight to the login page.
+  await page.waitForURL(
+    `/auth/login?next=${encodeURIComponent(`/zoekertjes/${ad.id}`)}`,
+  );
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  await page.getByLabel("E-mailadres").fill(seedUsers.tom.email);
+  await page.getByLabel("Wachtwoord", { exact: true }).fill(SEED_PASSWORD);
+  await page
+    .locator("form")
+    .getByRole("button", { name: "Inloggen", exact: true })
+    .click();
+
+  await page.waitForURL(`/zoekertjes/${ad.id}`);
+  // Tom has no conversation about this ad yet, so the message form opens.
+  await page.getByRole("button", { name: "Contact opnemen" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Contact vc_testdorp" }),
+  ).toBeVisible();
 });
