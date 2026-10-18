@@ -34,6 +34,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-025 | 2026-10-17 | Accepted | Minimal, content-free email notifications for messages and moderation outcomes, with an opt-out |
 | D-026 | 2026-10-17 | Accepted | A new message brings an archived conversation back to the inbox      |
 | D-027 | 2026-10-17 | Accepted | French and English are a nice-to-have, not a launch blocker; built with next-intl, Dutch the default |
+| D-028 | 2026-10-18 | Accepted | Waitlist emails are used for the launch email only, then wiped    |
 
 ---
 
@@ -649,3 +650,17 @@ as a nice-to-have and asked for the easiest common approach (2026-10-17).
 its own: it finds the English strings that leak into the UI (#90). Then
 French and English are added as translations: #143 and #144 in M3.
 
+
+## D-028 — Waitlist emails are wiped after the launch email
+
+**Context.** The coming-soon homepage collects email addresses in
+`waitlist_subscribers`, live in production, but the privacy page didn't
+mention the waitlist and nothing said how long the addresses are kept (#77).
+
+**Decision** (owner, 2026-10-18). **The waitlist is used for the launch email
+only.** Once that email has gone out (#95), the list is deleted. Keeping it
+until people unsubscribe, or for a fixed period after launch, were considered.
+
+**Consequences.** The privacy page says so. Sending the launch email and
+wiping the list are one task in #95; later announcements need people to opt
+in again, for example through the notification settings (D-025).

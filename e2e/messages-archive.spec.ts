@@ -61,7 +61,6 @@ test("archiving hides a conversation from my inbox only, and I can put it back",
 
   // Tom still has it in his inbox.
   const tomContext = await browser.newContext();
-  await tomContext.route(/datadoghq\.eu/, (route) => route.abort());
   const tom = await tomContext.newPage();
   await loginAs(tom, "tom");
   await tom.goto("/messages");

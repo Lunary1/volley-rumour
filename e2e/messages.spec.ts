@@ -32,10 +32,6 @@ test("a message arrives live and the sender sees it was read", async ({
   const clubContext = await browser.newContext();
   const jana = await janaContext.newPage();
   const club = await clubContext.newPage();
-  // Same Datadog block as the `page` fixture.
-  for (const context of [janaContext, clubContext]) {
-    await context.route(/datadoghq\.eu/, (route) => route.abort());
-  }
 
   await loginAs(club, "club");
   await club.goto(conversationUrl);

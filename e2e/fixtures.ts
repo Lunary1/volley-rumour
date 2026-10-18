@@ -1,9 +1,4 @@
-import {
-  test as base,
-  expect,
-  type Browser,
-  type Page,
-} from "@playwright/test";
+import { test, expect, type Browser, type Page } from "@playwright/test";
 
 // Accounts created by supabase/seed.sql. Keep the two in sync.
 export const SEED_PASSWORD = "test-wachtwoord";
@@ -193,7 +188,6 @@ export async function submitRumour(
 export async function pageFor(browser: Browser, user: SeedUser): Promise<Page> {
   test.slow();
   const context = await browser.newContext();
-  await context.route(/datadoghq\.eu/, (route) => route.abort());
   const page = await context.newPage();
   await loginAs(page, user);
   return page;
@@ -206,16 +200,4 @@ export function queueItem(page: Page, playerName: string) {
   });
 }
 
-export const test = base.extend<{ blockThirdParties: void }>({
-  // A production build sends Datadog RUM sessions to the production app;
-  // tests must never end up in its analytics.
-  blockThirdParties: [
-    async ({ context }, use) => {
-      await context.route(/datadoghq\.eu/, (route) => route.abort());
-      await use();
-    },
-    { auto: true },
-  ],
-});
-
-export { expect };
+export { test, expect };

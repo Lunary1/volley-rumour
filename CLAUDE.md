@@ -22,8 +22,12 @@ in `docs/product/decisions.md`.
 
 Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Supabase
 (Postgres + RLS, Auth with email/password and Google OAuth, Realtime) ·
-shadcn/ui (new-york) on Radix · Tailwind 4 · React Hook Form + Zod · Vercel ·
-Datadog RUM. Package manager: **npm only** (D-007) — never pnpm or yarn.
+shadcn/ui (new-york) on Radix · Tailwind 4 · React Hook Form + Zod · Vercel
+(Web Analytics, Speed Insights). Package manager: **npm only** (D-007) — never
+pnpm or yarn.
+
+A new service that receives personal data (analytics, email, error tracking)
+is listed on the privacy page (`app/privacy/page.tsx`) in the same PR (#77).
 
 ## Commands
 
