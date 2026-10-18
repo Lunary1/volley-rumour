@@ -24,6 +24,9 @@ const TAKEDOWN_RUMOUR_IDS = [
 // volle_wachtrij, who has no seeded votes; only the vote tests vote as them
 // (#129).
 const VOTER_ID = "a0000000-0000-4000-8000-000000000008";
+// test_nieuwkomer, who hasn't accepted the terms; only the gate tests use it
+// (#75).
+const NEWCOMER_ID = "a0000000-0000-4000-8000-00000000000d";
 
 /**
  * Undoes what earlier runs left behind, so reruns without `npm run db:reset`
@@ -44,6 +47,7 @@ const VOTER_ID = "a0000000-0000-4000-8000-000000000008";
  *   (#81).
  * - volle_wachtrij's votes (#129). The vote trigger recounts the rumours
  *   they were on (#78).
+ * - test_nieuwkomer's acceptance of the terms (#75), so the gate asks again.
  */
 export default async function globalSetup() {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -155,5 +159,15 @@ export default async function globalSetup() {
     .eq("user_id", VOTER_ID);
   if (votes.error) {
     throw new Error(`Cleaning up vote-test votes: ${votes.error.message}`);
+  }
+
+  const acceptance = await admin
+    .from("terms_acceptances")
+    .delete()
+    .eq("user_id", NEWCOMER_ID);
+  if (acceptance.error) {
+    throw new Error(
+      `Resetting the gate-test acceptance: ${acceptance.error.message}`,
+    );
   }
 }

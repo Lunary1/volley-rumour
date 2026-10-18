@@ -17,6 +17,7 @@
 --   geschorst@example.test test_geschorst   user       only for suspension tests (#80)
 --   kandidaat@example.test test_kandidaat   user       only for badge and role tests (#80)
 --   bron@example.test      trouwe_bron      user       5 van 6 bevestigd: a Betrouwbare bron (#88)
+--   nieuwkomer@example.test test_nieuwkomer user      hasn't confirmed 16+ or the terms yet: only for gate tests (#75)
 --
 -- Logging out ends every session of that user (Supabase's default global
 -- sign-out), so a test that logs out would break parallel tests using the
@@ -39,22 +40,29 @@ SELECT
   '00000000-0000-0000-0000-000000000000', u.id, 'authenticated', 'authenticated',
   u.email, extensions.crypt('test-wachtwoord', extensions.gen_salt('bf')), now(),
   '{"provider": "email", "providers": ["email"]}',
-  jsonb_build_object('username', u.username, 'full_name', u.full_name),
+  -- The sign-up form's two checkboxes (#75): the trigger records the
+  -- acceptance. test_nieuwkomer has neither, like an account from before #75.
+  jsonb_build_object('username', u.username, 'full_name', u.full_name)
+    || CASE WHEN u.accepted
+         THEN '{"age_confirmed": true, "terms_accepted": true}'::jsonb
+         ELSE '{}'::jsonb
+       END,
   now() - u.age, now() - u.age,
   '', '', '', ''
 FROM (VALUES
-  ('a0000000-0000-4000-8000-000000000001'::uuid, 'jana@example.test',      'speler_jana',  'Jana Voorbeeld',  interval '60 days'),
-  ('a0000000-0000-4000-8000-000000000002'::uuid, 'tom@example.test',       'coach_tom',    'Tom Testmans',    interval '45 days'),
-  ('a0000000-0000-4000-8000-000000000003'::uuid, 'club@example.test',      'vc_testdorp',  'VC Testdorp',     interval '90 days'),
-  ('a0000000-0000-4000-8000-000000000004'::uuid, 'moderator@example.test', 'moderator_vr', 'Moderator VR',    interval '120 days'),
-  ('a0000000-0000-4000-8000-000000000005'::uuid, 'uitlog@example.test',    'test_uitlogger', 'Test Uitlogger', interval '10 days'),
-  ('a0000000-0000-4000-8000-000000000006'::uuid, 'reset@example.test',     'test_reset',   'Test Herstel',    interval '8 days'),
-  ('a0000000-0000-4000-8000-000000000008'::uuid, 'wachtrij@example.test',  'volle_wachtrij', 'Volle Wachtrij', interval '20 days'),
-  ('a0000000-0000-4000-8000-000000000009'::uuid, 'beheerder@example.test', 'beheerder_vr', 'Beheerder VR',    interval '150 days'),
-  ('a0000000-0000-4000-8000-00000000000a'::uuid, 'geschorst@example.test', 'test_geschorst', 'Test Geschorst', interval '15 days'),
-  ('a0000000-0000-4000-8000-00000000000b'::uuid, 'kandidaat@example.test', 'test_kandidaat', 'Test Kandidaat', interval '12 days'),
-  ('a0000000-0000-4000-8000-00000000000c'::uuid, 'bron@example.test',      'trouwe_bron',  'Trouwe Bron',     interval '200 days')
-) AS u (id, email, username, full_name, age);
+  ('a0000000-0000-4000-8000-000000000001'::uuid, 'jana@example.test',      'speler_jana',  'Jana Voorbeeld',  interval '60 days', true),
+  ('a0000000-0000-4000-8000-000000000002'::uuid, 'tom@example.test',       'coach_tom',    'Tom Testmans',    interval '45 days', true),
+  ('a0000000-0000-4000-8000-000000000003'::uuid, 'club@example.test',      'vc_testdorp',  'VC Testdorp',     interval '90 days', true),
+  ('a0000000-0000-4000-8000-000000000004'::uuid, 'moderator@example.test', 'moderator_vr', 'Moderator VR',    interval '120 days', true),
+  ('a0000000-0000-4000-8000-000000000005'::uuid, 'uitlog@example.test',    'test_uitlogger', 'Test Uitlogger', interval '10 days', true),
+  ('a0000000-0000-4000-8000-000000000006'::uuid, 'reset@example.test',     'test_reset',   'Test Herstel',    interval '8 days', true),
+  ('a0000000-0000-4000-8000-000000000008'::uuid, 'wachtrij@example.test',  'volle_wachtrij', 'Volle Wachtrij', interval '20 days', true),
+  ('a0000000-0000-4000-8000-000000000009'::uuid, 'beheerder@example.test', 'beheerder_vr', 'Beheerder VR',    interval '150 days', true),
+  ('a0000000-0000-4000-8000-00000000000a'::uuid, 'geschorst@example.test', 'test_geschorst', 'Test Geschorst', interval '15 days', true),
+  ('a0000000-0000-4000-8000-00000000000b'::uuid, 'kandidaat@example.test', 'test_kandidaat', 'Test Kandidaat', interval '12 days', true),
+  ('a0000000-0000-4000-8000-00000000000c'::uuid, 'bron@example.test',      'trouwe_bron',  'Trouwe Bron',     interval '200 days', true),
+  ('a0000000-0000-4000-8000-00000000000d'::uuid, 'nieuwkomer@example.test', 'test_nieuwkomer', 'Test Nieuwkomer', interval '30 days', false)
+) AS u (id, email, username, full_name, age, accepted);
 
 INSERT INTO auth.identities (
   id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at
@@ -75,7 +83,7 @@ INSERT INTO auth.users (
   '00000000-0000-0000-0000-000000000000', 'a0000000-0000-4000-8000-000000000007',
   'authenticated', 'authenticated', 'google@example.test', '', now(),
   '{"provider": "google", "providers": ["google"]}',
-  '{"username": "test_google", "full_name": "Test Google"}',
+  '{"username": "test_google", "full_name": "Test Google", "age_confirmed": true, "terms_accepted": true}',
   now() - interval '7 days', now() - interval '7 days',
   '', '', '', ''
 );

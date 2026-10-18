@@ -18,6 +18,11 @@ export default function VoorwaardenPage() {
             Voordat je deelneemt aan VolleyRumours, lees alstublieft deze
             voorwaarden zorgvuldig door.
           </p>
+          {/* Same date as current_terms_version() in the database (#75):
+              change both together, in a migration. */}
+          <p className="mt-4 text-sm text-muted-foreground">
+            Versie van 18 oktober 2026
+          </p>
         </div>
       </section>
 
@@ -33,6 +38,19 @@ export default function VoorwaardenPage() {
             volleyballiefhebbers om transfers, geruchten, en classified
             advertenties te delen. Door VolleyRumours te gebruiken, ga je
             akkoord met deze voorwaarden.
+          </p>
+        </div>
+
+        {/* Age (#75, D-003) */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            Wie mag een account maken
+          </h2>
+          <p className="text-muted-foreground">
+            Je moet 16 jaar of ouder zijn om een account te maken. Bij het
+            registreren bevestig je dat, en aanvaard je deze voorwaarden. We
+            bewaren wanneer je dat deed en welke versie van de voorwaarden je
+            aanvaardde.
           </p>
         </div>
 
@@ -261,9 +279,8 @@ export default function VoorwaardenPage() {
           </h2>
           <div className="space-y-4 text-muted-foreground">
             <p>
-              We kunnen deze voorwaarden op elk moment aanpassen. Grote
-              wijzigingen zullen via e-mail aangekondigd worden. Voortgezet
-              gebruik van VolleyRumours na wijzigingen betekent acceptatie.
+              We kunnen deze voorwaarden aanpassen. Bij een nieuwe versie vragen
+              we je ze opnieuw te aanvaarden voor je de site verder gebruikt.
             </p>
           </div>
         </div>

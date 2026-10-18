@@ -22,7 +22,7 @@ test("a user deletes their account and everything personal goes", async ({
     email,
     password: SEED_PASSWORD,
     email_confirm: true,
-    user_metadata: { username },
+    user_metadata: { username, age_confirmed: true, terms_accepted: true },
   });
   expect(error).toBeNull();
   const userId = data.user!.id;

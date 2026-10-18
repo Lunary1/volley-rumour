@@ -37,6 +37,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-028 | 2026-10-18 | Accepted | Waitlist emails are used for the launch email only, then wiped    |
 | D-029 | 2026-10-18 | Accepted | Account deletion also deletes unpublished rumours; zoekertjes left ownerless by earlier deletions are deleted |
 | D-030 | 2026-10-18 | Accepted | Stored zoekertje contact emails are deleted; ads online at the expiry rollout run until 31 August 2027 |
+| D-031 | 2026-10-18 | Accepted | 16+ and terms are accepted per terms version; anyone without the current one is asked on /welkom |
 
 ---
 
@@ -708,3 +709,31 @@ date is added.
 there's nothing left to leak. No ad disappears at launch; stale ads leave the
 list when their posters mark them gevonden or delete them, or at the end of
 the season.
+
+## D-031 — The age and terms gate asks per terms version
+
+**Context.** D-003 asks for a 16+ confirmation at sign-up and the same gate for
+Google sign-ups. #75 adds the terms, the stored timestamp and version, and asks
+existing accounts once.
+
+**Decision** (agent call in #75, 2026-10-18; owner to confirm in the PR).
+- **One acceptance covers both**: the 16+ confirmation and the terms are two
+  required checkboxes on one form, stored as one row per user and terms
+  version, with the time.
+- **The database owns the version** (`current_terms_version()`, the date on
+  `/voorwaarden`). A new version is a migration, and asks everyone again on
+  their next visit. The terms page says so, instead of "continued use means
+  acceptance".
+- **The gate is in the proxy, for every logged-in user**: without an
+  acceptance of the current version, every page except the info pages, the
+  auth pages and the takedown form sends them to `/welkom`, then back. That
+  covers Google sign-ups and accounts from before #75 alike.
+- **It is a declaration, not a security boundary**: the database doesn't
+  refuse writes without an acceptance, and a failed check lets the request
+  through. Someone who skips the form through the raw API has still not
+  declared anything, and is asked on their first visit.
+
+**Consequences.** Every existing production account is asked once after
+launch. Coming-soon mode closes `/welkom` with the other routes, so the gate
+waits for the launch. Changing the terms text without a new version doesn't
+ask anyone again.
