@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
+import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/schemas";
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
@@ -55,8 +56,8 @@ export async function updatePassword(
     return { error: "Je moet ingelogd zijn" };
   }
 
-  if (newPassword.length < 8) {
-    return { error: "Wachtwoord moet minimaal 8 tekens zijn" };
+  if (newPassword.length < PASSWORD_MIN_LENGTH) {
+    return { error: PASSWORD_MIN_MESSAGE };
   }
 
   // Try to sign in with current email and password to verify

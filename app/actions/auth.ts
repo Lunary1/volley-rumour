@@ -9,6 +9,12 @@ import { z } from "zod";
 import { isRecoverySession } from "@/lib/supabase/recovery";
 import { safeNextPath } from "@/lib/utils";
 import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MIN_MESSAGE,
+  signUpSchema,
+  type SignUpField,
+} from "@/lib/schemas";
+import {
   errorResponse,
   successResponse,
   type ActionResponse,
@@ -53,6 +59,132 @@ export async function login(email: string, password: string) {
 
   revalidatePath("/", "layout");
   return { success: true };
+}
+
+export type SignUpResult =
+  | { success: true; data: { confirmEmail: boolean } }
+  | { success: false; error: string; field?: SignUpField };
+
+const USERNAME_TAKEN = "Deze gebruikersnaam bestaat al. Kies een andere.";
+
+async function usernameTaken(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  username: string,
+) {
+  // Case-insensitive, like the sign-up trigger; `_` is a LIKE wildcard.
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .ilike("username", username.replaceAll("_", "\\_"))
+    .limit(1);
+  return (data?.length ?? 0) > 0;
+}
+
+/**
+ * #89 – Email sign-up. Validates with Dutch messages, refuses a taken
+ * username (the sign-up trigger refuses it too, VR012), and sends the
+ * confirmation link through /auth/callback so it lands on `next`.
+ *
+ * An address that is already registered gets the same "check your email"
+ * answer as a new one, so the form can't be used to find out who has an
+ * account. With "Confirm email" on, Supabase sends no email in that case.
+ */
+export async function signUp(
+  _previous: SignUpResult | null,
+  formData: FormData,
+): Promise<SignUpResult> {
+  if (
+    formData.get("ageConfirmed") !== "on" ||
+    formData.get("termsAccepted") !== "on"
+  ) {
+    return {
+      success: false,
+      error:
+        "Bevestig dat je 16 jaar of ouder bent en aanvaard de voorwaarden.",
+    };
+  }
+
+  const parsed = signUpSchema.safeParse({
+    username: formData.get("username") ?? "",
+    email: formData.get("email") ?? "",
+    password: formData.get("password") ?? "",
+  });
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return {
+      success: false,
+      error: issue.message,
+      field: issue.path[0] as SignUpField,
+    };
+  }
+  const { username, email, password } = parsed.data;
+
+  const supabase = await createClient();
+  if (await usernameTaken(supabase, username)) {
+    return { success: false, error: USERNAME_TAKEN, field: "username" };
+  }
+
+  const origin = (await headers()).get("origin") || "";
+  const next = safeNextPath(formData.get("next")?.toString());
+  const callback = new URLSearchParams({ flow: "signup" });
+  if (next !== "/") callback.set("next", next);
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?${callback}`,
+      // The sign-up trigger records the acceptance with the current terms
+      // version (#75).
+      data: { username, age_confirmed: true, terms_accepted: true },
+    },
+  });
+
+  if (error) {
+    switch (error.code) {
+      case "user_already_exists":
+      case "email_exists":
+        // Only without "Confirm email"; see above.
+        return successResponse({ confirmEmail: true });
+      case "weak_password":
+        return {
+          success: false,
+          error: PASSWORD_MIN_MESSAGE,
+          field: "password",
+        };
+      case "email_address_invalid":
+        return {
+          success: false,
+          error: "Vul een geldig e-mailadres in",
+          field: "email",
+        };
+      case "signup_disabled":
+      case "email_provider_disabled":
+        return {
+          success: false,
+          error: "Registreren is op dit moment niet mogelijk.",
+        };
+      case "over_email_send_rate_limit":
+      case "over_request_rate_limit":
+        return {
+          success: false,
+          error: "Te veel pogingen. Probeer het over een uur opnieuw.",
+        };
+    }
+    // The trigger refusing a username taken in the meantime shows up as a
+    // generic database error.
+    if (await usernameTaken(supabase, username)) {
+      return { success: false, error: USERNAME_TAKEN, field: "username" };
+    }
+    return {
+      success: false,
+      error: "Registreren is mislukt. Probeer het later opnieuw.",
+    };
+  }
+
+  // Without "Confirm email" the user is logged in straight away.
+  if (data.session) revalidatePath("/", "layout");
+  return successResponse({ confirmEmail: !data.session });
 }
 
 // Use React cache() for request-scoped deduplication — automatically
@@ -135,7 +267,7 @@ export async function requestPasswordReset(email: string) {
 
 const newPasswordSchema = z
   .object({
-    password: z.string().min(8, "Wachtwoord moet minimaal 8 tekens zijn"),
+    password: z.string().min(PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE),
     confirmPassword: z.string(),
   })
   .refine((v) => v.password === v.confirmPassword, {

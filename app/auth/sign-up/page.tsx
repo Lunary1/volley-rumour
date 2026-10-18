@@ -2,8 +2,7 @@
 
 import React, { Suspense } from "react";
 
-import { createClient } from "@/lib/supabase/client";
-import { signInWithGoogle } from "@/app/actions/auth";
+import { signInWithGoogle, signUp } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,8 +15,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TermsCheckboxes } from "@/components/terms-checkboxes";
 import { useIsClient } from "@/lib/use-is-client";
+import { safeNextPath } from "@/lib/utils";
+import {
+  PASSWORD_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  type SignUpField,
+} from "@/lib/schemas";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /**
@@ -49,65 +55,48 @@ function SignUpPageInner() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [success, setSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, startTransition] = useTransition();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
   const isClient = useIsClient();
   const searchParams = useSearchParams();
+  // Where the user came from, for after the confirmation link (#89).
+  const next = safeNextPath(searchParams.get("next"));
+  const nextQuery = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
   // Error code set by /auth/callback on failure, read once on first render
   const errorCode = searchParams.get("error");
   const [error, setError] = useState<string | null>(() =>
     errorCode ? getOAuthErrorMessage(errorCode) : null,
   );
+  const [errorField, setErrorField] = useState<SignUpField | null>(null);
 
   // Clean the URL so the message doesn't stick around on refresh
   useEffect(() => {
-    if (errorCode) router.replace("/auth/sign-up", { scroll: false });
-  }, [errorCode, router]);
+    if (errorCode)
+      router.replace(`/auth/sign-up${nextQuery}`, { scroll: false });
+  }, [errorCode, nextQuery, router]);
 
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignUp = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // The browser already refuses the form without both checkboxes (#75).
     const form = new FormData(e.currentTarget);
-    if (
-      form.get("ageConfirmed") !== "on" ||
-      form.get("termsAccepted") !== "on"
-    ) {
-      setError(
-        "Bevestig dat je 16 jaar of ouder bent en aanvaard de voorwaarden.",
-      );
-      return;
-    }
-    const supabase = createClient();
-    setIsLoading(true);
     setError(null);
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            window.location.origin,
-          // The sign-up trigger records the acceptance with the
-          // current terms version (#75).
-          data: {
-            username,
-            age_confirmed: true,
-            terms_accepted: true,
-          },
-        },
-      });
-      if (error) throw error;
-
-      setSuccess(true);
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Er ging iets mis");
-    } finally {
-      setIsLoading(false);
-    }
+    setErrorField(null);
+    startTransition(async () => {
+      const result = await signUp(null, form);
+      if (!result.success) {
+        setError(result.error);
+        setErrorField(result.field ?? null);
+      } else if (result.data.confirmEmail) {
+        setSuccess(true);
+      } else {
+        router.push(next);
+        router.refresh();
+      }
+    });
   };
+
+  const fieldError = (field: SignUpField) =>
+    errorField === field ? error : null;
 
   if (success) {
     return (
@@ -124,7 +113,7 @@ function SignUpPageInner() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href="/auth/login">
+              <Link href={`/auth/login${nextQuery}`}>
                 <Button
                   variant="outline"
                   className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
@@ -164,7 +153,7 @@ function SignUpPageInner() {
                     setIsGoogleLoading(true);
                     setError(null);
                     try {
-                      const result = await signInWithGoogle();
+                      const result = await signInWithGoogle(next);
                       if (result?.error) {
                         setError(result.error);
                       }
@@ -214,12 +203,25 @@ function SignUpPageInner() {
                     </Label>
                     <Input
                       id="username"
+                      name="username"
                       type="text"
+                      autoComplete="username"
                       placeholder="jouwgebruikersnaam"
                       required
+                      minLength={USERNAME_MIN_LENGTH}
+                      maxLength={USERNAME_MAX_LENGTH}
+                      pattern="[A-Za-z0-9_]+"
+                      title="Letters, cijfers en _"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      aria-invalid={!!fieldError("username")}
+                      aria-describedby="username-hint"
                       className="bg-input border-border text-foreground"
+                    />
+                    <FieldMessage
+                      id="username-hint"
+                      error={fieldError("username")}
+                      hint={`${USERNAME_MIN_LENGTH} tot ${USERNAME_MAX_LENGTH} tekens: letters, cijfers en _`}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -228,13 +230,18 @@ function SignUpPageInner() {
                     </Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
+                      autoComplete="email"
                       placeholder="je@email.com"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      aria-invalid={!!fieldError("email")}
+                      aria-describedby="email-hint"
                       className="bg-input border-border text-foreground"
                     />
+                    <FieldMessage id="email-hint" error={fieldError("email")} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="password" className="text-foreground">
@@ -242,19 +249,30 @@ function SignUpPageInner() {
                     </Label>
                     <Input
                       id="password"
+                      name="password"
                       type="password"
+                      autoComplete="new-password"
                       required
-                      minLength={6}
+                      minLength={PASSWORD_MIN_LENGTH}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      aria-invalid={!!fieldError("password")}
+                      aria-describedby="password-hint"
                       className="bg-input border-border text-foreground"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Minimaal 6 karakters
-                    </p>
+                    <FieldMessage
+                      id="password-hint"
+                      error={fieldError("password")}
+                      hint={`Minimaal ${PASSWORD_MIN_LENGTH} tekens`}
+                    />
                   </div>
                   <TermsCheckboxes />
-                  {error && <p className="text-sm text-destructive">{error}</p>}
+                  <input type="hidden" name="next" value={next} />
+                  {error && !errorField && (
+                    <p role="alert" className="text-sm text-destructive">
+                      {error}
+                    </p>
+                  )}
                   <Button
                     type="submit"
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -266,7 +284,7 @@ function SignUpPageInner() {
                 <div className="mt-4 text-center text-sm text-muted-foreground">
                   Al een account?{" "}
                   <Link
-                    href="/auth/login"
+                    href={`/auth/login${nextQuery}`}
                     className="underline underline-offset-4 text-primary hover:text-primary/80"
                   >
                     Inloggen
@@ -278,5 +296,30 @@ function SignUpPageInner() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** A field's error in red, or its hint while there is none. */
+function FieldMessage({
+  id,
+  error,
+  hint,
+}: {
+  id: string;
+  error: string | null;
+  hint?: string;
+}) {
+  if (error) {
+    return (
+      <p id={id} role="alert" className="text-xs text-destructive">
+        {error}
+      </p>
+    );
+  }
+  if (!hint) return null;
+  return (
+    <p id={id} className="text-xs text-muted-foreground">
+      {hint}
+    </p>
   );
 }

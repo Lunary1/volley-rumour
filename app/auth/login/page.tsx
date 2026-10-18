@@ -35,6 +35,8 @@ function getOAuthErrorMessage(code: string): string {
       return "Google login is momenteel niet beschikbaar.";
     case "reset-link-invalid":
       return "Je herstellink is ongeldig of verlopen. Vraag een nieuwe aan en open hem in dezelfde browser.";
+    case "confirm-link-invalid":
+      return "Je bevestigingslink is ongeldig of verlopen. Is je account al bevestigd, log dan in. Anders registreer je opnieuw met hetzelfde e-mailadres voor een nieuwe link.";
     default:
       return "Er ging iets mis. Probeer het opnieuw.";
   }
@@ -70,16 +72,22 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(() =>
     errorCode ? getOAuthErrorMessage(errorCode) : null,
   );
+  // Set by /auth/callback when a confirmation link was opened in another
+  // browser: the address is confirmed, but there is no session here (#89).
+  const confirmed = searchParams.get("bevestigd") === "1";
+  const [notice] = useState(() =>
+    confirmed ? "Je e-mailadres is bevestigd. Log in om verder te gaan." : null,
+  );
 
   // Clean the URL so the message doesn't stick around on refresh
   useEffect(() => {
-    if (!errorCode) return;
+    if (!errorCode && !confirmed) return;
     const url =
       next === "/"
         ? "/auth/login"
         : `/auth/login?next=${encodeURIComponent(next)}`;
     router.replace(url, { scroll: false });
-  }, [errorCode, next, router]);
+  }, [errorCode, confirmed, next, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,8 +102,8 @@ function LoginPage() {
       } else {
         router.push(next);
       }
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+    } catch {
+      setError("Er ging iets mis. Probeer het opnieuw.");
       setIsLoading(false);
     }
   };
@@ -290,6 +298,11 @@ function LoginPage() {
                           hierboven.
                         </p>
                       </div>
+                      {notice && !error && (
+                        <p role="status" className="text-sm text-foreground">
+                          {notice}
+                        </p>
+                      )}
                       {error && <p className="text-sm text-red-500">{error}</p>}
                       <Button
                         type="submit"
@@ -302,7 +315,11 @@ function LoginPage() {
                     <div className="mt-4 text-center text-sm text-muted-foreground">
                       Nog geen account?{" "}
                       <Link
-                        href="/auth/sign-up"
+                        href={
+                          next === "/"
+                            ? "/auth/sign-up"
+                            : `/auth/sign-up?next=${encodeURIComponent(next)}`
+                        }
                         className="underline underline-offset-4 text-primary hover:text-primary/80"
                       >
                         Registreer

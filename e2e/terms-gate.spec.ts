@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { SEED_PASSWORD, test, expect, newcomer } from "./fixtures";
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
+import { getAuthLinkFromEmail } from "./mailpit";
 
 // Age and terms gate (issue #75, D-003). Email sign-up asks for both
 // declarations on the form. Everyone else who hasn't accepted (Google
@@ -40,6 +41,7 @@ test("email sign-up needs both checkboxes and stores the acceptance", async ({
   await expect(page.getByText("Controleer je e-mail")).toBeHidden();
 
   await page.getByLabel(TERMS).check();
+  const sentAt = new Date(Date.now() - 1_000);
   await submit.click();
   await expect(page.getByText("Controleer je e-mail")).toBeVisible();
 
@@ -61,8 +63,9 @@ test("email sign-up needs both checkboxes and stores the acceptance", async ({
       Date.now() - new Date(acceptances![0].accepted_at).getTime(),
     ).toBeLessThan(60_000);
 
-    // Local sign-ups need no email confirmation, so the user is logged in,
-    // and not asked again.
+    // The confirmation link logs them in, and they aren't asked again.
+    await page.goto(await getAuthLinkFromEmail(email, sentAt));
+    await page.waitForURL("/");
     await page.goto("/zoekertjes");
     await expect(page).toHaveURL("/zoekertjes");
   } finally {

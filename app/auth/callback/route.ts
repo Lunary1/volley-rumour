@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
+import { safeNextPath } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const errorParam = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
-  // if "next" is in param, use it as the redirect URL
-  let next = searchParams.get("next") ?? "/";
-  if (!next.startsWith("/")) {
-    // if "next" is not a relative URL, use the default
-    next = "/";
-  }
+  // Only a path on this site, never //other.host
+  const next = safeNextPath(searchParams.get("next"));
 
   // A password-reset link that is expired, already used or opened in another
   // browser (#58). Supabase reports an expired link as access_denied too.
@@ -20,6 +17,21 @@ export async function GET(request: NextRequest) {
   const resetLinkInvalidUrl = `${origin}/auth/login?error=reset-link-invalid`;
   if (isPasswordReset && errorParam) {
     return NextResponse.redirect(resetLinkInvalidUrl);
+  }
+
+  // A sign-up confirmation link (#89). Supabase confirms the address before
+  // it sends the browser here, so if the code can't be exchanged (the link
+  // was opened in another browser), the user only has to log in.
+  const isSignUpConfirmation = searchParams.get("flow") === "signup";
+  const loginUrl = (param: string, value: string) => {
+    const url = new URL("/auth/login", origin);
+    url.searchParams.set(param, value);
+    if (next !== "/") url.searchParams.set("next", next);
+    return url.toString();
+  };
+  if (isSignUpConfirmation && errorParam) {
+    // Expired or already used.
+    return NextResponse.redirect(loginUrl("error", "confirm-link-invalid"));
   }
 
   // Handle OAuth provider errors (e.g. user cancelled, access_denied)
@@ -119,6 +131,10 @@ export async function GET(request: NextRequest) {
 
   if (isPasswordReset) {
     return NextResponse.redirect(resetLinkInvalidUrl);
+  }
+
+  if (isSignUpConfirmation) {
+    return NextResponse.redirect(loginUrl("bevestigd", "1"));
   }
 
   // return the user to an error page with instructions
