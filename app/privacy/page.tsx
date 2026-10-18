@@ -65,7 +65,8 @@ export default function PrivacyPage() {
                 <strong>Accountgegevens:</strong> E-mailadres, wachtwoord
                 (beveiligd opgeslagen), gebruikersnaam, weergavenaam en avatar.
                 Log je in met Google, dan nemen we je naam en profielfoto van
-                Google over.
+                Google over. Ook wanneer je bevestigde dat je 16 jaar of ouder
+                bent en welke versie van de voorwaarden je aanvaardde.
               </li>
               <li>
                 <strong>Inhoudsgegevens:</strong> Geruchten, zoekertjes en

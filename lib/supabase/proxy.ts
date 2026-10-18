@@ -1,5 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isComingSoon } from "@/lib/coming-soon";
+import { isOpenWithoutTerms, TERMS_COOKIE, WELCOME_PATH } from "@/lib/terms";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -37,7 +39,43 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: If you remove getUser() and you use server-side rendering
   // with the Supabase client, your users may be randomly logged out.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Age and terms gate (#75). Coming-soon mode closes these routes anyway,
+  // and /welkom with them, so the gate waits for the launch.
+  if (
+    user &&
+    !isComingSoon() &&
+    !isOpenWithoutTerms(request.nextUrl.pathname) &&
+    request.cookies.get(TERMS_COOKIE)?.value !== user.id
+  ) {
+    const { data: accepted, error } = await supabase.rpc("has_accepted_terms");
+    if (accepted === true) {
+      supabaseResponse.cookies.set(TERMS_COOKIE, user.id, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: request.nextUrl.protocol === "https:",
+        path: "/",
+      });
+    } else if (!error) {
+      // A failed check lets the request through: the gate is a declaration,
+      // not a security boundary, and shouldn't lock everyone out.
+      const url = request.nextUrl.clone();
+      url.pathname = WELCOME_PATH;
+      url.search = "";
+      url.searchParams.set(
+        "next",
+        request.nextUrl.pathname + request.nextUrl.search,
+      );
+      const redirect = NextResponse.redirect(url);
+      supabaseResponse.cookies
+        .getAll()
+        .forEach((cookie) => redirect.cookies.set(cookie));
+      return redirect;
+    }
+  }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:

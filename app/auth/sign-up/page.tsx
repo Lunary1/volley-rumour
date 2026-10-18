@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TermsCheckboxes } from "@/components/terms-checkboxes";
+import { useIsClient } from "@/lib/use-is-client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -50,6 +52,7 @@ function SignUpPageInner() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
+  const isClient = useIsClient();
   const searchParams = useSearchParams();
   // Error code set by /auth/callback on failure, read once on first render
   const errorCode = searchParams.get("error");
@@ -62,8 +65,19 @@ function SignUpPageInner() {
     if (errorCode) router.replace("/auth/sign-up", { scroll: false });
   }, [errorCode, router]);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // The browser already refuses the form without both checkboxes (#75).
+    const form = new FormData(e.currentTarget);
+    if (
+      form.get("ageConfirmed") !== "on" ||
+      form.get("termsAccepted") !== "on"
+    ) {
+      setError(
+        "Bevestig dat je 16 jaar of ouder bent en aanvaard de voorwaarden.",
+      );
+      return;
+    }
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
@@ -76,8 +90,12 @@ function SignUpPageInner() {
           emailRedirectTo:
             process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
             window.location.origin,
+          // The sign-up trigger records the acceptance with the
+          // current terms version (#75).
           data: {
             username,
+            age_confirmed: true,
+            terms_accepted: true,
           },
         },
       });
@@ -235,11 +253,12 @@ function SignUpPageInner() {
                       Minimaal 6 karakters
                     </p>
                   </div>
+                  <TermsCheckboxes />
                   {error && <p className="text-sm text-destructive">{error}</p>}
                   <Button
                     type="submit"
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                    disabled={isLoading}
+                    disabled={isLoading || !isClient}
                   >
                     {isLoading ? "Bezig met registreren..." : "Registreren"}
                   </Button>

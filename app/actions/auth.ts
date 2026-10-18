@@ -243,6 +243,39 @@ export async function signInWithGoogle(next?: string) {
 }
 
 /**
+ * #75 (D-003) – Records that the logged-in user is 16 or older and accepts the
+ * current terms, from /welkom, then sends them on to `next`. The database
+ * stores the version and the time.
+ */
+export async function acceptTerms(
+  _previous: ActionResponse | null,
+  formData: FormData,
+): Promise<ActionResponse> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return errorResponse("Je moet ingelogd zijn");
+
+  if (
+    formData.get("ageConfirmed") !== "on" ||
+    formData.get("termsAccepted") !== "on"
+  ) {
+    return errorResponse(
+      "Bevestig dat je 16 jaar of ouder bent en aanvaard de voorwaarden.",
+    );
+  }
+
+  const { error } = await supabase.rpc("accept_terms");
+  if (error) {
+    return errorResponse("Er ging iets mis. Probeer het opnieuw.");
+  }
+
+  revalidatePath("/", "layout");
+  redirect(safeNextPath(formData.get("next")?.toString()));
+}
+
+/**
  * Permanently deletes the logged-in user's account (J-11, #76).
  *
  * `delete_own_account()` does it in one transaction, so it all happens or

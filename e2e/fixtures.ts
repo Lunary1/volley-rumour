@@ -27,6 +27,14 @@ export const seedUsers = {
 
 export type SeedUser = keyof typeof seedUsers;
 
+// Hasn't confirmed 16+ or accepted the terms (#75), like an account from
+// before the gate, so logging in lands on /welkom instead of "/". Only the
+// gate tests use it; global-setup.ts removes its acceptance before every run.
+export const newcomer = {
+  email: "nieuwkomer@example.test",
+  username: "test_nieuwkomer",
+} as const;
+
 // Accounts only the password-reset tests use, because those tests change the
 // password. `google` has no password at all, like a Google sign-up.
 export const resetUsers = {

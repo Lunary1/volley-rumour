@@ -49,6 +49,7 @@ test("profile says it failed to load instead of asking to log in", async ({
     email,
     password: SEED_PASSWORD,
     email_confirm: true,
+    user_metadata: { age_confirmed: true, terms_accepted: true },
   });
   expect(error).toBeNull();
   const userId = data.user!.id;
