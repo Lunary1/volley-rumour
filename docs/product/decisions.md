@@ -35,6 +35,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-026 | 2026-10-17 | Accepted | A new message brings an archived conversation back to the inbox      |
 | D-027 | 2026-10-17 | Accepted | French and English are a nice-to-have, not a launch blocker; built with next-intl, Dutch the default |
 | D-028 | 2026-10-18 | Accepted | Waitlist emails are used for the launch email only, then wiped    |
+| D-029 | 2026-10-18 | Accepted | Account deletion also deletes unpublished rumours; zoekertjes left ownerless by earlier deletions are deleted |
 
 ---
 
@@ -664,3 +665,24 @@ until people unsubscribe, or for a fixed period after launch, were considered.
 **Consequences.** The privacy page says so. Sending the launch email and
 wiping the list are one task in #95; later announcements need people to opt
 in again, for example through the notification settings (D-025).
+
+## D-029 — Account deletion also deletes unpublished rumours and old orphaned zoekertjes
+
+**Context.** Making account deletion all-or-nothing (#76) raised two cases
+D-021 didn't cover. Accounts deleted before D-021 left their zoekertjes online
+without an owner, often with the poster's name in the title. And a deleted
+account's pending and rejected rumours were kept without an author, so a
+pending one stayed in the moderation queue with nobody behind it.
+
+**Decision** (owner, 2026-10-18).
+- **Ownerless zoekertjes are deleted** by the #76 migration, in production
+  too; from then on every zoekertje has an owner (`user_id` NOT NULL).
+- **Rumours that never went public (pending, rejected) are deleted** with the
+  account. Published ones (lopend, confirmed, denied, not confirmed, removed)
+  stay without an author, as before.
+
+**Consequences.** Conversations about a deleted zoekertje stay and show
+"Verwijderd zoekertje"; reports about it go with it, while the staff log keeps
+what moderators did. Rumours now outlive their author even when a user is
+deleted outside the site (the foreign key is `ON DELETE SET NULL`). The privacy
+page and the delete dialog say what goes and what stays.

@@ -5,7 +5,6 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { createHash } from "crypto";
 import { z } from "zod";
 import { isRecoverySession } from "@/lib/supabase/recovery";
 import { safeNextPath } from "@/lib/utils";
@@ -244,15 +243,14 @@ export async function signInWithGoogle(next?: string) {
 }
 
 /**
- * KAN-52 – GDPR Right to be Forgotten
+ * Permanently deletes the logged-in user's account (J-11, #76).
  *
- * Permanently deletes the authenticated user's account and all personal data.
- * Anonymizes community content (rumours, classifieds) so public value is retained.
- * Writes a SHA-256-hashed audit entry — no raw personal data stored.
- *
- * Deletion order is FK-safe (children before parents).
+ * `delete_own_account()` does it in one transaction, so it all happens or
+ * nothing does: the account, profile, zoekertjes (D-021), votes, blocks,
+ * conversations and unpublished rumours go; published rumours and reports stay
+ * without the user; a hashed entry goes in the deletion log.
  */
-export async function deleteAccount(): Promise<{ error?: string }> {
+export async function deleteAccount(): Promise<ActionResponse> {
   const supabase = await createClient();
 
   const {
@@ -260,123 +258,31 @@ export async function deleteAccount(): Promise<{ error?: string }> {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Je bent niet ingelogd." };
+    return errorResponse("Je bent niet ingelogd.");
   }
 
-  const userId = user.id;
-  const authProvider =
-    user.app_metadata?.provider ?? user.app_metadata?.providers?.[0] ?? null;
-
-  // The data steps below write columns users can't change themselves
-  // (authorship, contact details), so they run with the service role. Every
-  // query is scoped to the verified session's userId.
-  const admin = createAdminClient();
-
-  // --- 1. Anonymize reports (retain moderation audit trail) ---
-  const { error: rcErr } = await admin
-    .from("reports")
-    .update({ reporter_id: null })
-    .eq("reporter_id", userId);
-  if (rcErr) return { error: "Kon meldingen niet verwerken." };
-
-  // --- 2. Anonymize rumours (detach authorship; content stays public) ---
-  const { error: rumourErr } = await admin
-    .from("rumours")
-    .update({ creator_id: null })
-    .eq("creator_id", userId);
-  if (rumourErr) return { error: "Kon geruchten niet verwerken." };
-
-  // --- 3. Anonymize classifieds (strip PII, keep listing) ---
-  const { error: classifiedErr } = await admin
-    .from("classifieds")
-    .update({
-      user_id: null,
-      contact_name: "[verwijderd]",
-      contact_email: null,
-    })
-    .eq("user_id", userId);
-  if (classifiedErr) return { error: "Kon zoekertjes niet verwerken." };
-
-  // --- 4. Hard-delete rumour votes ---
-  const { error: votesErr } = await admin
-    .from("rumour_votes")
-    .delete()
-    .eq("user_id", userId);
-  if (votesErr) return { error: "Kon stemmen niet verwijderen." };
-
-  // --- 5. Hard-delete blocked_users (both directions) ---
-  const { error: blockErr } = await admin
-    .from("blocked_users")
-    .delete()
-    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`);
-  if (blockErr) return { error: "Kon geblokkeerde gebruikers niet verwerken." };
-
-  // --- 6. Fetch conversation IDs the user was part of ---
-  const { data: convRows, error: convFetchErr } = await admin
-    .from("conversations")
-    .select("id")
-    .or(`initiator_id.eq.${userId},recipient_id.eq.${userId}`);
-  if (convFetchErr) return { error: "Kon gesprekken niet ophalen." };
-
-  const convIds = (convRows ?? []).map((r) => r.id);
-
-  // --- 7. Hard-delete messages in those conversations ---
-  if (convIds.length > 0) {
-    const { error: msgErr } = await admin
-      .from("messages")
-      .delete()
-      .in("conversation_id", convIds);
-    if (msgErr) return { error: "Kon berichten niet verwijderen." };
+  const { data: avatarUrl, error } = await supabase.rpc("delete_own_account");
+  if (error) {
+    return errorResponse(
+      "Je account kon niet verwijderd worden. Er is niets gewist; probeer het later opnieuw.",
+    );
   }
 
-  // --- 8. Hard-delete conversations ---
-  const { error: convErr } = await admin
-    .from("conversations")
-    .delete()
-    .or(`initiator_id.eq.${userId},recipient_id.eq.${userId}`);
-  if (convErr) return { error: "Kon gesprekken niet verwijderen." };
-
-  // --- 9. Delete avatar from Supabase Storage (if hosted there) ---
-  const { data: profileRow } = await admin
-    .from("profiles")
-    .select("avatar_url")
-    .eq("id", userId)
-    .single();
-
-  const avatarUrl: string | null = profileRow?.avatar_url ?? null;
-  const supabaseStoragePrefix =
+  // A file in Storage isn't a row, so it goes after the account. If this
+  // fails, nothing links to the file any more.
+  const storagePrefix =
     process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/";
-  if (avatarUrl && avatarUrl.startsWith(supabaseStoragePrefix)) {
-    // Extract bucket + path from the URL
-    const withoutPrefix = avatarUrl.replace(supabaseStoragePrefix, "");
-    const slashIdx = withoutPrefix.indexOf("/");
-    if (slashIdx !== -1) {
-      const bucket = withoutPrefix.substring(0, slashIdx);
-      const path = withoutPrefix.substring(slashIdx + 1);
-      await admin.storage.from(bucket).remove([path]);
+  if (typeof avatarUrl === "string" && avatarUrl.startsWith(storagePrefix)) {
+    const [bucket, ...path] = avatarUrl.slice(storagePrefix.length).split("/");
+    if (bucket && path.length > 0) {
+      await createAdminClient()
+        .storage.from(bucket)
+        .remove([path.join("/")]);
     }
   }
 
-  // --- 10. Hard-delete profiles row ---
-  const { error: profileErr } = await admin
-    .from("profiles")
-    .delete()
-    .eq("id", userId);
-  if (profileErr) return { error: "Kon profiel niet verwijderen." };
-
-  // --- 11. Delete auth.users record (requires admin/service role) ---
-  const { error: authErr } = await admin.auth.admin.deleteUser(userId);
-  if (authErr) return { error: "Kon account niet verwijderen." };
-
-  // --- 12. Write deletion audit log (SHA-256 hash only — no PII) ---
-  const userIdHash = createHash("sha256").update(userId).digest("hex");
-  await admin.from("deletion_audit_log").insert({
-    user_id_hash: userIdHash,
-    auth_provider: authProvider,
-  });
-
-  // --- 13. Sign out and redirect ---
-  await supabase.auth.signOut();
+  // The user and their sessions are gone; only the cookies are left to clear.
+  await supabase.auth.signOut({ scope: "local" });
   revalidatePath("/", "layout");
-  redirect("/?deleted=1");
+  return successResponse(undefined);
 }

@@ -215,10 +215,13 @@ export default function PrivacyPage() {
                 account verwijdert.
               </li>
               <li>
-                <strong>Account verwijderen:</strong> We wissen je profiel,
-                avatar, stemmen, blokkeringen, en je gesprekken met alle
-                berichten erin. Je geruchten blijven staan, zonder je naam. Je
-                meldingen blijven bewaard, zonder je naam.
+                <strong>Account verwijderen:</strong> We wissen in één keer je
+                profiel, avatar, zoekertjes, stemmen, blokkeringen, je
+                gesprekken met alle berichten erin, en je geruchten die nog niet
+                gepubliceerd zijn. Je gepubliceerde geruchten blijven staan,
+                zonder je naam. Je meldingen blijven bewaard, zonder je naam. We
+                houden alleen bij dát er een account verwijderd is, zonder te
+                bewaren welk.
               </li>
               <li>
                 <strong>Schorsingen:</strong> Tot je account verwijderd wordt.

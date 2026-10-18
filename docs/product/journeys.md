@@ -326,8 +326,8 @@ and delete my account and data if I leave.
   restricted to image types and a max size **[assumption]**.
 - **Given** I delete my account, **then** my profile, votes, messages,
   conversations, blocks and avatar are deleted; my zoekertjes are **deleted**
-  **[assumption — today they are anonymised but stay public with my real name in
-  the title]**; my approved rumours are anonymised; a hashed audit entry is
+  (D-021), and so are my rumours that were never published (D-029); my
+  published rumours are anonymised; a hashed audit entry is
   written; and I'm logged out with a confirmation.
 - **Given** a partial failure during deletion, **then** no half-deleted state is
   left behind (single transaction or idempotent retry).

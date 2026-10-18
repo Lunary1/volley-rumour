@@ -38,6 +38,8 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useIsClient } from "@/lib/use-is-client";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { BlockedUsersCard, type BlockedUser } from "./blocked-users-card";
 import {
@@ -83,6 +85,8 @@ export function ProfileView({
   recentActivity,
   blockedUsers,
 }: ProfileViewProps) {
+  const router = useRouter();
+  const isClient = useIsClient();
   const [profile, setProfile] = useState(initialProfile);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -131,11 +135,14 @@ export function ProfileView({
     setDeleting(true);
     setError(null);
     const result = await deleteAccount();
-    if (result?.error) {
-      setError(result.error);
+    handleServerActionResponse(result, {
+      successMessage: "Je account is verwijderd.",
+    });
+    if (result.success) {
+      router.replace("/");
+    } else {
       setDeleting(false);
     }
-    // On success the server action redirects — nothing more to do here
   }
 
   async function handleUpdatePassword(e: React.FormEvent) {
@@ -543,6 +550,7 @@ export function ProfileView({
           <CardContent>
             <Button
               variant="destructive"
+              disabled={!isClient}
               onClick={() => {
                 setDeleteConfirmInput("");
                 setDeleteModalOpen(true);
@@ -562,9 +570,10 @@ export function ProfileView({
               Account verwijderen
             </DialogTitle>
             <DialogDescription>
-              Al je berichten en gesprekken worden permanent verwijderd. Je
-              geruchten en zoekertjes blijven zichtbaar maar worden
-              geanonimiseerd.
+              Je profiel, je zoekertjes, je stemmen en al je gesprekken met de
+              berichten erin worden permanent verwijderd, net als geruchten die
+              nog niet gepubliceerd zijn. Gepubliceerde geruchten blijven
+              zichtbaar, zonder je naam.
               <br />
               <br />
               Typ <strong>VERWIJDER</strong> om te bevestigen.
@@ -572,6 +581,7 @@ export function ProfileView({
           </DialogHeader>
           <form onSubmit={handleDeleteAccount} className="space-y-4">
             <Input
+              aria-label="Typ VERWIJDER om te bevestigen"
               placeholder="VERWIJDER"
               value={deleteConfirmInput}
               onChange={(e) => setDeleteConfirmInput(e.target.value)}
