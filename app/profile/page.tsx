@@ -50,7 +50,7 @@ export default async function ProfilePage() {
     );
   }
 
-  const [rumours, votes, classifieds, recentActivity, blocks] =
+  const [rumours, votes, classifieds, recentActivity, blocks, optOut] =
     await Promise.all([
       supabase
         .from("rumours")
@@ -73,6 +73,12 @@ export default async function ProfilePage() {
         )
         .eq("blocker_id", user.id)
         .order("created_at", { ascending: false }),
+      // A row means email notifications are off (#98).
+      supabase
+        .from("email_opt_outs")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle(),
     ]);
 
   const blockedUsers: BlockedUser[] = (blocks.data ?? []).map((block) => {
@@ -96,6 +102,7 @@ export default async function ProfilePage() {
       }}
       recentActivity={recentActivity}
       blockedUsers={blockedUsers}
+      emailNotifications={!optOut.data}
     />
   );
 }

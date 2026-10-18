@@ -23,7 +23,7 @@ const processors = [
   {
     name: "Resend",
     purpose:
-      "Verstuurt e-mails over je account, zoals de bevestiging van je e-mailadres of een link voor een nieuw wachtwoord. Resend krijgt je e-mailadres en de inhoud van die e-mail.",
+      "Verstuurt e-mails over je account, zoals de bevestiging van je e-mailadres of een link voor een nieuw wachtwoord, en meldingen van een nieuw bericht of een beslissing over je gerucht. Resend krijgt je e-mailadres en de inhoud van die e-mail; een melding bevat nooit de tekst van een bericht of gerucht.",
   },
   {
     name: "Google",
@@ -170,7 +170,9 @@ export default function PrivacyPage() {
                 gebruiken, via Vercel Web Analytics en Speed Insights.
               </li>
               <li>
-                <strong>Communicatie:</strong> E-mails over je account, en één
+                <strong>Communicatie:</strong> E-mails over je account, een
+                korte melding bij een nieuw bericht of een beslissing over je
+                gerucht (zonder de inhoud; uit te zetten op je profiel), en één
                 e-mail wanneer de site opent als je op de wachtlijst staat.
               </li>
               <li>

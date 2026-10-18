@@ -3,8 +3,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { avatarUrl } from "@/lib/avatar";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { sendMessageSchema } from "@/lib/schemas";
+import { notifyNewMessage } from "@/lib/notifications";
 import {
   successResponse,
   errorResponse,
@@ -144,16 +146,23 @@ export async function createConversation(
 
   // Send initial message if provided
   if (initialMessage && initialMessage.trim()) {
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: initialMessage.trim(),
-    });
+    const { data: message, error } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content: initialMessage.trim(),
+      })
+      .select("id")
+      .single();
 
     if (error) {
       const message = extractErrorMessage(error, "Fout bij sturen van bericht");
       return errorResponse(message);
     }
+
+    // After the response, so the email never slows down or fails the send.
+    after(() => notifyNewMessage(message.id, conversationId));
   }
 
   revalidatePath("/messages");
@@ -217,6 +226,8 @@ export async function sendMessage(
     const msg = extractErrorMessage(error, "Fout bij sturen van bericht");
     return errorResponse(msg);
   }
+
+  after(() => notifyNewMessage(message.id, conversationId));
 
   // Update conversation updated_at
   await supabase

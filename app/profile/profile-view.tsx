@@ -52,6 +52,7 @@ import { useRouter } from "next/navigation";
 import { useIsClient } from "@/lib/use-is-client";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { BlockedUsersCard, type BlockedUser } from "./blocked-users-card";
+import { EmailNotificationsCard } from "./email-notifications-card";
 import {
   REJECTION_REASONS,
   RUMOUR_STATUS_LABELS,
@@ -87,6 +88,7 @@ interface ProfileViewProps {
     classifieds: RecentClassified[];
   } | null;
   blockedUsers: BlockedUser[];
+  emailNotifications: boolean;
 }
 
 export function ProfileView({
@@ -94,6 +96,7 @@ export function ProfileView({
   stats,
   recentActivity,
   blockedUsers,
+  emailNotifications,
 }: ProfileViewProps) {
   const router = useRouter();
   const isClient = useIsClient();
@@ -500,6 +503,8 @@ export function ProfileView({
             </CardContent>
           </Card>
         )}
+
+        <EmailNotificationsCard enabled={emailNotifications} />
 
         <BlockedUsersCard users={blockedUsers} />
 

@@ -261,3 +261,31 @@ export async function removeAvatar(): Promise<ActionResponse> {
   revalidatePath("/", "layout");
   return successResponse(undefined);
 }
+
+/**
+ * Turns email notifications on or off (#98, D-025). On is the default; off
+ * is a row in email_opt_outs. Suspended users may change it too.
+ */
+export async function setEmailNotifications(
+  enabled: boolean,
+): Promise<ActionResponse> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return errorResponse("Je moet ingelogd zijn");
+
+  const { error } = enabled
+    ? await supabase.from("email_opt_outs").delete().eq("user_id", user.id)
+    : await supabase
+        .from("email_opt_outs")
+        .upsert({ user_id: user.id }, { ignoreDuplicates: true });
+  if (error) {
+    return errorResponse(
+      extractErrorMessage(error, "Je instelling kon niet bewaard worden."),
+    );
+  }
+
+  revalidatePath("/profile");
+  return successResponse(undefined);
+}
