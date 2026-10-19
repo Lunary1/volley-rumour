@@ -15,6 +15,7 @@ classifieds (*zoekertjes*) are the core value, moderated transfer rumours
 | `docs/product/decisions.md` | Decision log (D-xxx) and open decisions (O-xxx) |
 | `docs/product/audit.md` | Gap audit of every journey against the code |
 | `docs/product/moderation.md` | Moderator handbook: response times, rota, onboarding, templates |
+| `docs/product/legal-review.md` | Self-review of terms, privacy and takedown copy against GDPR, DSA and Belgian law; questions for a lawyer |
 
 When product intent is unclear, ask the owner — don't guess. Record the answer
 in `docs/product/decisions.md`.

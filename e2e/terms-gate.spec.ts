@@ -97,7 +97,7 @@ test("a user who hasn't accepted is asked once, before anything else", async ({
   );
   // The terms stay readable.
   await page.goto("/voorwaarden");
-  await expect(page.getByText("Wie mag een account maken")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Je account" })).toBeVisible();
   await page.goto("/zoekertjes?provincie=antwerpen");
 
   const proceed = page.getByRole("button", { name: "Doorgaan" });
@@ -134,4 +134,21 @@ test("a user who hasn't accepted is asked once, before anything else", async ({
     again.getByRole("banner").getByText(newcomer.username),
   ).toBeVisible();
   await context.close();
+});
+
+test("the terms page shows the version the database asks for", async ({
+  page,
+}) => {
+  // Both change together, in a migration (#75, #94).
+  const { data: version } = await admin.rpc("current_terms_version");
+  const date = new Date(`${version}T12:00:00Z`).toLocaleDateString("nl-BE", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  await page.goto("/voorwaarden");
+  await expect(page.getByText(`Versie van ${date}`)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Niet akkoord met een beslissing" }),
+  ).toBeVisible();
 });

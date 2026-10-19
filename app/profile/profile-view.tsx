@@ -48,6 +48,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { ContestDecision } from "@/components/contest-decision";
 import { useRouter } from "next/navigation";
 import { useIsClient } from "@/lib/use-is-client";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -397,6 +398,7 @@ export function ProfileView({
                             r.rejection_reason as RejectionReason
                           ] ?? r.rejection_reason}
                           {r.rejection_note && ` — ${r.rejection_note}`}
+                          <ContestDecision />
                         </p>
                       )}
                       {/* Neutral on purpose: the author isn't told who asked
@@ -405,6 +407,7 @@ export function ProfileView({
                         <p className="mt-1 px-3 text-xs text-muted-foreground">
                           Een moderator heeft dit gerucht van de site gehaald.
                           {r.removal_note && ` ${r.removal_note}`}
+                          <ContestDecision />
                         </p>
                       )}
                     </li>
@@ -473,6 +476,7 @@ export function ProfileView({
                             Een moderator heeft dit zoekertje van de site
                             gehaald.
                             {c.removal_note && ` ${c.removal_note}`}
+                            <ContestDecision />
                           </p>
                         )}
                       </li>

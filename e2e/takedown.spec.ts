@@ -28,6 +28,12 @@ async function sendRequest(page: Page, email: string) {
   await page
     .getByLabel("Waarom moet dit gerucht weg?")
     .fill("Dit klopt niet, ik verander niet van club.");
+  // The good-faith statement is required (DSA art. 16(2)(d), #94).
+  const goodFaith = page.getByLabel(
+    "Ik verklaar te goeder trouw dat mijn verzoek juist en volledig is.",
+  );
+  await expect(goodFaith).toHaveAttribute("required", "");
+  await goodFaith.check();
   await page.getByRole("button", { name: "Verzoek versturen" }).click();
 
   await expect(
@@ -103,6 +109,10 @@ test("a visitor asks to remove a rumour and a moderator removes it", async ({
   await expect(
     page.getByText("Verwijderd, bedankt voor je melding."),
   ).toBeVisible();
+  // How to contest the decision (DSA art. 16(5), #94).
+  await expect(
+    page.getByText("Niet akkoord met deze beslissing?"),
+  ).toBeVisible();
   await page.goto("/geruchten?status=denied");
   await expect(page.getByText(playerName)).toHaveCount(0);
 });
@@ -143,6 +153,11 @@ test("a moderator rejects a request found from the footer", async ({
   await page
     .getByLabel("Waarom moet dit gerucht weg?")
     .fill("Nog eens: dit klopt niet.");
+  await page
+    .getByLabel(
+      "Ik verklaar te goeder trouw dat mijn verzoek juist en volledig is.",
+    )
+    .check();
   await page.getByRole("button", { name: "Verzoek versturen" }).click();
   await expect(
     page.getByRole("form", { name: "Verwijderverzoek" }).getByRole("alert"),
