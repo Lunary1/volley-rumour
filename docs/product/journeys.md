@@ -414,6 +414,9 @@ wrong ones as denied or expired.
   announced), **then** I can add it directly.
 - **Given** a mistake, **then** I can correct or remove a confirmed transfer,
   and the action is audited.
+- **Given** a rumour was wrongly denied or expired, **when** I reopen it with a
+  reason, **then** it is live again, the author's track record updates, and
+  the action is audited (#150).
 
 ## J-15 — Moderator/admin handles reports, takedowns and sanctions
 

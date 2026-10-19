@@ -188,6 +188,53 @@ export async function resolveRumour(
   return successResponse(null);
 }
 
+// Reopening a wrongly denied or expired rumour (#150). reopen_rumour() checks
+// staff and the status, makes it lopend and writes the log entry in one
+// transaction; the author's track record follows through its trigger.
+
+const reopenSchema = z.object({
+  rumourId: rumourIdSchema,
+  reason: z
+    .string()
+    .trim()
+    .min(1, "Geef een reden om het gerucht te heropenen")
+    .max(
+      RESOLUTION_NOTE_MAX_LENGTH,
+      `De reden mag maximaal ${RESOLUTION_NOTE_MAX_LENGTH} tekens zijn`,
+    ),
+});
+
+export async function reopenRumour(input: {
+  rumourId: string;
+  reason: string;
+}): Promise<ActionResponse<null>> {
+  const staff = await requireStaff();
+  if (!staff.ok) return staff.response;
+
+  const parsed = reopenSchema.safeParse(input);
+  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+
+  const { error } = await staff.supabase.rpc("reopen_rumour", {
+    p_rumour_id: parsed.data.rumourId,
+    p_reason: parsed.data.reason,
+  });
+  if (error) {
+    switch (error.code) {
+      case "P0002":
+        return errorResponse("Dit gerucht is al heropend of bestaat niet meer");
+      case "42501":
+        return errorResponse("Geen toegang");
+      case "22023":
+        return errorResponse("Geef een reden van maximaal 500 tekens");
+      default:
+        return errorResponse("Er ging iets mis. Probeer het opnieuw.");
+    }
+  }
+
+  revalidateRumourPages();
+  return successResponse(null);
+}
+
 /** End of a transfer window: every lopend rumour becomes "Niet bevestigd". */
 export async function expireOpenRumours(): Promise<ActionResponse<number>> {
   const staff = await requireStaff();

@@ -252,6 +252,55 @@ test("a moderator denies one rumour and marks another not confirmed", async ({
   await expect(page.getByRole("heading", { name: denied })).toHaveCount(0);
 });
 
+test("a moderator reopens a wrongly denied rumour with a reason", async ({
+  browser,
+}) => {
+  const playerName = await openRumour("Fout", {
+    status: "denied",
+    resolved_at: new Date().toISOString(),
+  });
+  const reason = `Club bevestigt toch ${Date.now()}`;
+
+  const moderator = await pageFor(browser, "moderator");
+  await moderator.goto("/admin/geruchten");
+  await moderator
+    .getByRole("navigation", { name: "Geruchten" })
+    .getByRole("link", { name: "Afgesloten" })
+    .click();
+  await moderator.waitForURL("/admin/geruchten?lijst=afgesloten");
+
+  const closed = moderator.getByRole("list", { name: "Afgesloten geruchten" });
+  const item = queueItem(moderator, playerName);
+  await expect(closed.getByRole("heading", { name: playerName })).toBeVisible();
+  await expect(item).toContainText("Ontkracht");
+
+  // No reason, no reopening.
+  await item.getByRole("button", { name: "Heropenen" }).click();
+  const confirm = item.getByRole("button", { name: "Heropenen bevestigen" });
+  await expect(confirm).toBeDisabled();
+  await item.getByLabel("Reden voor het logboek").fill(reason);
+  await confirm.click();
+  await expect(
+    moderator.getByText(`Gerucht over ${playerName} is weer lopend`),
+  ).toBeVisible();
+  await expect(closed.getByRole("heading", { name: playerName })).toHaveCount(
+    0,
+  );
+
+  // Lopend again, so it can be resolved the right way.
+  await moderator.goto("/admin/geruchten");
+  await expect(
+    queueItem(moderator, playerName).getByRole("button", {
+      name: "Bevestigen",
+    }),
+  ).toBeVisible();
+
+  await moderator.goto("/admin/logboek");
+  await expect(
+    moderator.getByRole("row").filter({ hasText: reason }),
+  ).toContainText("Gerucht heropend");
+});
+
 test("expiring every lopend rumour asks for confirmation first", async ({
   page,
 }) => {

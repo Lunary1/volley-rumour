@@ -11,6 +11,7 @@ const actionLabels: Record<string, string> = {
   rumour_approved: "Gerucht goedgekeurd",
   rumour_rejected: "Gerucht afgewezen",
   rumour_resolved: "Gerucht afgesloten",
+  rumour_reopened: "Gerucht heropend",
   content_removed: "Inhoud verwijderd",
   takedown_rejected: "Verwijderverzoek afgewezen",
   report_dismissed: "Melding afgesloten zonder actie",

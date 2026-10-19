@@ -240,6 +240,7 @@ items.
 | Bulk "niet bevestigd" at window close | **WORKS** | `expire_open_rumours()`, [expire-all.tsx](../../app/admin/geruchten/expire-all.tsx) | One button with a confirmation; one log entry per rumour |
 | Add transfer directly | **WORKS** | `create_transfer()`, [admin/transfers](../../app/admin/transfers/page.tsx) | Needs an official source; dated in Belgian time |
 | Correct or remove a transfer, audited | **WORKS** | `update_transfer()`, `delete_transfer()` | The log keeps what the transfer said before. Removing a rumour's transfer makes the rumour lopend again, so a wrong confirmation can be redone |
+| Reopen a wrongly denied or expired rumour, audited | **WORKS** | [reopen_rumour migration](../../supabase/migrations/20261019083251_reopen_rumour.sql), [reopen_rumour.test.sql](../../supabase/tests/database/reopen_rumour.test.sql), [rumour-resolution.spec.ts](../../e2e/rumour-resolution.spec.ts) | #150: "Afgesloten" tab on `/admin/geruchten`; `reopen_rumour()` is staff-only, needs a reason, makes the rumour lopend and logs "Gerucht heropend" with the decision it undid; the track record follows through its trigger and voting opens again |
 
 ### J-15 — Reports, takedowns, sanctions · PARTIAL
 
