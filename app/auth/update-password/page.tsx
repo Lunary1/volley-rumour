@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@/lib/seo";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isRecoverySession } from "@/lib/supabase/recovery";
@@ -10,7 +11,10 @@ import {
 } from "@/components/ui/card";
 import { UpdatePasswordForm } from "@/components/update-password-form";
 
-export const metadata = { title: "Nieuw wachtwoord instellen" };
+export const metadata = {
+  title: "Nieuw wachtwoord instellen",
+  robots: NO_INDEX,
+};
 
 // #58 – The password-reset email links here via /auth/callback, which turns
 // the link into a recovery session.

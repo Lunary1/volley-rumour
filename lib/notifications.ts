@@ -1,16 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
+import { SITE_URL } from "@/lib/site-url";
 
 // Email notifications (#98, D-025): short and content-free. They never
 // contain a message, a rumour or a name, only that something happened and a
 // link. Who gets one is decided by the database (email_notifications
 // migration), which also honours the opt-out on the profile.
-
-function siteUrl() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://volleyrumours.be"
-  ).replace(/\/$/, "");
-}
 
 function notificationEmail(
   to: string,
@@ -18,8 +13,8 @@ function notificationEmail(
   body: string,
   link: { label: string; path: string },
 ) {
-  const url = `${siteUrl()}${link.path}`;
-  const profileUrl = `${siteUrl()}/profile`;
+  const url = `${SITE_URL}${link.path}`;
+  const profileUrl = `${SITE_URL}/profile`;
   const footer =
     "Je krijgt deze e-mail omdat e-mailmeldingen aan staan voor je account op VolleyRumours. Je zet ze uit op je profiel:";
   return {

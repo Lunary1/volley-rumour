@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -16,7 +17,10 @@ import { Button } from "@/components/ui/button";
 import { MyClassifiedActions } from "@/components/my-classified-actions";
 import { formatDate } from "@/lib/dates";
 
-export const metadata: Metadata = { title: "Mijn zoekertjes" };
+export const metadata: Metadata = {
+  title: "Mijn zoekertjes",
+  robots: NO_INDEX,
+};
 
 type Status = "online" | "found" | "expired" | "removed";
 

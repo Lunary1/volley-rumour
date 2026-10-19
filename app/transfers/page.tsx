@@ -12,6 +12,14 @@ import {
   pageCount,
   parsePage,
 } from "@/lib/public-data";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Transfers",
+  description:
+    "Bevestigde transfers van spelers en trainers in het Belgische volleybal, met de officiële bron.",
+  path: "/transfers",
+});
 
 const tabIcons = {
   all: Users,

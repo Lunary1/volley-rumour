@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { avatarUrl } from "@/lib/avatar";
 import {
@@ -13,11 +14,12 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { TRUSTED_SOURCE_MIN_RESOLVED, formatTrackRecord } from "@/lib/rumours";
 import { accuracy, getTrustedSources } from "@/lib/trusted-sources";
 
-export const metadata = {
-  title: "Betrouwbare bronnen | VolleyRumours",
+export const metadata = pageMetadata({
+  title: "Betrouwbare bronnen",
   description:
     "Bijdragers van wie de meeste geruchten door een moderator bevestigd werden.",
-};
+  path: "/betrouwbare-bronnen",
+});
 
 // A moderator's decision changes the list at once (#88).
 export const dynamic = "force-dynamic";

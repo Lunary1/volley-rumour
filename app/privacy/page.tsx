@@ -1,11 +1,12 @@
-import { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { isComingSoon } from "@/lib/coming-soon";
 
-export const metadata: Metadata = {
-  title: "Privacybeleid - VolleyRumours",
+export const metadata = pageMetadata({
+  title: "Privacybeleid",
   description: "Lees ons privacybeleid en hoe wij jouw gegevens beschermen.",
-};
+  path: "/privacy",
+});
 
 // Every service that receives personal data (#77). Datadog was removed in
 // D-023. Copy to be reviewed in #94.

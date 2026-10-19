@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { ArrowRight, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +15,12 @@ import { formatDate } from "@/lib/dates";
 // (?gerucht=<id>) or from the footer and privacy page, where the visitor
 // first looks the rumour up by name. No login needed.
 
-export const metadata: Metadata = {
-  title: "Gerucht laten verwijderen - VolleyRumours",
+export const metadata = pageMetadata({
+  title: "Gerucht laten verwijderen",
   description:
     "Gaat een gerucht over jou? Vraag de verwijdering aan, zonder account.",
-};
+  path: "/verwijderverzoek",
+});
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

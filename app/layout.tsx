@@ -9,14 +9,27 @@ import { Footer } from "@/components/footer";
 import { SuspensionNotice } from "@/components/suspension-notice";
 import { ToasterProvider } from "@/components/toaster-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SITE_URL } from "@/lib/site-url";
+import { BASE_OPEN_GRAPH } from "@/lib/seo";
 
 const _inter = Inter({ subsets: ["latin"] });
 const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 
+const description =
+  "Zoekertjes, transfers en Transfer Talk voor het Belgische volleybal. Vind een club, speler of trainer en stem op de geruchten van de transfermarkt.";
+
+// Defaults for every page (#99). A page sets its own title (the template adds
+// the site name) and description; the share image comes from the nearest
+// opengraph-image file.
 export const metadata: Metadata = {
-  title: "VolleyRumours - Belgische Volleybal Transfers & Transfer Talk",
-  description:
-    "Ontdek de nieuwste volleybal transfers, Transfer Talk en zoekertjes in België. Stem op geruchten en bouw een track record op als betrouwbare bron.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "VolleyRumours - Belgische volleybal transfers en zoekertjes",
+    template: "%s | VolleyRumours",
+  },
+  description,
+  openGraph: { ...BASE_OPEN_GRAPH, description },
+  twitter: { card: "summary_large_image" },
   icons: {
     icon: [
       {

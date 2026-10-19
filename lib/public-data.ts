@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { unstable_cache, updateTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/server";
 import { PUBLIC_RUMOUR_STATUSES } from "@/lib/rumours";
@@ -130,3 +131,28 @@ export const getHomepageData = unstable_cache(
     tags: [PUBLIC_DATA_TAGS.rumours, PUBLIC_DATA_TAGS.transfers],
   },
 );
+
+/** Columns a rumour card needs, with the author's track record. */
+export const RUMOUR_CARD_SELECT = `
+  *,
+  creator:creator_id(username, is_verified_source, rumours_confirmed, rumours_denied)
+`;
+
+/**
+ * One approved rumour for /geruchten/[id], its metadata and share image
+ * (#99), or null. Read as a visitor, so a pending or removed rumour is null
+ * for its author too. Not cached across requests: its votes change.
+ */
+export const getPublicRumour = cache(async (id: string) => {
+  const { data, error } = await createPublicClient()
+    .from("rumours")
+    .select(RUMOUR_CARD_SELECT)
+    .eq("id", id)
+    .in("status", PUBLIC_RUMOUR_STATUSES)
+    .maybeSingle();
+  // 22P02: the id isn't a uuid.
+  if (error && error.code !== "22P02") {
+    console.error("Error fetching rumour:", error);
+  }
+  return data ?? null;
+});

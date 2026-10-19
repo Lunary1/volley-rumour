@@ -10,6 +10,10 @@ import { MessageCircle } from "lucide-react";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 import { ArchiveConversationButton } from "@/components/archive-conversation-button";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+import { NO_INDEX } from "@/lib/seo";
+
+export const metadata: Metadata = { title: "Berichten", robots: NO_INDEX };
 
 interface ConversationPreview {
   id: string;

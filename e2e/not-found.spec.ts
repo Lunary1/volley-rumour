@@ -6,7 +6,7 @@ import { test, expect, seed } from "./fixtures";
 test("an unknown URL shows the Dutch 404 page", async ({ page }) => {
   const response = await page.goto("/bestaat-niet");
   expect(response?.status()).toBe(404);
-  await expect(page).toHaveTitle("Pagina niet gevonden - VolleyRumours");
+  await expect(page).toHaveTitle("Pagina niet gevonden | VolleyRumours");
   await expect(
     page.getByRole("heading", { level: 1, name: "Pagina niet gevonden" }),
   ).toBeVisible();

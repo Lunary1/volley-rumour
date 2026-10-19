@@ -7,7 +7,7 @@ import { getStaffUser } from "@/lib/staff";
 import { adminSections } from "./sections";
 
 export const metadata: Metadata = {
-  title: "Beheer | VolleyRumours",
+  title: "Beheer",
   robots: { index: false, follow: false },
 };
 

@@ -11,7 +11,7 @@ test("zoekertje detail uses the ad title and shows the contact name", async ({
   await expect(
     page.getByRole("heading", { level: 1, name: ad.title }),
   ).toBeVisible();
-  await expect(page).toHaveTitle(`${ad.title} | Zoekertjes`);
+  await expect(page).toHaveTitle(`${ad.title} | Zoekertjes | VolleyRumours`);
   await expect(page.getByText(`Contact: ${ad.contactName}`)).toBeVisible();
 });
 

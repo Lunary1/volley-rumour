@@ -1,11 +1,12 @@
-import { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Flame } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Over Ons - VolleyRumours",
+export const metadata = pageMetadata({
+  title: "Over Ons",
   description:
     "Meer over VolleyRumours en onze missie voor de volleybalcommunity.",
-};
+  path: "/over-ons",
+});
 
 export default function OverOnsPage() {
   return (

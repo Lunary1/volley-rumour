@@ -4,9 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.volleyrumours.be";
+import { SITE_URL } from "@/lib/site-url";
 
 interface ShareButtonProps {
   /** Title of the post to share */
