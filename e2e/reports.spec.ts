@@ -30,7 +30,7 @@ function reportButtonOnCard(page: Page, playerName: string) {
 }
 
 test("a visitor is asked to log in before reporting", async ({ page }) => {
-  await page.goto("/geruchten");
+  await page.goto("/geruchten?status=denied");
   await reportButtonOnCard(page, seed.reportRumour.playerName).click();
   await page.waitForURL("/auth/login?next=%2Fgeruchten");
 });
@@ -42,7 +42,7 @@ test("a user reports a rumour and a moderator removes it", async ({
   const { playerName } = seed.reportRumour;
 
   await loginAs(page, "jana");
-  await page.goto("/geruchten");
+  await page.goto("/geruchten?status=denied");
   await reportButtonOnCard(page, playerName).click();
   const dialog = page.getByRole("dialog", { name: "Gerucht melden" });
   await expect(
@@ -86,7 +86,7 @@ test("a user reports a rumour and a moderator removes it", async ({
     "Inhoud verwijderd",
   );
 
-  await page.goto("/geruchten");
+  await page.goto("/geruchten?status=denied");
   await expect(page.getByText(playerName)).toHaveCount(0);
 
   // The author sees the removal and the note on their profile.

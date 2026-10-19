@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
 import { requireStaff } from "@/lib/staff";
+import { expirePublicData } from "@/lib/public-data";
 import { notifyRumourDecision } from "@/lib/notifications";
 import {
   REJECTION_NOTE_MAX_LENGTH,
@@ -70,6 +71,7 @@ function moderationError(error: { code?: string }) {
 }
 
 function revalidateRumourPages() {
+  expirePublicData("rumours");
   revalidatePath("/admin", "layout");
   revalidatePath("/geruchten");
   revalidatePath("/");
@@ -181,6 +183,7 @@ export async function resolveRumour(
   if (error) return resolutionError(error);
 
   revalidateRumourPages();
+  expirePublicData("transfers");
   revalidatePath("/transfers");
   return successResponse(null);
 }

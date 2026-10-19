@@ -6,6 +6,7 @@ import { z } from "zod";
 import { dailyIpHash } from "@/lib/ip-hash";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/staff";
+import { expirePublicData } from "@/lib/public-data";
 import {
   TAKEDOWN_EMAIL_MAX_LENGTH,
   TAKEDOWN_EXPLANATION_MAX_LENGTH,
@@ -151,6 +152,7 @@ function decisionError(error: { code?: string }) {
 }
 
 function revalidateTakedownPages() {
+  expirePublicData("rumours");
   revalidatePath("/admin", "layout");
   revalidatePath("/geruchten");
   revalidatePath("/");

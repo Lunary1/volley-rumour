@@ -35,6 +35,19 @@ export async function createClient() {
 }
 
 /**
+ * A client without cookies: it reads as a logged-out visitor, so RLS gives it
+ * public data only. Use it for queries cached across users (#96), never for
+ * anything that depends on who is asking.
+ */
+export function createPublicClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+}
+
+/**
  * Create an admin client that bypasses RLS policies using service role key
  * Use sparingly and only for operations that require elevated permissions
  */

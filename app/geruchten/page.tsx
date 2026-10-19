@@ -6,15 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { PUBLIC_RUMOUR_STATUSES, isPublicRumourStatus } from "@/lib/rumours";
+import {
+  RUMOURS_PER_PAGE,
+  getRumourStatusCounts,
+  pageCount,
+  parsePage,
+} from "@/lib/public-data";
+import { PageNav } from "@/components/page-nav";
 
 // Rendered per request: the cards show the user's own votes, and a cached
 // query showed vote counts up to a minute old (#129).
 export const dynamic = "force-dynamic";
 
 // Authors and staff can read pending and rejected rumours through RLS, but
-// Transfer Talk only ever lists approved ones (#65).
-async function getRumours(status?: string) {
+// Transfer Talk only ever lists approved ones (#65). One page at a time, newest
+// first (#96).
+async function getRumoursPage(status: string | undefined, page: number) {
   const supabase = await createClient();
   let query = supabase
     .from("rumours")
@@ -23,16 +32,34 @@ async function getRumours(status?: string) {
       *,
       creator:creator_id(username, is_verified_source, rumours_confirmed, rumours_denied)
     `,
+      { count: "exact" },
     )
     .in("status", PUBLIC_RUMOUR_STATUSES)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id");
 
   if (status) {
     query = query.eq("status", status);
   }
 
-  const { data } = await query;
-  return data || [];
+  const from = (page - 1) * RUMOURS_PER_PAGE;
+  const { data, count, error } = await query.range(
+    from,
+    from + RUMOURS_PER_PAGE - 1,
+  );
+  // Past the last page, PostgREST refuses the range.
+  if (error?.code === "PGRST103") return null;
+  if (error) console.error("Error fetching rumours:", error);
+  return { rumours: data ?? [], total: count ?? 0 };
+}
+
+/** The /geruchten URL for a status tab and page, leaving out the defaults. */
+function geruchtenUrl(status: string | undefined, page = 1): string {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (page > 1) params.set("pagina", String(page));
+  const query = params.toString();
+  return query ? `/geruchten?${query}` : "/geruchten";
 }
 
 // "Geen ... geruchten" per filter.
@@ -45,6 +72,7 @@ const emptyTitles: Record<string, string> = {
 
 interface SearchParams {
   status?: string;
+  pagina?: string;
 }
 
 export default async function GeruchtenPage(props: {
@@ -55,24 +83,26 @@ export default async function GeruchtenPage(props: {
     searchParams?.status && isPublicRumourStatus(searchParams.status)
       ? searchParams.status
       : undefined;
+  const page = parsePage(searchParams?.pagina);
 
-  // Fetch only the rumours we need based on status filter
-  const [
-    allRumours,
-    pendingRumours,
-    confirmedRumours,
-    deniedRumours,
-    expiredRumours,
-  ] = await Promise.all([
-    getRumours(status),
-    getRumours("rumour"),
-    getRumours("confirmed"),
-    getRumours("denied"),
-    getRumours("expired"),
+  const [result, counts] = await Promise.all([
+    getRumoursPage(status, page),
+    // The tabs leave out their counts when these fail to load.
+    getRumourStatusCounts().catch((error) => {
+      console.error("Error counting rumours:", error);
+      return null;
+    }),
   ]);
+  if (!result) redirect(geruchtenUrl(status));
 
-  const displayRumours = allRumours;
+  const displayRumours = result.rumours;
+  const totalPages = pageCount(result.total, RUMOURS_PER_PAGE);
   const userVotes = await getUserVotes(displayRumours.map((r) => r.id));
+  const tabCount = (count: number | undefined) =>
+    count === undefined ? "" : ` (${count})`;
+  const allCount = counts
+    ? Object.values(counts).reduce((sum, n) => sum + n, 0)
+    : undefined;
 
   return (
     <div className="min-h-screen py-8">
@@ -101,7 +131,7 @@ export default async function GeruchtenPage(props: {
               variant={!status ? "default" : "outline"}
               className={!status ? "bg-primary text-primary-foreground" : ""}
             >
-              Alle ({allRumours.length})
+              Alle{tabCount(allCount)}
             </Button>
           </Link>
           <Link href="/geruchten?status=rumour">
@@ -112,7 +142,7 @@ export default async function GeruchtenPage(props: {
               }
             >
               <Flame className="mr-2 h-4 w-4 text-accent" />
-              Trending ({pendingRumours.length})
+              Trending{tabCount(counts?.rumour)}
             </Button>
           </Link>
           <Link href="/geruchten?status=confirmed">
@@ -124,7 +154,7 @@ export default async function GeruchtenPage(props: {
                   : ""
               }
             >
-              Bevestigd ({confirmedRumours.length})
+              Bevestigd{tabCount(counts?.confirmed)}
             </Button>
           </Link>
           <Link href="/geruchten?status=denied">
@@ -134,7 +164,7 @@ export default async function GeruchtenPage(props: {
                 status === "denied" ? "bg-primary text-primary-foreground" : ""
               }
             >
-              Ontkracht ({deniedRumours.length})
+              Ontkracht{tabCount(counts?.denied)}
             </Button>
           </Link>
           <Link href="/geruchten?status=expired">
@@ -144,40 +174,47 @@ export default async function GeruchtenPage(props: {
                 status === "expired" ? "bg-primary text-primary-foreground" : ""
               }
             >
-              Niet bevestigd ({expiredRumours.length})
+              Niet bevestigd{tabCount(counts?.expired)}
             </Button>
           </Link>
         </div>
 
         {/* Rumours Grid - 1 col mobile, 2–3 desktop */}
         {displayRumours.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {displayRumours.map((rumour) => (
-              <RumourCard
-                key={rumour.id}
-                rumour={{
-                  id: rumour.id,
-                  player_name: rumour.player_name,
-                  from_club_name: rumour.from_club_name,
-                  to_club_name: rumour.to_club_name,
-                  category: rumour.category,
-                  description: rumour.description,
-                  source_type: rumour.source_type,
-                  source_url: rumour.source_url,
-                  resolution_source_url: rumour.resolution_source_url,
-                  votes_true: rumour.votes_true,
-                  votes_false: rumour.votes_false,
-                  created_at: rumour.created_at,
-                  status: rumour.status,
-                  creator_id: rumour.creator_id,
-                  creator: rumour.creator,
-                }}
-                onVote={voteOnRumour}
-                userVote={userVotes.votes[rumour.id] ?? null}
-                currentUserId={userVotes.userId}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {displayRumours.map((rumour) => (
+                <RumourCard
+                  key={rumour.id}
+                  rumour={{
+                    id: rumour.id,
+                    player_name: rumour.player_name,
+                    from_club_name: rumour.from_club_name,
+                    to_club_name: rumour.to_club_name,
+                    category: rumour.category,
+                    description: rumour.description,
+                    source_type: rumour.source_type,
+                    source_url: rumour.source_url,
+                    resolution_source_url: rumour.resolution_source_url,
+                    votes_true: rumour.votes_true,
+                    votes_false: rumour.votes_false,
+                    created_at: rumour.created_at,
+                    status: rumour.status,
+                    creator_id: rumour.creator_id,
+                    creator: rumour.creator,
+                  }}
+                  onVote={voteOnRumour}
+                  userVote={userVotes.votes[rumour.id] ?? null}
+                  currentUserId={userVotes.userId}
+                />
+              ))}
+            </div>
+            <PageNav
+              currentPage={page}
+              totalPages={totalPages}
+              pageUrl={(p) => geruchtenUrl(status, p)}
+            />
+          </>
         ) : (
           <Card className="bg-card border-border">
             <CardContent className="py-16 text-center">

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireStaff } from "@/lib/staff";
+import { expirePublicData } from "@/lib/public-data";
 import { RUMOUR_DIVISIONS, type RumourDivision } from "@/lib/rumours";
 import {
   CLUB_NAME_MAX_LENGTH,
@@ -74,6 +75,8 @@ function transferError(error: { code?: string }) {
 }
 
 function revalidateTransferPages() {
+  // Removing a rumour's transfer reopens the rumour.
+  expirePublicData("rumours", "transfers");
   revalidatePath("/admin", "layout");
   revalidatePath("/transfers");
   revalidatePath("/geruchten");

@@ -35,7 +35,7 @@ test("a visitor asks to remove a rumour and a moderator removes it", async ({
   const { playerName } = seed.takedownRemoveRumour;
 
   // Not logged in: from the rumour's detail view to the form.
-  await page.goto("/geruchten");
+  await page.goto("/geruchten?status=denied");
   await page
     .locator('[data-slot="card"]')
     .filter({ hasText: playerName })
@@ -55,7 +55,7 @@ test("a visitor asks to remove a rumour and a moderator removes it", async ({
   await expect(page.getByText(reference)).toBeVisible();
   // The rumour stays up until a moderator decides (D-014).
   const statusUrl = page.url();
-  await page.goto("/geruchten");
+  await page.goto("/geruchten?status=denied");
   await expect(page.getByText(playerName).first()).toBeVisible();
 
   const moderator = await pageFor(browser, "moderator");
@@ -88,7 +88,7 @@ test("a visitor asks to remove a rumour and a moderator removes it", async ({
   await expect(
     page.getByText("Verwijderd, bedankt voor je melding."),
   ).toBeVisible();
-  await page.goto("/geruchten");
+  await page.goto("/geruchten?status=denied");
   await expect(page.getByText(playerName)).toHaveCount(0);
 });
 
@@ -152,7 +152,7 @@ test("a moderator rejects a request found from the footer", async ({
   await expect(
     page.getByText("Het gerucht steunt op een officieel clubbericht."),
   ).toBeVisible();
-  await page.goto("/geruchten");
+  await page.goto("/geruchten?status=denied");
   await expect(page.getByText(playerName).first()).toBeVisible();
 });
 

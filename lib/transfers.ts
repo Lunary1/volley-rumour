@@ -49,6 +49,25 @@ export const TRANSFER_TABS = [
   categories: readonly TransferCategory[] | null;
 }[];
 
+export type TransferTab = (typeof TRANSFER_TABS)[number]["value"];
+
+/** The tab in `/transfers?type=`; anything unknown is "all". */
+export function parseTransferTab(
+  value: string | string[] | undefined,
+): TransferTab {
+  const tab = Array.isArray(value) ? value[0] : value;
+  return TRANSFER_TABS.find((t) => t.value === tab)?.value ?? "all";
+}
+
+/** The /transfers URL for a tab and page, leaving out the defaults. */
+export function transfersUrl(tab: TransferTab, page = 1): string {
+  const params = new URLSearchParams();
+  if (tab !== "all") params.set("type", tab);
+  if (page > 1) params.set("pagina", String(page));
+  const query = params.toString();
+  return query ? `/transfers?${query}` : "/transfers";
+}
+
 /**
  * The transfer types a rumour of this category can become when a moderator
  * confirms it. resolve_rumour() refuses any other.

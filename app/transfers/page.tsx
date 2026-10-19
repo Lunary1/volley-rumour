@@ -1,17 +1,17 @@
-import { createClient } from "@/lib/supabase/server";
-import {
-  TRANSFER_CARD_COLUMNS,
-  TransferCard,
-  type TransferCardData,
-} from "@/components/transfer-card";
+import { TransferCard } from "@/components/transfer-card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageNav } from "@/components/page-nav";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, UserPlus, UserMinus, Users } from "lucide-react";
-import { TRANSFER_TABS, type TransferCategory } from "@/lib/transfers";
-
-// Cache transfers for 60 seconds; moderators' changes revalidate the page.
-export const revalidate = 60;
+import { cn } from "@/lib/utils";
+import { TRANSFER_TABS, parseTransferTab, transfersUrl } from "@/lib/transfers";
+import {
+  TRANSFERS_PER_PAGE,
+  getTransfersPage,
+  pageCount,
+  parsePage,
+} from "@/lib/public-data";
 
 const tabIcons = {
   all: Users,
@@ -28,28 +28,18 @@ const emptyMessages = {
 } as const;
 
 // One set of transfer types everywhere (#82): each tab lists the categories
-// in TRANSFER_TABS.
-async function getTransfers(
-  categories: readonly TransferCategory[] | null,
-): Promise<TransferCardData[]> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("transfers")
-    .select(TRANSFER_CARD_COLUMNS)
-    .order("confirmed_at", { ascending: false });
+// in TRANSFER_TABS. The tab and page live in the URL and the server loads
+// one page of one tab, cached for every visitor (#96).
+export default async function TransfersPage(props: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const searchParams = await props.searchParams;
+  const tab = parseTransferTab(searchParams.type);
+  const page = parsePage(searchParams.pagina);
 
-  if (categories) {
-    query = query.in("category", categories);
-  }
-
-  const { data } = await query.limit(50);
-  return (data ?? []) as TransferCardData[];
-}
-
-export default async function TransfersPage() {
-  const lists = await Promise.all(
-    TRANSFER_TABS.map((tab) => getTransfers(tab.categories)),
-  );
+  const result = await getTransfersPage(tab, page);
+  if (!result) redirect(transfersUrl(tab));
+  const totalPages = pageCount(result.total, TRANSFERS_PER_PAGE);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -60,37 +50,48 @@ export default async function TransfersPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8 bg-secondary">
-          {TRANSFER_TABS.map((tab) => {
-            const Icon = tabIcons[tab.value];
-            return (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Icon className="w-4 h-4 mr-2" />
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+      <nav
+        aria-label="Soort transfer"
+        className="grid w-full grid-cols-4 mb-8 rounded-lg bg-secondary p-[3px]"
+      >
+        {TRANSFER_TABS.map((t) => {
+          const Icon = tabIcons[t.value];
+          const active = t.value === tab;
+          return (
+            <Link
+              key={t.value}
+              href={transfersUrl(t.value)}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "inline-flex items-center justify-center rounded-md px-2 py-1 text-sm font-medium transition-colors",
+                active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-foreground hover:bg-background/60",
+              )}
+            >
+              <Icon className="hidden sm:block w-4 h-4 mr-2 shrink-0" />
+              {t.label}
+            </Link>
+          );
+        })}
+      </nav>
 
-        {TRANSFER_TABS.map((tab, i) => (
-          <TabsContent key={tab.value} value={tab.value}>
-            {lists[i].length === 0 ? (
-              <EmptyState message={emptyMessages[tab.value]} />
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {lists[i].map((transfer) => (
-                  <TransferCard key={transfer.id} transfer={transfer} share />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+      {result.transfers.length === 0 ? (
+        <EmptyState message={emptyMessages[tab]} />
+      ) : (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {result.transfers.map((transfer) => (
+              <TransferCard key={transfer.id} transfer={transfer} share />
+            ))}
+          </div>
+          <PageNav
+            currentPage={page}
+            totalPages={totalPages}
+            pageUrl={(p) => transfersUrl(tab, p)}
+          />
+        </>
+      )}
 
       <div className="mt-12 text-center">
         <p className="text-muted-foreground mb-4">
