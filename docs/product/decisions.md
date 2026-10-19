@@ -822,3 +822,20 @@ out of the sitemap. Lists, zoekertjes, transfers and info pages are indexed.
 the author. Search engines may still crawl a rumour page (robots.txt allows
 it), so they see the `noindex`. Indexing confirmed rumours later is a new
 decision.
+
+## D-036 — Moderation response times, rota and standard replies
+
+**Context.** The transfer window brings the most rumours, reports and takedown
+requests (#93). Takedowns are reviewed before anything is hidden (D-014), so
+the time to a decision matters, and moderators wrote every note from scratch.
+
+**Decision** (owner, 2026-10-19). Pending rumours are reviewed within 24 h;
+takedown requests, reports and contact messages are decided within 72 h. Until
+launch the owner is the only moderator. Standard Dutch replies are built into
+the admin area: a "Sjabloon invoegen" picker on every note the author,
+requester or suspended user reads, and on the internal report notes. A
+template's [placeholder] must be replaced before the note can be sent.
+
+**Consequences.** The handbook (`docs/product/moderation.md`) holds the rota,
+targets and onboarding. A second moderator is still needed before launch
+(readiness checklist). Template wording changes go through a PR, like any copy.

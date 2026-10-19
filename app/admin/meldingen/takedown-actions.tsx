@@ -11,6 +11,11 @@ import {
 } from "@/app/actions/takedown";
 import { handleServerActionResponse } from "@/lib/client-utils";
 import { TAKEDOWN_NOTE_MAX_LENGTH } from "@/lib/takedown";
+import {
+  hasTemplatePlaceholder,
+  TAKEDOWN_TEMPLATES,
+} from "@/lib/moderation-templates";
+import { PlaceholderHint, TemplatePicker } from "@/app/admin/template-picker";
 
 /** Remove the rumour, or reject the request, for one open takedown request. */
 export function TakedownActions({
@@ -26,7 +31,8 @@ export function TakedownActions({
   const [note, setNote] = useState("");
 
   const noteRequired = decision === "reject";
-  const canConfirm = !noteRequired || note.trim().length > 0;
+  const canConfirm =
+    (!noteRequired || note.trim().length > 0) && !hasTemplatePlaceholder(note);
 
   function confirm(event: React.FormEvent) {
     event.preventDefault();
@@ -75,6 +81,10 @@ export function TakedownActions({
           ? "Het gerucht verdwijnt overal; de auteur ziet het als 'Verwijderd' op het eigen profiel. Andere open verzoeken over dit gerucht worden mee afgehandeld."
           : "Het gerucht blijft staan."}
       </p>
+      <TemplatePicker
+        templates={TAKEDOWN_TEMPLATES[decision]}
+        onPick={setNote}
+      />
       <div className="space-y-1">
         <Label htmlFor={`${id}-note`}>
           Toelichting voor de aanvrager{noteRequired ? "" : " (optioneel)"}
@@ -86,6 +96,7 @@ export function TakedownActions({
           maxLength={TAKEDOWN_NOTE_MAX_LENGTH}
           required={noteRequired}
         />
+        <PlaceholderHint text={note} />
       </div>
       <div className="flex flex-wrap gap-2">
         <Button

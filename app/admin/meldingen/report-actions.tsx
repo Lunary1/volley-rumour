@@ -8,6 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { closeReport, removeReportedContent } from "@/app/actions/reports";
 import { handleServerActionResponse } from "@/lib/client-utils";
 import { REPORT_NOTE_MAX_LENGTH, type ReportTargetType } from "@/lib/reports";
+import {
+  hasTemplatePlaceholder,
+  REPORT_TEMPLATES,
+} from "@/lib/moderation-templates";
+import { PlaceholderHint, TemplatePicker } from "@/app/admin/template-picker";
 
 type Decision = "remove" | "dismiss" | "action";
 
@@ -52,7 +57,8 @@ export function ReportActions({
   const [note, setNote] = useState("");
 
   const noteRequired = decision === "action";
-  const canConfirm = !noteRequired || note.trim().length > 0;
+  const canConfirm =
+    (!noteRequired || note.trim().length > 0) && !hasTemplatePlaceholder(note);
 
   function confirm(event: React.FormEvent) {
     event.preventDefault();
@@ -102,6 +108,7 @@ export function ReportActions({
       aria-label={copy.confirm}
     >
       <p className="text-sm">{copy.explain}</p>
+      <TemplatePicker templates={REPORT_TEMPLATES[decision]} onPick={setNote} />
       <div className="space-y-1">
         <Label htmlFor={`${id}-note`}>{copy.noteLabel}</Label>
         <Textarea
@@ -111,6 +118,7 @@ export function ReportActions({
           maxLength={REPORT_NOTE_MAX_LENGTH}
           required={noteRequired}
         />
+        <PlaceholderHint text={note} />
       </div>
       <div className="flex flex-wrap gap-2">
         <Button

@@ -15,6 +15,11 @@ import {
 import { handleServerActionResponse } from "@/lib/client-utils";
 import { useIsClient } from "@/lib/use-is-client";
 import {
+  hasTemplatePlaceholder,
+  SUSPENSION_TEMPLATES,
+} from "@/lib/moderation-templates";
+import { PlaceholderHint, TemplatePicker } from "@/app/admin/template-picker";
+import {
   SANCTION_NOTE_MAX_LENGTH,
   SUSPENSION_DURATIONS,
   SUSPENSION_REASON_MAX_LENGTH,
@@ -158,7 +163,8 @@ export function UserActions({
     const textRequired = form === "suspend";
     const canConfirm =
       (!textRequired || text.trim().length > 0) &&
-      (form !== "suspend" || duration !== "date" || date !== "");
+      (form !== "suspend" || duration !== "date" || date !== "") &&
+      !hasTemplatePlaceholder(text);
 
     return (
       <form
@@ -202,6 +208,9 @@ export function UserActions({
             )}
           </div>
         )}
+        {form === "suspend" && (
+          <TemplatePicker templates={SUSPENSION_TEMPLATES} onPick={setText} />
+        )}
         <div className="space-y-1">
           <Label htmlFor={`${id}-text`}>{copy.textLabel}</Label>
           <Textarea
@@ -214,6 +223,7 @@ export function UserActions({
                 : SANCTION_NOTE_MAX_LENGTH
             }
           />
+          <PlaceholderHint text={text} />
         </div>
         <div className="flex flex-wrap gap-2">
           <Button

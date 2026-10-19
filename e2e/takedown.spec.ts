@@ -154,6 +154,14 @@ test("a moderator rejects a request found from the footer", async ({
   await item.getByRole("button", { name: "Verzoek afwijzen" }).click();
   const confirm = item.getByRole("button", { name: "Afwijzen bevestigen" });
   await expect(confirm).toBeDisabled();
+  // A standard reply (#93) is enough to send.
+  await item
+    .getByLabel("Sjabloon invoegen")
+    .selectOption("Gaat over de transfer");
+  await expect(item.getByLabel(/Toelichting voor de aanvrager/)).toHaveValue(
+    /^Het gerucht gaat over een mogelijke transfer/,
+  );
+  await expect(confirm).toBeEnabled();
   await item
     .getByLabel(/Toelichting voor de aanvrager/)
     .fill("Het gerucht steunt op een officieel clubbericht.");
