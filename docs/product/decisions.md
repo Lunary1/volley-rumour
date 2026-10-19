@@ -840,7 +840,7 @@ template's [placeholder] must be replaced before the note can be sent.
 targets and onboarding. A second moderator is still needed before launch
 (readiness checklist). Template wording changes go through a PR, like any copy.
 
-## D-037 — Moderation outcomes stay on screen; staff are emailed about new items
+## D-037 — Which moderation events send an email
 
 **Context.** J-15 was the last journey not at WORKS, only because moderation
 outcomes weren't emailed (#53). Each outcome is already shown where the person
@@ -850,11 +850,14 @@ confirmation (D-015) and a suspended user sees the notice on every page
 (D-016). The owner is the only moderator (D-036) and only sees new items by
 opening the admin area.
 
-**Decision** (owner, 2026-10-19). No emails for moderation outcomes: removals,
-takedown decisions, report decisions and suspensions stay on screen. Staff do
-get an email for every new takedown request, report and contact message
-(#181).
+**Decision** (owner, 2026-10-19). Removals, report decisions and suspensions
+stay on screen, without email. A takedown requester does get one content-free
+email with their status link once a moderator decides: the Digital Services
+Act (art. 16(5)) says whoever files a notice is notified of the decision and
+how to contest it, and we already have their address. Staff get an email for
+every new takedown request, report and contact message. Both emails are #181.
 
-**Consequences.** J-15 is WORKS and Phase 2 is closed. A takedown requester who
-loses the status link can ask through the contact form. Outcome emails are a
+**Consequences.** J-15 is WORKS and Phase 2 is closed; the emails come with #181
+in M3. Whether on-screen outcomes are enough for reporters and authors is on
+the list for the legal review (#94). Outcome emails are a
 new decision if users miss them after launch.
