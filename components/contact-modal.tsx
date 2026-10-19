@@ -19,7 +19,6 @@ interface ContactModalProps {
   userId: string;
   userName: string;
   adId: string;
-  adType: "transfer_talk" | "classified";
   onClose: () => void;
 }
 
@@ -27,7 +26,6 @@ export function ContactModal({
   userId,
   userName,
   adId,
-  adType,
   onClose,
 }: ContactModalProps) {
   const router = useRouter();
@@ -41,7 +39,7 @@ export function ContactModal({
     try {
       setSending(true);
 
-      const result = await createConversation(adId, adType, userId, message);
+      const result = await createConversation(adId, userId, message);
 
       if (!result.success) {
         toast.error(result.error);

@@ -584,7 +584,6 @@ export function ClassifiedsList({
           userId={selectedClassified.user_id}
           userName={selectedClassified.profiles?.username || "deze gebruiker"}
           adId={selectedClassified.id}
-          adType="classified"
           onClose={() => setContactModal(null)}
         />
       )}

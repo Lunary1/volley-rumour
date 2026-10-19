@@ -67,18 +67,9 @@ export default async function ConversationPage({
   // Fetch the ad details
   // A zoekertje that went offline is hidden by RLS, but the conversation
   // still shows its title, without a link (#84).
-  const { data: adData } =
-    conversation.ad_type === "transfer"
-      ? await supabase
-          .from("transfers")
-          .select("id, title")
-          .eq("id", conversation.ad_id)
-          .single<{ id: string; title: string; online?: boolean }>()
-      : await supabase
-          .rpc("conversation_classified_titles", {
-            p_ids: [conversation.ad_id],
-          })
-          .maybeSingle<{ id: string; title: string; online?: boolean }>();
+  const { data: adData } = await supabase
+    .rpc("conversation_classified_titles", { p_ids: [conversation.ad_id] })
+    .maybeSingle<{ id: string; title: string; online: boolean }>();
   const adOnline = adData?.online !== false;
 
   // Fetch the other user's details
@@ -138,14 +129,7 @@ export default async function ConversationPage({
     .map((msg) => ({ ...msg, is_from_me: msg.sender_id === user.id }))
     .reverse();
 
-  // Determine ad link
-  const adLink =
-    conversation.ad_type === "transfer"
-      ? `/transfers`
-      : `/zoekertjes/${conversation.ad_id}`;
-
-  const adTypeBadge =
-    conversation.ad_type === "transfer" ? "Transfer" : "Zoekertje";
+  const adLink = `/zoekertjes/${conversation.ad_id}`;
 
   // Get initials for avatar fallback
   const otherUserInitials = (otherUserData?.username || "G")
@@ -199,7 +183,7 @@ export default async function ConversationPage({
                   variant="secondary"
                   className="text-[10px] px-1.5 py-0 h-4 font-medium"
                 >
-                  {adTypeBadge}
+                  Zoekertje
                 </Badge>
                 {adData && !adOnline ? (
                   <span className="text-xs text-muted-foreground truncate">
@@ -218,9 +202,7 @@ export default async function ConversationPage({
                 ) : (
                   // Its author deleted the ad; the conversation stays (#72).
                   <span className="text-xs text-muted-foreground truncate">
-                    {conversation.ad_type === "transfer"
-                      ? "Gesprek"
-                      : "Verwijderd zoekertje"}
+                    Verwijderd zoekertje
                   </span>
                 )}
               </div>

@@ -153,9 +153,6 @@ export default async function MessagesPage({
         <MessagesTabs archived={archived} />
         <div className="space-y-2">
           {conversations.map((conversation) => {
-            const adTypeBadge =
-              conversation.ad_type === "transfer" ? "Transfer" : "Zoekertje";
-
             return (
               <Card
                 key={conversation.id}
@@ -200,7 +197,7 @@ export default async function MessagesPage({
                             variant="secondary"
                             className="text-[10px] px-1.5 py-0 h-4 font-medium shrink-0"
                           >
-                            {adTypeBadge}
+                            Zoekertje
                           </Badge>
                         </div>
                         <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
