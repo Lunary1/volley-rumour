@@ -70,6 +70,13 @@ async function openRumour(
   return playerName;
 }
 
+/** A /transfers tab: a link, with the tab in the URL (#96). */
+function transferTab(page: Page, label: string) {
+  return page
+    .getByRole("navigation", { name: "Soort transfer" })
+    .getByRole("link", { name: label });
+}
+
 /** A transfer's card on /transfers or the homepage. */
 function transferCard(page: Page, playerName: string) {
   return page
@@ -119,7 +126,7 @@ test("a moderator confirms a rumour with a source and it becomes a transfer", as
   // Visitors see the transfer on its tab, with the source and no contact
   // button (D-004).
   await page.goto("/transfers");
-  await page.getByRole("tab", { name: "Spelers" }).click();
+  await transferTab(page, "Spelers").click();
   const card = transferCard(page, playerName);
   await expect(card).toBeVisible();
   await expect(card.getByText("Speelster")).toBeVisible();
@@ -128,7 +135,7 @@ test("a moderator confirms a rumour with a source and it becomes a transfer", as
     card.getByRole("link", { name: "Officiële bron" }),
   ).toHaveAttribute("href", source);
   await expect(card.getByRole("button", { name: /Contact/ })).toHaveCount(0);
-  await page.getByRole("tab", { name: "Trainers" }).click();
+  await transferTab(page, "Trainers").click();
   await expect(transferCard(page, playerName)).toHaveCount(0);
 
   // On Transfer Talk the rumour is confirmed, with the source, and closed to
@@ -295,7 +302,7 @@ test("a moderator adds, corrects and removes a transfer", async ({ page }) => {
   ).toBeVisible();
 
   await page.goto("/transfers");
-  await page.getByRole("tab", { name: "Gestopt" }).click();
+  await transferTab(page, "Gestopt").click();
   await expect(
     transferCard(page, corrected).getByText("Trainer stopt"),
   ).toBeVisible();

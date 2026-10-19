@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/staff";
+import { expirePublicData } from "@/lib/public-data";
 import {
   CONTENT_REPORT_REASONS,
   CONVERSATION_REPORT_REASONS,
@@ -163,6 +164,7 @@ function decisionError(error: { code?: string }) {
 }
 
 function revalidateReportPages() {
+  expirePublicData("rumours");
   revalidatePath("/admin", "layout");
   revalidatePath("/geruchten");
   revalidatePath("/zoekertjes", "layout");

@@ -272,10 +272,15 @@ export async function getConversations({ archived = false } = {}) {
       `
       *,
       initiator:initiator_id(id, username, avatar_path),
-      recipient:recipient_id(id, username, avatar_path)
+      recipient:recipient_id(id, username, avatar_path),
+      messages(content, sender_id)
     `,
     )
-    .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`);
+    .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`)
+    // Only the last message of each conversation, in this same query: the
+    // inbox loads in a fixed number of queries however long it is (#96).
+    .order("created_at", { referencedTable: "messages", ascending: false })
+    .limit(1, { referencedTable: "messages" });
   if (archived) {
     query = query.in("id", archivedIds);
   } else if (archivedIds.length > 0) {
@@ -306,31 +311,12 @@ export async function getConversations({ archived = false } = {}) {
     );
   });
 
-  // Get last message for each conversation
-  const lastMessageMap = new Map();
-
-  for (const conversationId of conversationIds) {
-    const { data: lastMessage } = await supabase
-      .from("messages")
-      .select("conversation_id, content, sender_id")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (lastMessage) {
-      lastMessageMap.set(conversationId, {
-        content: lastMessage.content,
-        sender_id: lastMessage.sender_id,
-      });
-    }
-  }
-
   const enriched = conversations?.map((c) => {
     // Determine which user is the "other" user
     const isInitiator = c.initiator_id === user.id;
     const otherUser = isInitiator ? c.recipient : c.initiator;
     const initiatorUser = c.initiator;
+    const lastMessage = c.messages[0];
 
     return {
       id: c.id,
@@ -344,10 +330,10 @@ export async function getConversations({ archived = false } = {}) {
         otherUser.id || (isInitiator ? c.recipient_id : c.initiator_id),
       other_user_name: otherUser.username || "Onbekende gebruiker",
       other_user_avatar_url: avatarUrl(otherUser.avatar_path),
-      last_message: lastMessageMap.get(c.id)?.content,
+      last_message: lastMessage?.content,
       last_message_at: c.updated_at,
       unread_count: unreadMap.get(c.id) || 0,
-      last_message_is_from_me: lastMessageMap.get(c.id)?.sender_id === user.id,
+      last_message_is_from_me: lastMessage?.sender_id === user.id,
     };
   });
 

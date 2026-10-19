@@ -2,11 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { RumourCard } from "@/components/rumour-card";
 import { voteOnRumour } from "@/app/actions/vote";
 import { getUserVotes } from "@/lib/votes";
-import {
-  TRANSFER_CARD_COLUMNS,
-  TransferCard,
-  type TransferCardData,
-} from "@/components/transfer-card";
+import { TransferCard } from "@/components/transfer-card";
+import { getHomepageData } from "@/lib/public-data";
 import { TrustedSourcesPeek } from "@/components/trusted-sources-peek";
 import { getTrustedSources } from "@/lib/trusted-sources";
 import { Button } from "@/components/ui/button";
@@ -43,37 +40,6 @@ async function getFeaturedRumours() {
   return data || [];
 }
 
-async function getLatestTransfers() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("transfers")
-    .select(TRANSFER_CARD_COLUMNS)
-    .order("confirmed_at", { ascending: false })
-    .limit(6);
-
-  return (data ?? []) as TransferCardData[];
-}
-
-/** Real site-wide counts (not array lengths). */
-async function getSiteCounts() {
-  const supabase = await createClient();
-
-  const [rumours, transfers, users] = await Promise.all([
-    supabase
-      .from("rumours")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "rumour"),
-    supabase.from("transfers").select("id", { count: "exact", head: true }),
-    supabase.from("profiles").select("id", { count: "exact", head: true }),
-  ]);
-
-  return {
-    rumours: rumours.count ?? 0,
-    transfers: transfers.count ?? 0,
-    users: users.count ?? 0,
-  };
-}
-
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
@@ -84,13 +50,19 @@ export default async function HomePage() {
     return <ComingSoonPage />;
   }
 
-  const [featuredRumours, latestTransfers, trustedSources, counts] =
-    await Promise.all([
-      getFeaturedRumours(),
-      getLatestTransfers(),
-      getTrustedSources(3),
-      getSiteCounts(),
-    ]);
+  const [featuredRumours, homepageData, trustedSources] = await Promise.all([
+    getFeaturedRumours(),
+    // Cached for every visitor (#96); empty when it fails to load.
+    getHomepageData().catch((error) => {
+      console.error("Error loading homepage data:", error);
+      return {
+        latestTransfers: [],
+        counts: { rumours: 0, transfers: 0, users: 0 },
+      };
+    }),
+    getTrustedSources(3),
+  ]);
+  const { latestTransfers, counts } = homepageData;
   const userVotes = await getUserVotes(featuredRumours.map((r) => r.id));
 
   return (

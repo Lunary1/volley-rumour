@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ContactModal } from "@/components/contact-modal";
+import { PageLink, PageNav } from "@/components/page-nav";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { getExistingConversation } from "@/app/actions/messages";
 import { useRouter } from "next/navigation";
@@ -568,30 +569,11 @@ export function ClassifiedsList({
             )}
 
             {/* Bottom pagination */}
-            {totalPages > 1 && (
-              <nav
-                aria-label="Paginering"
-                className="flex justify-center items-center gap-2 pt-4"
-              >
-                <PageLink
-                  href={pageUrl(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Vorige
-                </PageLink>
-                <div className="px-4 py-2 text-sm text-muted-foreground">
-                  Pagina {currentPage} van {totalPages}
-                </div>
-                <PageLink
-                  href={pageUrl(currentPage + 1)}
-                  disabled={currentPage >= totalPages}
-                >
-                  Volgende
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </PageLink>
-              </nav>
-            )}
+            <PageNav
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageUrl={pageUrl}
+            />
           </div>
         )}
       </div>
@@ -607,41 +589,5 @@ export function ClassifiedsList({
         />
       )}
     </div>
-  );
-}
-
-/** A page button: a link, so paging works before hydration and can be shared. */
-function PageLink({
-  href,
-  disabled,
-  label,
-  className,
-  children,
-}: {
-  href: string;
-  disabled: boolean;
-  label?: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  if (disabled) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        disabled
-        aria-label={label}
-        className={className}
-      >
-        {children}
-      </Button>
-    );
-  }
-  return (
-    <Button asChild variant="outline" size="sm" className={className}>
-      <Link href={href} aria-label={label}>
-        {children}
-      </Link>
-    </Button>
   );
 }
