@@ -152,9 +152,11 @@ function decisionError(error: { code?: string }) {
 }
 
 function revalidateTakedownPages() {
-  expirePublicData("rumours");
+  // Removing a rumour also deletes its transfer (#151).
+  expirePublicData("rumours", "transfers");
   revalidatePath("/admin", "layout");
   revalidatePath("/geruchten");
+  revalidatePath("/transfers");
   revalidatePath("/");
   revalidatePath("/profile");
 }

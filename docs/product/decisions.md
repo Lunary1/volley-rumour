@@ -39,6 +39,8 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-030 | 2026-10-18 | Accepted | Stored zoekertje contact emails are deleted; ads online at the expiry rollout run until 31 August 2027 |
 | D-031 | 2026-10-18 | Accepted | 16+ and terms are accepted per terms version; anyone without the current one is asked on /welkom |
 | D-032 | 2026-10-18 | Accepted | Notification emails go through Resend over SMTP, one per run of unread messages, never while the recipient is chatting |
+| D-033 | 2026-10-19 | Accepted | Removing a rumour also deletes the transfer made when it was confirmed |
+| D-034 | 2026-10-19 | Accepted | Production stays public while the site is in development; coming-soon goes back on before launch |
 
 ---
 
@@ -767,3 +769,37 @@ emails need a sender.
 (D-015) still get no email; J-12 and J-15 keep their status links and
 confirmations. A message to a recipient whose browser is open on another page
 still sends an email: the site doesn't track presence.
+
+## D-033 — Removing a rumour deletes its transfer
+
+**Context.** Confirming a rumour makes a transfer (`transfers.source_rumour_id`,
+D-020). When the rumour was later removed after a takedown request (D-014) or a
+report (D-015), the transfer stayed on `/transfers` and the homepage (#151). A
+takedown usually means the person asked to be taken off the site, so their name
+stayed public.
+
+**Decision** (owner, 2026-10-19). Removing a rumour always deletes its
+transfer, in the same database function and transaction, also when the
+transfer had an official source. The deletion is logged as its own "Transfer
+verwijderd" entry with the transfer as it was. If the transfer is public fact
+and only the rumour was the problem, staff add it again by hand on
+`/admin/transfers`.
+
+**Consequences.** The simple rule keeps the takedown promise without a
+judgement call per removal. Transfers of rumours removed before the change are
+deleted by the migration, without a log entry (the log needs a staff member as
+actor).
+
+## D-034 — Production stays public during development
+
+**Context.** On 2026-10-19 `NEXT_PUBLIC_COMING_SOON` turned out not to be set
+for Production in Vercel, so volleyrumours.be served the full site instead of
+the coming-soon page (D-009).
+
+**Decision** (owner, 2026-10-19). That is intended for now: the owner follows
+progress on production, and there are no users yet. Coming-soon mode (D-009)
+goes back on when development is done, and stays on until launch (#95).
+
+**Consequences.** Supabase sign-ups are disabled in the dashboard until launch
+(D-009), so nobody can create an account on production in the meantime.
+Anything merged is visible on volleyrumours.be straight away.

@@ -164,9 +164,11 @@ function decisionError(error: { code?: string }) {
 }
 
 function revalidateReportPages() {
-  expirePublicData("rumours");
+  // Removing a rumour also deletes its transfer (#151).
+  expirePublicData("rumours", "transfers");
   revalidatePath("/admin", "layout");
   revalidatePath("/geruchten");
+  revalidatePath("/transfers");
   revalidatePath("/zoekertjes", "layout");
   revalidatePath("/");
   revalidatePath("/profile");
