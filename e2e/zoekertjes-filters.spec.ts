@@ -76,7 +76,7 @@ test("the server pages a search, and the page is in the URL", async ({
         user_id: club!.id,
         type: "team_seeks_player",
         title: `${word} ${i + 1}`,
-        contact_name: `${word} ${i + 1}`,
+        contact_name: "Paginaclub",
         position: "setter",
         gender: "heren",
         division: "nat2_heren",

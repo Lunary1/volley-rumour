@@ -72,6 +72,14 @@ interface ClassifiedsListProps {
   currentUserId?: string;
 }
 
+/** Who posted the ad, as "contact · team", without repeating a name. */
+function posterLine(classified: Classified): string {
+  const names = [classified.contact_name, classified.team_name]
+    .map((name) => name?.trim())
+    .filter((name): name is string => !!name);
+  return [...new Set(names)].join(" · ");
+}
+
 const CATEGORY_OPTIONS = [
   { value: null, label: "Alle" },
   ...Object.entries(CLASSIFIED_TYPE_LABELS).map(([value, label]) => ({
@@ -353,7 +361,7 @@ export function ClassifiedsList({
               )}
             </div>
 
-            {/* Featured cards: contact-only (no link to detail) to keep CTA prominent. */}
+            {/* Featured cards: the body links to the ad, the button opens contact. */}
             {featured.length > 0 && (
               <div className="mb-12">
                 <h2 className="text-xl font-bold text-foreground mb-6 tracking-tight">
@@ -368,86 +376,82 @@ export function ClassifiedsList({
                         key={classified.id}
                         className="lg:col-span-2 lg:row-span-2"
                       >
-                        <div
-                          className="group h-full rounded-2xl p-6 md:p-8 bg-card shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden relative border border-border flex flex-col"
-                          onClick={() => {
-                            if (!isOwnClassified) {
-                              handleContactClick(classified);
-                            }
-                          }}
-                        >
+                        <article className="group h-full rounded-2xl p-6 md:p-8 bg-card shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden relative border border-border flex flex-col">
                           {/* Subtle background accent using primary color */}
                           <div className="absolute top-0 right-0 w-40 h-40 bg-primary rounded-full blur-3xl opacity-15 -z-10" />
 
-                          {/* Featured badge */}
-                          <div className="mb-6 flex items-center gap-2">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary tracking-tight">
-                              ⭐ AANBEVOLEN
-                            </span>
-                          </div>
+                          <Link
+                            href={`/zoekertjes/${classified.id}`}
+                            className="flex flex-col flex-1 min-h-0"
+                          >
+                            {/* Featured badge */}
+                            <div className="mb-6 flex items-center gap-2">
+                              <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary tracking-tight">
+                                ⭐ AANBEVOLEN
+                              </span>
+                            </div>
 
-                          {/* Main content */}
-                          <div className="space-y-4 flex-1">
-                            {/* Contact name + Position */}
-                            <div>
-                              <h3 className="text-2xl font-bold text-foreground tracking-tight leading-tight">
-                                {classified.contact_name || "Onbekend"}
-                              </h3>
-                              {classified.position && (
-                                <p className="text-base font-semibold text-primary mt-2 capitalize">
-                                  {getPositionLabel(classified.position)}
+                            {/* Main content */}
+                            <div className="space-y-4 flex-1">
+                              {/* Title + Position */}
+                              <div>
+                                <h3 className="text-2xl font-bold text-foreground tracking-tight leading-tight wrap-anywhere line-clamp-3 group-hover:text-primary transition-colors">
+                                  {classified.title}
+                                </h3>
+                                {classified.position && (
+                                  <p className="text-base font-semibold text-primary mt-2 capitalize">
+                                    {getPositionLabel(classified.position)}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Poster: contact name and team */}
+                              {posterLine(classified) && (
+                                <p className="text-base font-medium text-foreground/80 wrap-anywhere">
+                                  {posterLine(classified)}
                                 </p>
                               )}
+
+                              {/* Division + Province */}
+                              <div className="flex flex-wrap items-center gap-3 pt-2">
+                                {classified.division && (
+                                  <span className="text-sm font-medium text-foreground/70">
+                                    {getDivisionLabel(classified.division)}
+                                  </span>
+                                )}
+                                {classified.province && (
+                                  <span className="text-sm font-medium text-foreground/60 flex items-center gap-1">
+                                    <MapPin className="h-3.5 w-3.5" />
+                                    {getProvinceLabel(classified.province)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
-                            {/* Team name */}
-                            {classified.team_name && (
-                              <p className="text-base font-medium text-foreground/80">
-                                {classified.team_name}
-                              </p>
-                            )}
-
-                            {/* Division + Province */}
-                            <div className="flex flex-wrap items-center gap-3 pt-2">
-                              {classified.division && (
-                                <span className="text-sm font-medium text-foreground/70">
-                                  {getDivisionLabel(classified.division)}
+                            {/* Footer */}
+                            <div className="flex flex-col gap-2 pt-6 border-t border-border">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs text-muted-foreground">
+                                  <RelativeTime date={classified.created_at} />
+                                </p>
+                              </div>
+                              <p className="text-xs text-foreground/60 flex items-center gap-2 flex-wrap">
+                                Geplaatst door{" "}
+                                <span className="font-medium text-foreground/80">
+                                  {classified.profiles?.username || "Onbekend"}
                                 </span>
-                              )}
-                              {classified.province && (
-                                <span className="text-sm font-medium text-foreground/60 flex items-center gap-1">
-                                  <MapPin className="h-3.5 w-3.5" />
-                                  {getProvinceLabel(classified.province)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Footer */}
-                          <div className="flex flex-col gap-2 pt-6 border-t border-border">
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs text-muted-foreground">
-                                <RelativeTime date={classified.created_at} />
+                                {classified.profiles?.is_verified_source && (
+                                  <VerifiedBadge size="sm" />
+                                )}
                               </p>
                             </div>
-                            <p className="text-xs text-foreground/60 flex items-center gap-2 flex-wrap">
-                              Geplaatst door{" "}
-                              <span className="font-medium text-foreground/80">
-                                {classified.profiles?.username || "Onbekend"}
-                              </span>
-                              {classified.profiles?.is_verified_source && (
-                                <VerifiedBadge size="sm" />
-                              )}
-                            </p>
-                          </div>
+                          </Link>
 
                           {/* CTA Button */}
                           {!isOwnClassified && (
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleContactClick(classified);
-                              }}
+                              type="button"
+                              onClick={() => handleContactClick(classified)}
                               disabled={checkingConversation}
                               className="w-full mt-6 px-4 py-3 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-all duration-150 text-sm flex items-center justify-center gap-2 group-hover:shadow-md"
                             >
@@ -455,7 +459,7 @@ export function ClassifiedsList({
                               Contact opnemen
                             </button>
                           )}
-                        </div>
+                        </article>
                       </div>
                     );
                   })}
@@ -495,10 +499,10 @@ export function ClassifiedsList({
                             </Badge>
                           </div>
 
-                          {/* Contact name + Position */}
+                          {/* Title + Position */}
                           <div className="mb-3 flex-1">
-                            <h3 className="font-semibold text-foreground text-base leading-snug group-hover:text-primary transition-colors">
-                              {classified.contact_name || "Onbekend"}
+                            <h3 className="font-semibold text-foreground text-base leading-snug wrap-anywhere line-clamp-3 group-hover:text-primary transition-colors">
+                              {classified.title}
                             </h3>
                             {classified.position && (
                               <p className="text-sm text-primary font-medium mt-1 capitalize">
@@ -507,10 +511,10 @@ export function ClassifiedsList({
                             )}
                           </div>
 
-                          {/* Team name */}
-                          {classified.team_name && (
-                            <p className="text-sm font-medium text-foreground/80 mb-2 line-clamp-1">
-                              {classified.team_name}
+                          {/* Poster: contact name and team */}
+                          {posterLine(classified) && (
+                            <p className="text-sm font-medium text-foreground/80 mb-2 line-clamp-1 wrap-anywhere">
+                              {posterLine(classified)}
                             </p>
                           )}
 
