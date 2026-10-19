@@ -12,6 +12,10 @@ import { BLOCKED_MESSAGE } from "@/lib/blocks";
 import { getCurrentUser } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import type { Metadata } from "next";
+import { NO_INDEX } from "@/lib/seo";
+
+export const metadata: Metadata = { title: "Gesprek", robots: NO_INDEX };
 
 interface ConversationPageProps {
   params: {

@@ -9,6 +9,10 @@ const OPEN_PATHS = new Set([
   "/voorwaarden",
   "/over-ons",
   "/contact",
+  // Search and share files (#99): the sitemap then lists only these pages.
+  "/robots.txt",
+  "/sitemap.xml",
+  "/opengraph-image",
 ]);
 
 export function isComingSoon(): boolean {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { NotFoundPanel } from "@/components/not-found-panel";
 
 export const metadata: Metadata = {
-  title: "Pagina niet gevonden - VolleyRumours",
+  title: "Pagina niet gevonden",
 };
 
 /**

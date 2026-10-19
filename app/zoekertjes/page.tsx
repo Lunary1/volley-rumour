@@ -12,6 +12,14 @@ import {
   parseClassifiedFilters,
   type ClassifiedFilters,
 } from "@/lib/classifieds-filters";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Zoekertjes",
+  description:
+    "Spelers, teams en trainers die elkaar zoeken in het Belgische volleybal. Filter op reeks, provincie en positie.",
+  path: "/zoekertjes",
+});
 
 /** At most this many featured ads head page 1. */
 const FEATURED_LIMIT = 4;

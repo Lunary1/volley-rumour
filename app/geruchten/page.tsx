@@ -15,6 +15,14 @@ import {
   parsePage,
 } from "@/lib/public-data";
 import { PageNav } from "@/components/page-nav";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Transfer Talk",
+  description:
+    "De geruchten van de Belgische volleybal transfermarkt, nagekeken door een moderator. Stem of je denkt dat ze kloppen.",
+  path: "/geruchten",
+});
 
 // Rendered per request: the cards show the user's own votes, and a cached
 // query showed vote counts up to a minute old (#129).

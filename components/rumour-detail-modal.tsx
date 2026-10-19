@@ -263,7 +263,7 @@ export function RumourDetailModal({
           <ShareButton
             title={`${rumour.player_name} — ${rumour.from_club_name ? `${rumour.from_club_name} ➜ ` : ""}${rumour.to_club_name}`}
             shareText={`🏐 ${rumour.player_name} ${rumour.from_club_name ? `van ${rumour.from_club_name} naar ${rumour.to_club_name}` : `naar ${rumour.to_club_name}`}? Bekijk dit gerucht op VolleyRumours!`}
-            url="/geruchten"
+            url={`/geruchten/${rumour.id}`}
             variant="outline"
             size="sm"
           />

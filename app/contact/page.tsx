@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getCurrentUser } from "@/app/actions/auth";
 import { isComingSoon } from "@/lib/coming-soon";
@@ -9,11 +9,12 @@ import { ContactForm } from "./contact-form";
 // on the content (J-15) and the takedown form for named people (J-12). In
 // coming-soon mode neither exists for visitors, so the pointer is hidden.
 
-export const metadata: Metadata = {
-  title: "Contact - VolleyRumours",
+export const metadata = pageMetadata({
+  title: "Contact",
   description:
     "Een vraag, feedback of een voorstel? Stuur ons een bericht via het contactformulier.",
-};
+  path: "/contact",
+});
 
 export default async function ContactPage() {
   const user = await getCurrentUser();

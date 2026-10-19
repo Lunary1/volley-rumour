@@ -30,6 +30,7 @@ import { labelFor } from "@/lib/rumours";
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ShareButton } from "@/components/share-button";
+import { NO_INDEX, pageMetadata, truncate } from "@/lib/seo";
 import { ReportDialog } from "@/components/report-dialog";
 
 /** Profile fragment returned with classified (from Supabase relation). */
@@ -86,9 +87,22 @@ export async function generateMetadata({
   const { id } = await params;
   const classified = await getClassified(id);
   if (!classified?.is_active || isClassifiedExpired(classified.expires_at)) {
-    return { title: "Zoekertje" };
+    return { title: "Zoekertje", robots: NO_INDEX };
   }
-  return { title: `${classified.title || "Zoekertje"} | Zoekertjes` };
+  // Only what the page itself shows (#99); the share image is
+  // opengraph-image.tsx next to this page.
+  const facts = [
+    CLASSIFIED_TYPE_LABELS[classified.type],
+    getDivisionLabel(classified.division),
+    getProvinceLabel(classified.province),
+  ].filter(Boolean);
+  return pageMetadata({
+    title: `${classified.title || "Zoekertje"} | Zoekertjes`,
+    description: truncate(
+      [facts.join(" · "), classified.description].filter(Boolean).join(". "),
+    ),
+    path: `/zoekertjes/${classified.id}`,
+  });
 }
 
 export default async function ClassifiedDetailPage({

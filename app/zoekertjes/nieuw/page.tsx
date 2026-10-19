@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -12,7 +13,10 @@ import {
 } from "@/components/ui/card";
 import { ClassifiedForm } from "@/components/classified-form";
 
-export const metadata: Metadata = { title: "Nieuw zoekertje" };
+export const metadata: Metadata = {
+  title: "Nieuw zoekertje",
+  robots: NO_INDEX,
+};
 
 export default async function NewClassifiedPage() {
   // Logged-out visitors log in and come back here (#71).

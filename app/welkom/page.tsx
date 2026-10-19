@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@/lib/seo";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -13,7 +14,8 @@ import {
 import { AcceptTermsForm } from "./accept-terms-form";
 
 export const metadata: Metadata = {
-  title: "Welkom - VolleyRumours",
+  title: "Welkom",
+  robots: NO_INDEX,
 };
 
 /**

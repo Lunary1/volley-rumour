@@ -1,3 +1,4 @@
+import { NO_INDEX } from "@/lib/seo";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -16,7 +17,10 @@ import {
   type ClassifiedFormValues,
 } from "@/components/classified-form";
 
-export const metadata: Metadata = { title: "Zoekertje bewerken" };
+export const metadata: Metadata = {
+  title: "Zoekertje bewerken",
+  robots: NO_INDEX,
+};
 
 export default async function EditClassifiedPage({
   params,

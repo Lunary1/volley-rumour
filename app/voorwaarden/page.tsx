@@ -1,9 +1,10 @@
-import { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Voorwaarden - VolleyRumours",
+export const metadata = pageMetadata({
+  title: "Voorwaarden",
   description: "Servicevoorwaarden en gebruiksrichtlijnen voor VolleyRumours.",
-};
+  path: "/voorwaarden",
+});
 
 export default function VoorwaardenPage() {
   return (

@@ -41,6 +41,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-032 | 2026-10-18 | Accepted | Notification emails go through Resend over SMTP, one per run of unread messages, never while the recipient is chatting |
 | D-033 | 2026-10-19 | Accepted | Removing a rumour also deletes the transfer made when it was confirmed |
 | D-034 | 2026-10-19 | Accepted | Production stays public while the site is in development; coming-soon goes back on before launch |
+| D-035 | 2026-10-19 | Accepted | Every approved rumour has its own shareable page, but rumour pages are never indexed by search engines |
 
 ---
 
@@ -803,3 +804,21 @@ goes back on when development is done, and stays on until launch (#95).
 **Consequences.** Supabase sign-ups are disabled in the dashboard until launch
 (D-009), so nobody can create an account on production in the meantime.
 Anything merged is visible on volleyrumours.be straight away.
+
+## D-035 — Rumour pages can be shared, not found through search engines
+
+**Context.** Rumours only opened in a pop-up, so a shared rumour linked to
+`/geruchten` and showed no preview (#99). A page per rumour fixes sharing, but
+an indexed page would put a player's name in search results next to an
+unconfirmed rumour, and a removed rumour can linger in a search engine's cache
+after a takedown (D-014).
+
+**Decision** (owner, 2026-10-19). Every approved rumour gets its own page,
+`/geruchten/<id>`, with a share image. Pending, rejected and removed rumours
+return 404, for their author too. Rumour pages carry `noindex` and are left
+out of the sitemap. Lists, zoekertjes, transfers and info pages are indexed.
+
+**Consequences.** Share links show the player, the move and the status, never
+the author. Search engines may still crawl a rumour page (robots.txt allows
+it), so they see the `noindex`. Indexing confirmed rumours later is a new
+decision.

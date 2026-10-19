@@ -59,6 +59,7 @@ export const seed = {
     contactName: "Tom Testmans",
   },
   openRumour: {
+    id: "e0000000-0000-4000-8000-000000000001",
     playerName: "Pieter Proefspeler",
     sourceLabel: "Eigen waarneming",
   },
@@ -78,7 +79,10 @@ export const seed = {
   // creator_id is null, as after the creator deleted their account
   rumourWithoutCreator: { playerName: "Wout Weesgerucht" },
   // Not approved by a moderator (#65): Jana's is pending, Tom's rejected.
-  pendingRumour: { playerName: "Nina Nagekeken" },
+  pendingRumour: {
+    id: "e0000000-0000-4000-8000-000000000006",
+    playerName: "Nina Nagekeken",
+  },
   rejectedRumour: { playerName: "Rik Retour" },
   // Jana (initiator) and VC Testdorp about activeAd.
   conversation: {

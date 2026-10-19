@@ -13,7 +13,7 @@ import { formatDate } from "@/lib/dates";
 // data, only the reference, the rumour's name and the decision.
 
 export const metadata: Metadata = {
-  title: "Status van je verwijderverzoek - VolleyRumours",
+  title: "Status van je verwijderverzoek",
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

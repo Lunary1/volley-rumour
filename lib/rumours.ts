@@ -190,3 +190,19 @@ export function formatBelief(votesTrue: number, votesFalse: number): string {
     ? "Nog geen stemmen"
     : `${share}% van de stemmers denkt dat dit klopt`;
 }
+
+/** "Jan Peeters: van Club A naar Club B" for titles and share images (#99). */
+export function rumourHeadline(rumour: {
+  player_name: string;
+  from_club_name: string | null;
+  to_club_name: string;
+  category: string;
+}): { player: string; move: string } {
+  const from = rumour.from_club_name ? `van ${rumour.from_club_name} ` : "";
+  return {
+    player: rumour.player_name,
+    move: rumour.category.includes("retirement")
+      ? `stopt${rumour.from_club_name ? ` bij ${rumour.from_club_name}` : ""}`
+      : `${from}naar ${rumour.to_club_name}`,
+  };
+}

@@ -4,6 +4,10 @@ import { getRecentActivity } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";
 import { ProfileView } from "./profile-view";
 import type { BlockedUser } from "./blocked-users-card";
+import type { Metadata } from "next";
+import { NO_INDEX } from "@/lib/seo";
+
+export const metadata: Metadata = { title: "Profiel", robots: NO_INDEX };
 
 export default async function ProfilePage() {
   const supabase = await createClient();
