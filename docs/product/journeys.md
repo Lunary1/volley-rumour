@@ -436,14 +436,14 @@ takedown requests) and deal with abusive accounts.
 - **Given** a reported conversation, **then** I can read it only via the report
   (access is logged), not browse all conversations.
 - **Given** I remove content, **then** it disappears from all public views
-  (lists, detail pages, homepage, share links) and the author is notified with
-  the reason.
+  (lists, detail pages, homepage, share links) and the author sees the removal
+  and the reason on their profile (D-037).
 - **Given** I suspend a user, **then** they can still log in to read, but can't
   post, vote or message until the suspension ends; their existing content is
   unaffected unless I remove it separately.
 - **Given** any action, **then** it is recorded in the moderation audit log,
   and the takedown requester is informed of the outcome. A reporter gets a
-  confirmation only; outcomes follow by email once #53 lands (D-015).
+  confirmation only (D-015). Outcomes are shown on screen, not emailed (D-037).
 - **Given** a report, **then** the content stays visible until I decide, and
   my decision answers every open report about the same item (D-015).
 - **Given** the admin area, **then** I can grant or revoke the verified badge
