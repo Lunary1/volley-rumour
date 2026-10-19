@@ -8,6 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { approveRumour, rejectRumour } from "@/app/actions/moderation";
 import { handleServerActionResponse } from "@/lib/client-utils";
 import {
+  hasTemplatePlaceholder,
+  REJECTION_TEMPLATES,
+} from "@/lib/moderation-templates";
+import { PlaceholderHint, TemplatePicker } from "@/app/admin/template-picker";
+import {
   REJECTION_NOTE_MAX_LENGTH,
   REJECTION_REASONS,
   type RejectionReason,
@@ -33,7 +38,10 @@ export function ModerationActions({
   const [note, setNote] = useState("");
 
   const noteRequired = reason === "other";
-  const canReject = !!reason && (!noteRequired || note.trim().length > 0);
+  const canReject =
+    !!reason &&
+    (!noteRequired || note.trim().length > 0) &&
+    !hasTemplatePlaceholder(note);
 
   function approve() {
     startTransition(async () => {
@@ -100,6 +108,12 @@ export function ModerationActions({
           </div>
         ))}
       </fieldset>
+      {reason && (
+        <TemplatePicker
+          templates={REJECTION_TEMPLATES[reason]}
+          onPick={setNote}
+        />
+      )}
       <div className="space-y-1">
         <Label htmlFor={`${id}-note`}>
           Toelichting voor de auteur{noteRequired ? "" : " (optioneel)"}
@@ -116,6 +130,7 @@ export function ModerationActions({
               : undefined
           }
         />
+        <PlaceholderHint text={note} />
       </div>
       <div className="flex flex-wrap gap-2">
         <Button

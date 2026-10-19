@@ -105,6 +105,43 @@ test("a moderator rejects a rumour with a reason the author sees", async ({
   await expect(own).toContainText(`Reden: Andere — ${note}`);
 });
 
+test("a moderator rejects with a template and fills in its placeholder", async ({
+  page,
+  browser,
+}) => {
+  // Standard Dutch replies (#93): a template fills the note, and a note that
+  // still has a [placeholder] can't be sent.
+  const lastName = `Sjabloon${Date.now()}`;
+  const playerName = `Toon ${lastName}`;
+  await loginAs(page, "tom");
+  await submitRumour(page, lastName);
+
+  const moderator = await pageFor(browser, "moderator");
+  await moderator.goto("/admin/wachtrij");
+  const item = queueItem(moderator, playerName);
+  await item.getByRole("button", { name: "Afwijzen" }).click();
+  await item.getByLabel("Dubbel gerucht").check();
+  await item.getByLabel("Sjabloon invoegen").selectOption("Staat er al");
+
+  const note = item.getByLabel(/Toelichting voor de auteur/);
+  await expect(note).toHaveValue(/^Dit gerucht staat er al: \[/);
+  await expect(item.getByText("Vervang de tekst tussen [ ]")).toBeVisible();
+  const confirm = item.getByRole("button", { name: "Afwijzen bevestigen" });
+  await expect(confirm).toBeDisabled();
+
+  const filled = `Dit gerucht staat er al: ${lastName}, van Menen naar Roeselare. Je kunt daar meestemmen.`;
+  await note.fill(filled);
+  await expect(item.getByText("Vervang de tekst tussen [ ]")).toHaveCount(0);
+  await confirm.click();
+  await expect(
+    moderator.getByText(`Gerucht over ${playerName} afgewezen`),
+  ).toBeVisible();
+
+  await page.goto("/profile");
+  const own = page.getByRole("listitem").filter({ hasText: playerName });
+  await expect(own).toContainText(`Reden: Dubbel gerucht — ${filled}`);
+});
+
 test("a normal user gets a 404 on the moderation queue", async ({ page }) => {
   await loginAs(page, "jana");
   const response = await page.goto("/admin/wachtrij");
