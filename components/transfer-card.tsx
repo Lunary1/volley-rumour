@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Calendar, ExternalLink, UserCircle } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
+import { CATEGORY_BADGE_CLASSES } from "@/lib/category-badges";
 import { formatDate } from "@/lib/dates";
 import {
   TRANSFER_CATEGORIES,
@@ -24,12 +25,12 @@ export interface TransferCardData {
 }
 
 const categoryColors: Record<TransferCategory, string> = {
-  player_male: "bg-primary/20 text-primary border-primary/30",
-  player_female: "bg-primary/20 text-primary border-primary/30",
-  trainer_male: "bg-accent/20 text-accent border-accent/30",
-  trainer_female: "bg-accent/20 text-accent border-accent/30",
-  player_retirement: "bg-muted text-muted-foreground border-muted",
-  trainer_retirement: "bg-muted text-muted-foreground border-muted",
+  player_male: CATEGORY_BADGE_CLASSES.player,
+  player_female: CATEGORY_BADGE_CLASSES.player,
+  trainer_male: CATEGORY_BADGE_CLASSES.trainer,
+  trainer_female: CATEGORY_BADGE_CLASSES.trainer,
+  player_retirement: CATEGORY_BADGE_CLASSES.retirement,
+  trainer_retirement: CATEGORY_BADGE_CLASSES.retirement,
 };
 
 /**
@@ -47,7 +48,7 @@ export function TransferCard({
   const category = transfer.category as TransferCategory;
   const retirement = isRetirement(transfer.category);
   const typeColor =
-    categoryColors[category] ?? "bg-muted text-muted-foreground border-muted";
+    categoryColors[category] ?? CATEGORY_BADGE_CLASSES.retirement;
   const typeLabel = TRANSFER_CATEGORIES[category] ?? "Transfer";
 
   return (
