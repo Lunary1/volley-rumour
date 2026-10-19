@@ -73,7 +73,6 @@ export function ClassifiedDetailContact({
           userId={userId}
           userName={userName}
           adId={classifiedId}
-          adType="classified"
           onClose={() => setShowModal(false)}
         />
       )}

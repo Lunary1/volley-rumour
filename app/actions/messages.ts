@@ -83,11 +83,11 @@ export async function getExistingConversation(
 }
 
 /**
- * Create or get a conversation between user and ad creator
+ * Create or get a conversation between user and ad creator. Only zoekertjes
+ * start conversations (D-004, #152).
  */
 export async function createConversation(
   adId: string,
-  adType: "transfer_talk" | "classified",
   recipientId: string,
   initialMessage?: string,
 ) {
@@ -126,7 +126,7 @@ export async function createConversation(
       .from("conversations")
       .insert({
         ad_id: adId,
-        ad_type: adType,
+        ad_type: "classified",
         initiator_id: user.id,
         recipient_id: recipientId,
       })
@@ -337,39 +337,22 @@ export async function getConversations({ archived = false } = {}) {
     };
   });
 
-  // Fetch ad titles for all conversations
-  const adsByType = new Map<string, string[]>();
-  enriched?.forEach((conv) => {
-    if (!adsByType.has(conv.ad_type)) {
-      adsByType.set(conv.ad_type, []);
-    }
-    adsByType.get(conv.ad_type)?.push(conv.ad_id);
-  });
-
+  // Fetch ad titles for all conversations. A zoekertje that went offline is
+  // hidden by RLS, but its conversations still show its title (#84).
   const adTitles = new Map<string, string>();
-
-  for (const [adType, adIds] of adsByType) {
-    // A zoekertje that went offline is hidden by RLS, but its conversations
-    // still show its title (#84).
-    const { data } =
-      adType === "classified"
-        ? await supabase.rpc("conversation_classified_titles", {
-            p_ids: adIds,
-          })
-        : await supabase.from("transfers").select("id, title").in("id", adIds);
-    const ads = data as { id: string; title: string }[] | null;
-
-    ads?.forEach((ad) => {
-      adTitles.set(`${adType}-${ad.id}`, ad.title);
+  if (enriched?.length) {
+    const { data: ads } = await supabase.rpc("conversation_classified_titles", {
+      p_ids: enriched.map((conv) => conv.ad_id),
+    });
+    ads?.forEach((ad: { id: string; title: string }) => {
+      adTitles.set(ad.id, ad.title);
     });
   }
 
   // Add ad titles to enriched conversations
   enriched?.forEach((conv) => {
     // A deleted zoekertje keeps its conversations (#72).
-    conv.ad_title =
-      adTitles.get(`${conv.ad_type}-${conv.ad_id}`) ||
-      (conv.ad_type === "transfer" ? "Gesprek" : "Verwijderd zoekertje");
+    conv.ad_title = adTitles.get(conv.ad_id) || "Verwijderd zoekertje";
   });
 
   return { success: true, data: enriched || [] };
