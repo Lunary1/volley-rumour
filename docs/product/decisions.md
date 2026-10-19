@@ -839,3 +839,22 @@ template's [placeholder] must be replaced before the note can be sent.
 **Consequences.** The handbook (`docs/product/moderation.md`) holds the rota,
 targets and onboarding. A second moderator is still needed before launch
 (readiness checklist). Template wording changes go through a PR, like any copy.
+
+## D-037 — Moderation outcomes stay on screen; staff are emailed about new items
+
+**Context.** J-15 was the last journey not at WORKS, only because moderation
+outcomes weren't emailed (#53). Each outcome is already shown where the person
+looks: the author sees "Verwijderd" and the moderator's note on their profile,
+the takedown requester has the private status link (D-014), the reporter gets a
+confirmation (D-015) and a suspended user sees the notice on every page
+(D-016). The owner is the only moderator (D-036) and only sees new items by
+opening the admin area.
+
+**Decision** (owner, 2026-10-19). No emails for moderation outcomes: removals,
+takedown decisions, report decisions and suspensions stay on screen. Staff do
+get an email for every new takedown request, report and contact message
+(#181).
+
+**Consequences.** J-15 is WORKS and Phase 2 is closed. A takedown requester who
+loses the status link can ask through the contact form. Outcome emails are a
+new decision if users miss them after launch.

@@ -48,7 +48,7 @@ ran without Supabase credentials, which is what CI will face.
 | ------- | ---------------------------------------- | ----------- | --------------------------------------------------------------------------- |
 | J-01    | Find a matching zoekertje                | **WORKS**   | Dutch 404 (#90); filters and pages in the URL (#85), logged-out contact fixed (#86), search crash fixed (#59) |
 | J-02    | Read Transfer Talk / transfers           | **WORKS**   | Paginated on the server, tab counts and transfers cached (#96). Track record on cards (#88), transfer tabs fixed (#70, #82) |
-| J-03    | Create an account                        | **PARTIAL** | 16+ and terms gate for every account (#75, D-031); Dutch field errors and the confirmation link returns to the origin page (#89); enumeration depends on the dashboard setting |
+| J-03    | Create an account                        | **WORKS**   | 16+ and terms gate for every account (#75, D-031); Dutch field errors and the confirmation link returns to the origin page (#89); "Confirm email" on in production (A4) |
 | J-04    | Post "speler zoekt team"                 | **WORKS**   | Server action, gender stored, login first, public notice (#71); expiry date set and shown (#84) |
 | J-05    | Manage own zoekertjes                    | **WORKS**   | "Mijn zoekertjes": edit, gevonden, delete (#72); expired status and renewal (#84) |
 | J-06    | Coach contacts a club                    | **WORKS**   | Email to a recipient who is away, without the content (#98, D-025); Realtime scoped and tested (#74) |
@@ -57,12 +57,12 @@ ran without Supabase credentials, which is what CI will face.
 | J-09    | Submit a sourced rumour                  | **WORKS**   | Pending, source, declarations and cap done (#65, #67); emailed on approval or rejection (#98) |
 | J-10    | Own rumours, track record, voting        | **WORKS**   | Track record and all own rumours on the profile (#88, D-005); voting fixed (#78) |
 | J-11    | Account and personal data                | **WORKS**   | Deletion is one transaction and deletes zoekertjes (#76, D-021, D-029); password reset fixed in #58; profile pictures uploaded to Storage (#92) |
-| J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014); removal also deletes the rumour's transfer (#151, D-033). Email waits on #53 |
+| J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014); removal also deletes the rumour's transfer (#151, D-033). Outcome on the status page, no email (D-037) |
 | J-13    | Pre-moderation queue                     | **WORKS**   | Queue with the author's track record, approve/reject and audit log work (#66, #88); the author is emailed (#98) |
 | J-14    | Resolve a rumour                         | **WORKS**   | Confirm, deny, expire, bulk expire and transfer edits work (#70); each decision updates the author's track record (#88) |
-| J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
+| J-15    | Reports, takedowns, sanctions            | **WORKS**   | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes shown on screen, not emailed (D-037) |
 
-**Count:** 13 WORKS · 2 PARTIAL · 0 BROKEN · 0 MISSING.
+**Count:** 15 WORKS · 0 PARTIAL · 0 BROKEN · 0 MISSING.
 
 ---
 
@@ -113,7 +113,7 @@ items.
 | No "Contact <author>" on transfers (D-004) | **WORKS** | [transfer-card.tsx](../../components/transfer-card.tsx) | #82: one card for the homepage and `/transfers`, without a contact button |
 | Pagination, <1 s p95 | **FIXED** (#96) | [geruchten/page.tsx](../../app/geruchten/page.tsx), [transfers/page.tsx](../../app/transfers/page.tsx), [lib/public-data.ts](../../lib/public-data.ts), [pagination.spec.ts](../../e2e/pagination.spec.ts) | 24 per page with `?pagina=` (and `?type=` for the transfer tabs, now links); tab counts and transfer lists cached for every visitor and expired by staff actions. Measured on a local production build with 500 rumours and 500 transfers: p95 under 60 ms per list page. Production load testing is #97 |
 
-### J-03 — Visitor creates an account · PARTIAL
+### J-03 — Visitor creates an account · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
@@ -122,7 +122,7 @@ items.
 | Email confirmation logs in and returns to origin page | **WORKS** | [auth.ts](../../app/actions/auth.ts), [callback/route.ts](../../app/auth/callback/route.ts), [sign-up.spec.ts](../../e2e/sign-up.spec.ts) | #89: sign-up is a server action; the link goes through `/auth/callback?flow=signup&next=…`, logs in and lands on the origin page. Opened in another browser it asks to log in (address confirmed) and keeps `next`; a used or expired link says so. Local Supabase now requires confirmation like production, and the test follows the link from Mailpit |
 | Taken/invalid username → Dutch field error | **WORKS** | [schemas.ts](../../lib/schemas.ts), [refuse_taken_username.sql](../../supabase/migrations/20261018172443_refuse_taken_username.sql), [signup_username.test.sql](../../supabase/tests/database/signup_username.test.sql), [sign-up.spec.ts](../../e2e/sign-up.spec.ts) | #89: 3–30 letters, digits and `_`, stored lowercase; "Deze gebruikersnaam bestaat al" under the field (any case); the trigger refuses a taken or invalid name (VR012) instead of adding a suffix. Supabase errors mapped to Dutch; one password minimum of 8 (sign-up, reset, change, `config.toml`) |
 | Consent timestamp and terms version stored | **WORKS** | [terms_acceptance.sql](../../supabase/migrations/20261018141947_terms_acceptance.sql), [terms_acceptance.test.sql](../../supabase/tests/database/terms_acceptance.test.sql) | #75: `terms_acceptances` (user, version, time); the database sets version and time, users can't write rows. Email sign-up records it through the sign-up trigger, `/welkom` through `accept_terms()` |
-| No account enumeration | VERIFY | [auth.ts](../../app/actions/auth.ts) | #89: an already registered address gets the same "Controleer je e-mail" as a new one. Still depends on "Confirm email" being on in the production dashboard (owner, A4); usernames are public anyway. Login already avoids enumeration |
+| No account enumeration | **WORKS** | [auth.ts](../../app/actions/auth.ts) | #89: an already registered address gets the same "Controleer je e-mail" as a new one. "Confirm email" is on in the production dashboard (owner confirmed 2026-10-19, A4); usernames are public anyway. Login already avoids enumeration |
 
 ### J-04 — Player posts "speler zoekt team" · PARTIAL
 
@@ -215,8 +215,8 @@ items.
 | -- | ------ | -------- | ------ |
 | File without login, bot-protected | **WORKS** (#68) | [verwijderverzoek/page.tsx](../../app/verwijderverzoek/page.tsx), [takedown.ts](../../app/actions/takedown.ts), `submit_takedown_request()` | From the rumour detail view, the footer and the privacy page; honeypot plus 5 per IP and 3 per email per day |
 | Rumour hidden immediately pending review | **CHANGED** (D-014) | — | The owner decided the rumour stays visible until a moderator decides |
-| Acknowledgement with reference | **WORKS** (#68) | [takedown-form.tsx](../../app/verwijderverzoek/takedown-form.tsx) | Reference and private status link on screen; no email until #53. The contact form stores messages for staff since #81 (D-017) |
-| Outcome communicated | **WORKS** (#68) | [status page](../../app/verwijderverzoek/status/[token]/page.tsx), `remove_rumour_for_takedown()`, `reject_takedown_request()` | The status link shows the decision and the moderator's note; email waits on #53 |
+| Acknowledgement with reference | **WORKS** (#68) | [takedown-form.tsx](../../app/verwijderverzoek/takedown-form.tsx) | Reference and private status link on screen; no email (D-037). The contact form stores messages for staff since #81 (D-017) |
+| Outcome communicated | **WORKS** (#68) | [status page](../../app/verwijderverzoek/status/[token]/page.tsx), `remove_rumour_for_takedown()`, `reject_takedown_request()` | The status link shows the decision and the moderator's note; no email (D-037) |
 | Requests visible only to moderators, retention defined | **WORKS** (#68) | [admin/meldingen](../../app/admin/meldingen/page.tsx), `anonymise_expired_takedown_requests()` | RLS: staff only, hashes never readable. Personal fields wiped after 12 months (D-014); the function still has to be scheduled |
 | Removal takes the person off the site | **WORKS** (#151) | `delete_transfer_of_removed_rumour()`, [removed_rumour_transfer.test.sql](../../supabase/tests/database/removed_rumour_transfer.test.sql), [takedown.spec.ts](../../e2e/takedown.spec.ts) | Removing a confirmed rumour (takedown or report) also deletes its transfer from `/transfers` and the homepage, logged as "Transfer verwijderd" (D-033) |
 
@@ -242,16 +242,16 @@ items.
 | Correct or remove a transfer, audited | **WORKS** | `update_transfer()`, `delete_transfer()` | The log keeps what the transfer said before. Removing a rumour's transfer makes the rumour lopend again, so a wrong confirmation can be redone |
 | Reopen a wrongly denied or expired rumour, audited | **WORKS** | [reopen_rumour migration](../../supabase/migrations/20261019083251_reopen_rumour.sql), [reopen_rumour.test.sql](../../supabase/tests/database/reopen_rumour.test.sql), [rumour-resolution.spec.ts](../../e2e/rumour-resolution.spec.ts) | #150: "Afgesloten" tab on `/admin/geruchten`; `reopen_rumour()` is staff-only, needs a reason, makes the rumour lopend and logs "Gerucht heropend" with the decision it undid; the track record follows through its trigger and voting opens again |
 
-### J-15 — Reports, takedowns, sanctions · PARTIAL
+### J-15 — Reports, takedowns, sanctions · WORKS
 
 | AC | Status | Evidence | Reason |
 | -- | ------ | -------- | ------ |
 | Open reports list incl. takedowns | **WORKS** | [admin/meldingen/page.tsx](../../app/admin/meldingen/page.tsx) | #69: one list, takedown requests first ("Voorrang"), then reports oldest first, with type, reason, reporter and the content |
 | Read reported conversation via report only, logged | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [reports.test.sql](../../supabase/tests/database/reports.test.sql) | `get_reported_conversation()`: staff only, open reports only, every read logged as "Gemeld gesprek gelezen". No staff policy on messages |
-| Remove content from all views, notify author | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [profile-view.tsx](../../app/profile/profile-view.tsx) | Rumours get status `removed`, zoekertjes `removed_at` (RLS hides both); the author sees "Verwijderd" and the moderator's note on their profile. No email yet (#53) |
+| Remove content from all views, notify author | **WORKS** | [user_reports migration](../../supabase/migrations/20261014174640_user_reports.sql), [profile-view.tsx](../../app/profile/profile-view.tsx) | Rumours get status `removed`, zoekertjes `removed_at` (RLS hides both); the author sees "Verwijderd" and the moderator's note on their profile. No email (D-037) |
 | Suspend user (read-only) | **WORKS** | [user_sanctions migration](../../supabase/migrations/20261014193846_user_sanctions.sql), [user_sanctions.test.sql](../../supabase/tests/database/user_sanctions.test.sql), [users.spec.ts](../../e2e/users.spec.ts) | #80: admins suspend until a date or indefinitely, with a reason; the database refuses the user's posts, votes, messages and profile edits (`VR005`); the user sees a notice on every page (D-016) |
-| Audit log, reporter informed | PARTIAL | [staff_actions](../../supabase/migrations/20261014174640_user_reports.sql) | Every decision and conversation read is logged. The reporter only gets a confirmation (D-015); outcomes are stored for email (#53) |
-| Contact form reaches staff | **WORKS** | [contact_messages migration](../../supabase/migrations/20261015072309_contact_messages.sql), [/admin/contact](../../app/admin/contact/page.tsx), [contact.spec.ts](../../e2e/contact.spec.ts) | #81: messages stored (honeypot, daily limits), read and marked handled by staff, logged; wiped 12 months after handling (D-017). No email forwarding (#53) |
+| Audit log, reporter informed | **WORKS** | [staff_actions](../../supabase/migrations/20261014174640_user_reports.sql) | Every decision and conversation read is logged. The reporter gets a confirmation only (D-015, D-037) |
+| Contact form reaches staff | **WORKS** | [contact_messages migration](../../supabase/migrations/20261015072309_contact_messages.sql), [/admin/contact](../../app/admin/contact/page.tsx), [contact.spec.ts](../../e2e/contact.spec.ts) | #81: messages stored (honeypot, daily limits), read and marked handled by staff, logged; wiped 12 months after handling (D-017). Staff email for new messages: #181 |
 | Grant/revoke verified badge and moderator role | **WORKS** | [/admin/gebruikers](../../app/admin/gebruikers/page.tsx), [user_sanctions migration](../../supabase/migrations/20261014193846_user_sanctions.sql) | #80: admins only, logged; moderators see the status. The admin role is set by the owner in SQL (D-016) |
 
 ---
