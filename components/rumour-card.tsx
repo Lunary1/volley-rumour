@@ -26,6 +26,8 @@ import { useIsClient } from "@/lib/use-is-client";
 import {
   LOGIN_TO_VOTE_MESSAGE,
   OWN_RUMOUR_MESSAGE,
+  RUMOUR_CATEGORY_BADGE_CLASSES,
+  RUMOUR_CATEGORY_LABELS,
   RUMOUR_SOURCE_SHORT_LABELS,
   VOTING_CLOSED_MESSAGE,
   belief,
@@ -76,22 +78,6 @@ interface RumourCardProps {
   currentUserId?: string | null;
 }
 
-const categoryLabels: Record<string, string> = {
-  transfer: "Transfer",
-  trainer_transfer: "Trainer Transfer",
-  player_retirement: "Speler Stopt",
-  trainer_retirement: "Trainer Stopt",
-};
-
-const categoryColors: Record<string, string> = {
-  transfer: "bg-primary/20 text-primary border-primary/30",
-  trainer_transfer: "bg-accent/20 text-accent border-accent/30",
-  player_retirement: "bg-muted text-muted-foreground border-muted",
-  trainer_retirement: "bg-muted text-muted-foreground border-muted",
-};
-
-// Public statuses; a moderator resolves a lopend rumour (#70). Expired is
-// neutral (D-005), so it gets no colour.
 const statusLabels: Record<string, string> = {
   rumour: "Lopend",
   confirmed: "Bevestigd ✓",
@@ -250,9 +236,9 @@ export function RumourCard({
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <Badge
               variant="outline"
-              className={categoryColors[rumour.category]}
+              className={RUMOUR_CATEGORY_BADGE_CLASSES[rumour.category]}
             >
-              {categoryLabels[rumour.category]}
+              {RUMOUR_CATEGORY_LABELS[rumour.category]}
             </Badge>
             <Badge variant="outline" className={statusColors[rumour.status]}>
               {statusLabels[rumour.status]}

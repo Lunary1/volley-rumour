@@ -20,6 +20,8 @@ import { ShareButton } from "@/components/share-button";
 import { ReportDialog } from "@/components/report-dialog";
 import Link from "next/link";
 import {
+  RUMOUR_CATEGORY_BADGE_CLASSES,
+  RUMOUR_CATEGORY_LABELS,
   RUMOUR_SOURCE_TYPES,
   belief,
   formatBelief,
@@ -52,20 +54,6 @@ export type RumourForModal = {
 
 /** Author label for a rumour whose creator deleted their account. */
 export const DELETED_CREATOR_LABEL = "Verwijderd account";
-
-const categoryLabels: Record<string, string> = {
-  transfer: "Transfer",
-  trainer_transfer: "Trainer Transfer",
-  player_retirement: "Speler Stopt",
-  trainer_retirement: "Trainer Stopt",
-};
-
-const categoryColors: Record<string, string> = {
-  transfer: "bg-primary/20 text-primary border-primary/30",
-  trainer_transfer: "bg-accent/20 text-accent border-accent/30",
-  player_retirement: "bg-muted text-muted-foreground border-muted",
-  trainer_retirement: "bg-muted text-muted-foreground border-muted",
-};
 
 const statusLabels: Record<string, string> = {
   rumour: "Gerucht",
@@ -124,9 +112,9 @@ export function RumourDetailModal({
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className={categoryColors[rumour.category]}
+              className={RUMOUR_CATEGORY_BADGE_CLASSES[rumour.category]}
             >
-              {categoryLabels[rumour.category]}
+              {RUMOUR_CATEGORY_LABELS[rumour.category]}
             </Badge>
             <Badge variant="outline" className={statusColors[rumour.status]}>
               {statusLabels[rumour.status]}

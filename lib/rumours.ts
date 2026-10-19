@@ -1,3 +1,5 @@
+import { CATEGORY_BADGE_CLASSES } from "@/lib/category-badges";
+
 // Rumour statuses (Moderation Policy, D-002). New rumours start pending and
 // only become public once a moderator approves them; RLS enforces this
 // (issue #65). A moderator removes a public rumour after a takedown request
@@ -59,6 +61,14 @@ export const RUMOUR_CATEGORY_LABELS: Record<string, string> = {
   trainer_transfer: "Trainer Transfer",
   player_retirement: "Speler Stopt",
   trainer_retirement: "Trainer Stopt",
+};
+
+/** Badge colours per category, shared by the card and the detail view (#174). */
+export const RUMOUR_CATEGORY_BADGE_CLASSES: Record<string, string> = {
+  transfer: CATEGORY_BADGE_CLASSES.player,
+  trainer_transfer: CATEGORY_BADGE_CLASSES.trainer,
+  player_retirement: CATEGORY_BADGE_CLASSES.retirement,
+  trainer_retirement: CATEGORY_BADGE_CLASSES.retirement,
 };
 
 /**
