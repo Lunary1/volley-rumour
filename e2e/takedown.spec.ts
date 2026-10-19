@@ -1,9 +1,24 @@
+import { createClient } from "@supabase/supabase-js";
 import type { Page } from "@playwright/test";
-import { expect, loginAs, pageFor, seed, test } from "./fixtures";
+import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
+import { expect, loginAs, pageFor, queueItem, seed, test } from "./fixtures";
 
 // The person a rumour is about asks for its removal without an account; a
 // moderator removes the rumour or rejects the request, and the requester
 // follows it through the status link (issue #68, J-12, D-014).
+
+const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
+
+const createdRumours: string[] = [];
+test.afterEach(async () => {
+  const rumours = createdRumours.splice(0);
+  if (!rumours.length) return;
+  // A transfer left by a failed test would block deleting its rumour.
+  await admin.from("transfers").delete().in("source_rumour_id", rumours);
+  await admin.from("rumours").delete().in("id", rumours);
+});
 
 /** Fills in and sends the request form, and returns the reference. */
 async function sendRequest(page: Page, email: string) {
@@ -154,6 +169,84 @@ test("a moderator rejects a request found from the footer", async ({
   ).toBeVisible();
   await page.goto("/geruchten?status=denied");
   await expect(page.getByText(playerName).first()).toBeVisible();
+});
+
+test("removing a confirmed rumour takes its transfer off the site", async ({
+  page,
+  browser,
+}) => {
+  test.slow(); // A visitor and a moderator.
+  // Its own lopend rumour without an author, so no track record changes
+  // (#151). Dated 2001, so it pushes no other test's rumour off page 1.
+  const playerName = `Tanja Transfer ${Date.now()}`;
+  const { data: rumour, error } = await admin
+    .from("rumours")
+    .insert({
+      player_name: playerName,
+      category: "transfer",
+      status: "rumour",
+      gender: "female",
+      from_club_name: "VC Testdorp",
+      to_club_name: "Volley Voorbeeld",
+      source_type: "media",
+      declared_good_faith: true,
+      declared_senior: true,
+      created_at: new Date(Date.UTC(2001, 0, 1)).toISOString(),
+    })
+    .select("id")
+    .single();
+  expect(error).toBeNull();
+  createdRumours.push(rumour!.id);
+
+  // Confirmed the way staff do it, which expires the cached transfer lists.
+  // The transfer is the newest, so it heads /transfers and the homepage.
+  const moderator = await pageFor(browser, "moderator");
+  await moderator.goto("/admin/geruchten");
+  const queued = queueItem(moderator, playerName);
+  await queued.getByRole("button", { name: "Bevestigen", exact: true }).click();
+  await queued
+    .getByLabel(/Link naar de officiële bron/)
+    .fill("https://volley-voorbeeld.example.test/nieuws/tanja");
+  await queued
+    .getByRole("button", { name: "Bevestigen en transfer aanmaken" })
+    .click();
+  await expect(
+    moderator.getByText(
+      `Gerucht over ${playerName} bevestigd, de transfer staat online`,
+    ),
+  ).toBeVisible();
+
+  await page.goto("/transfers");
+  await expect(page.getByText(playerName)).toBeVisible();
+  await page.goto("/");
+  await expect(page.getByText(playerName)).toBeVisible();
+
+  await page.goto(`/verwijderverzoek?gerucht=${rumour!.id}`);
+  const reference = await sendRequest(page, `tanja-${Date.now()}@example.test`);
+
+  await moderator.goto("/admin/meldingen");
+  const item = inboxItem(moderator, reference);
+  await item.getByRole("button", { name: "Gerucht verwijderen" }).click();
+  await item
+    .getByLabel(/Toelichting voor de aanvrager/)
+    .fill("Verwijderd, ook de transfer.");
+  await item.getByRole("button", { name: "Verwijderen bevestigen" }).click();
+  await expect(
+    moderator.getByText(`Gerucht verwijderd (${reference})`),
+  ).toBeVisible();
+
+  await page.goto("/transfers");
+  await expect(page.getByText(playerName)).toHaveCount(0);
+  await page.goto("/");
+  await expect(page.getByText(playerName)).toHaveCount(0);
+
+  await moderator.goto("/admin/logboek");
+  await expect(
+    moderator
+      .getByRole("row")
+      .filter({ hasText: reference })
+      .filter({ hasText: "Transfer verwijderd" }),
+  ).toContainText(`Gerucht verwijderd na verwijderverzoek ${reference}`);
 });
 
 test("only staff see requests, and status links are private", async ({

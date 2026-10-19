@@ -57,7 +57,7 @@ ran without Supabase credentials, which is what CI will face.
 | J-09    | Submit a sourced rumour                  | **WORKS**   | Pending, source, declarations and cap done (#65, #67); emailed on approval or rejection (#98) |
 | J-10    | Own rumours, track record, voting        | **WORKS**   | Track record and all own rumours on the profile (#88, D-005); voting fixed (#78) |
 | J-11    | Account and personal data                | **WORKS**   | Deletion is one transaction and deletes zoekertjes (#76, D-021, D-029); password reset fixed in #58; profile pictures uploaded to Storage (#92) |
-| J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014). Email waits on #53 |
+| J-12    | Takedown request by named person         | **WORKS**   | #68: form without login, staff inbox, status link (D-014); removal also deletes the rumour's transfer (#151, D-033). Email waits on #53 |
 | J-13    | Pre-moderation queue                     | **WORKS**   | Queue with the author's track record, approve/reject and audit log work (#66, #88); the author is emailed (#98) |
 | J-14    | Resolve a rumour                         | **WORKS**   | Confirm, deny, expire, bulk expire and transfer edits work (#70); each decision updates the author's track record (#88) |
 | J-15    | Reports, takedowns, sanctions            | **PARTIAL** | Inbox, suspensions, badge and roles work (#69, #80, D-015, D-016); outcomes aren't emailed (#53) |
@@ -218,6 +218,7 @@ items.
 | Acknowledgement with reference | **WORKS** (#68) | [takedown-form.tsx](../../app/verwijderverzoek/takedown-form.tsx) | Reference and private status link on screen; no email until #53. The contact form stores messages for staff since #81 (D-017) |
 | Outcome communicated | **WORKS** (#68) | [status page](../../app/verwijderverzoek/status/[token]/page.tsx), `remove_rumour_for_takedown()`, `reject_takedown_request()` | The status link shows the decision and the moderator's note; email waits on #53 |
 | Requests visible only to moderators, retention defined | **WORKS** (#68) | [admin/meldingen](../../app/admin/meldingen/page.tsx), `anonymise_expired_takedown_requests()` | RLS: staff only, hashes never readable. Personal fields wiped after 12 months (D-014); the function still has to be scheduled |
+| Removal takes the person off the site | **WORKS** (#151) | `delete_transfer_of_removed_rumour()`, [removed_rumour_transfer.test.sql](../../supabase/tests/database/removed_rumour_transfer.test.sql), [takedown.spec.ts](../../e2e/takedown.spec.ts) | Removing a confirmed rumour (takedown or report) also deletes its transfer from `/transfers` and the homepage, logged as "Transfer verwijderd" (D-033) |
 
 ### J-13 — Pre-moderation queue · WORKS
 
