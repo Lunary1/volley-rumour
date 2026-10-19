@@ -1,6 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { isComingSoon } from "@/lib/coming-soon";
+import { CONTACT_EMAIL, OPERATOR_NAME } from "@/lib/legal";
 
 export const metadata = pageMetadata({
   title: "Privacybeleid",
@@ -9,7 +10,7 @@ export const metadata = pageMetadata({
 });
 
 // Every service that receives personal data (#77). Datadog was removed in
-// D-023. Copy to be reviewed in #94.
+// D-023. Reviewed in #94 (docs/product/legal-review.md).
 const processors = [
   {
     name: "Supabase",
@@ -49,11 +50,40 @@ export default function PrivacyPage() {
             We nemen je privacy serieus. Lees hier hoe we je gegevens
             verzamelen, gebruiken en beschermen.
           </p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Laatst bijgewerkt op 19 oktober 2026
+          </p>
         </div>
       </section>
 
       {/* Content Section */}
       <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+        {/* Controller (GDPR art. 13(1)(a), D-038) */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            Wie is verantwoordelijk
+          </h2>
+          <p className="text-muted-foreground">
+            VolleyRumours wordt gemaakt door {OPERATOR_NAME}, zonder
+            winstoogmerk. Wij zijn verantwoordelijk voor je gegevens op deze
+            site. Je bereikt ons via het{" "}
+            <Link
+              href="/contact"
+              className="text-primary hover:underline font-medium"
+            >
+              contactformulier
+            </Link>{" "}
+            of via{" "}
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="text-primary hover:underline font-medium"
+            >
+              {CONTACT_EMAIL}
+            </a>
+            .
+          </p>
+        </div>
+
         {/* Gegevensverzameling */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
@@ -188,6 +218,36 @@ export default function PrivacyPage() {
           </div>
         </div>
 
+        {/* Legal bases (GDPR art. 13(1)(c), #94) */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">
+            Waarom we je gegevens mogen gebruiken
+          </h2>
+          <ul className="list-disc list-inside space-y-2 ml-2 text-muted-foreground">
+            <li>
+              <strong>Om de site te leveren die je gebruikt</strong>{" "}
+              (overeenkomst): je account, wat je plaatst, je berichten, je
+              stemmen, en e-mails over je account.
+            </li>
+            <li>
+              <strong>Gerechtvaardigd belang:</strong> moderatie, het logboek
+              van moderatoracties, misbruik voorkomen met de code van je
+              IP-adres, bezoekcijfers zonder cookies, meldingen per e-mail (die
+              je op je profiel uitzet), en geruchten over spelers en trainers
+              (zie hieronder).
+            </li>
+            <li>
+              <strong>Wettelijke plicht:</strong> verwijderverzoeken en
+              meldingen afhandelen en bewaren wat we daarover beslisten.
+            </li>
+            <li>
+              <strong>Toestemming:</strong> de wachtlijst, en inloggen met
+              Google. Je toestemming intrekken kan altijd; voor de wachtlijst
+              via het contactformulier.
+            </li>
+          </ul>
+        </div>
+
         {/* Processors (#77) */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
@@ -205,6 +265,13 @@ export default function PrivacyPage() {
                 </li>
               ))}
             </ul>
+            <p>
+              Onze database staat in de EU. Vercel, Resend en Google zijn
+              Amerikaanse bedrijven, dus sommige gegevens kunnen in de Verenigde
+              Staten verwerkt worden. Dat gebeurt onder het
+              EU-VS-gegevensprivacykader of de standaardcontractbepalingen van
+              de Europese Commissie.
+            </p>
           </div>
         </div>
 
@@ -301,12 +368,21 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        {/* Takedown requests (#68, D-014). Copy to be reviewed in #94. */}
+        {/* Takedown requests (#68, D-014); people named in rumours (GDPR
+            art. 14, #94). */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
             Geruchten over jou
           </h2>
           <div className="space-y-4 text-muted-foreground">
+            <p>
+              Gebruikers delen geruchten over seniorspelers en -trainers: de
+              naam, de club en de transfer of het stoppen waar het om gaat. We
+              publiceren ze in het belang van de volleybalgemeenschap, na
+              controle door een moderator, en nooit over minderjarigen of over
+              iemands privéleven. Zo&apos;n gerucht blijft online tot het
+              verwijderd wordt.
+            </p>
             <p>
               Gaat een gerucht over jou, je kind of iemand die je
               vertegenwoordigt, dan kan je zonder account vragen om het te
@@ -348,7 +424,7 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        {/* Contact form (#81, D-017). Copy to be reviewed in #94. */}
+        {/* Contact form (#81, D-017) */}
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
             Berichten via het contactformulier
@@ -381,18 +457,44 @@ export default function PrivacyPage() {
             <p>Je hebt het recht om:</p>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
-                <strong>Je gegevens inzien:</strong> Contacteer ons voor een
-                kopie van je gegevens.
+                <strong>Inzage:</strong> een kopie van je gegevens krijgen.
               </li>
               <li>
-                <strong>Je account verwijderen:</strong> Je profiel en je
-                gegevens wissen, zoals hierboven beschreven.
+                <strong>Verbetering:</strong> onjuiste gegevens laten
+                corrigeren. Je profiel pas je zelf aan.
               </li>
               <li>
-                <strong>Correcties aanvragen:</strong> Onjuiste informatie
-                corrigeren.
+                <strong>Wissen:</strong> je account verwijder je zelf op je
+                profiel, zoals hierboven beschreven. Een gerucht over jou laat
+                je verwijderen met een verwijderverzoek.
+              </li>
+              <li>
+                <strong>Bezwaar en beperking:</strong> bezwaar maken tegen wat
+                we op basis van gerechtvaardigd belang doen, of vragen dat we je
+                gegevens even niet gebruiken.
+              </li>
+              <li>
+                <strong>Overdraagbaarheid:</strong> je gegevens krijgen in een
+                gangbaar bestandsformaat.
               </li>
             </ul>
+            <p>
+              Vraag het via het contactformulier. We antwoorden binnen een
+              maand. Ben je niet tevreden over hoe we met je gegevens omgaan,
+              dan kan je een klacht indienen bij de{" "}
+              <a
+                href="https://www.gegevensbeschermingsautoriteit.be"
+                className="text-primary hover:underline font-medium"
+                rel="noopener noreferrer"
+              >
+                Gegevensbeschermingsautoriteit
+              </a>
+              .
+            </p>
+            <p>
+              We nemen geen beslissingen over je die volledig automatisch
+              gebeuren: elke moderatiebeslissing neemt een mens.
+            </p>
           </div>
         </div>
 

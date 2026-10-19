@@ -60,6 +60,13 @@ const requestSchema = z.object({
       TAKEDOWN_EXPLANATION_MAX_LENGTH,
       `Je uitleg mag maximaal ${TAKEDOWN_EXPLANATION_MAX_LENGTH} tekens zijn`,
     ),
+  // DSA art. 16(2)(d): the requester confirms the notice is made in good
+  // faith (#94).
+  goodFaith: z.literal(true, {
+    errorMap: () => ({
+      message: "Bevestig dat je verzoek juist en volledig is",
+    }),
+  }),
   // Honeypot: hidden from people, filled in by bots.
   website: z.string().optional(),
 });

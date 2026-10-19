@@ -861,3 +861,23 @@ every new takedown request, report and contact message. Both emails are #181.
 in M3. Whether on-screen outcomes are enough for reporters and authors is on
 the list for the legal review (#94). Outcome emails are a
 new decision if users miss them after launch.
+
+## D-038 — The operator stays anonymous while the site is free
+
+**Context.** The legal review (#94) found that neither the terms nor the
+privacy page say who runs the site. The GDPR asks for the controller's
+identity and contact details; Belgian law (WER art. XII.6) asks providers of
+services "normally provided for remuneration" for a name and geographic
+address.
+
+**Decision** (owner, 2026-10-19). The owner runs VolleyRumours as a private
+person and stays anonymous for now: the pages name "het VolleyRumours-team"
+with `info@volleyrumours.be` and the contact form (`lib/legal.ts`). The site is
+free and non-commercial, and comparable Belgian volleyball sites don't name
+their operator either.
+
+**Consequences.** The contact address must be read. A court or the
+Gegevensbeschermingsautoriteit can still find the operator through DNS
+Belgium or the host. **The day anything is paid** (featured zoekertjes, ads),
+the operator's name and address go on the terms and privacy page first. A
+lawyer reviewing the texts (#94) is asked whether this holds.

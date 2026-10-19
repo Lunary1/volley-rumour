@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createHash } from "node:crypto";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,6 +98,25 @@ export default async function TakedownStatusPage({
                 {request.decision_note}
               </p>
             </div>
+          )}
+          {request.status !== "open" && (
+            <p className="text-muted-foreground">
+              Niet akkoord met deze beslissing?{" "}
+              <Link href="/contact" className="underline underline-offset-2">
+                Laat het ons weten
+              </Link>{" "}
+              met je referentienummer, dan bekijken we het opnieuw. Je kan ook
+              naar de rechter stappen of, als het om je persoonsgegevens gaat,
+              een klacht indienen bij de{" "}
+              <a
+                href="https://www.gegevensbeschermingsautoriteit.be"
+                className="underline underline-offset-2"
+                rel="noopener noreferrer"
+              >
+                Gegevensbeschermingsautoriteit
+              </a>
+              .
+            </p>
           )}
         </CardContent>
       </Card>

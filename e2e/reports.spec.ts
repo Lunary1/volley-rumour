@@ -97,6 +97,12 @@ test("a user reports a rumour and a moderator removes it", async ({
       "Een moderator heeft dit gerucht van de site gehaald. Dit gerucht viel een speler persoonlijk aan.",
     ),
   ).toBeVisible();
+  // With the way to contest it (DSA art. 17, #94).
+  await expect(
+    author
+      .getByText("Een moderator heeft dit gerucht van de site gehaald.")
+      .getByRole("link", { name: "Laat het ons weten" }),
+  ).toHaveAttribute("href", "/contact");
 });
 
 test("a user reports a zoekertje and a moderator dismisses it", async ({

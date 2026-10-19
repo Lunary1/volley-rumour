@@ -51,6 +51,7 @@ export function TakedownForm({ rumourId }: { rumourId: string }) {
         name: String(form.get("name") ?? ""),
         email: String(form.get("email") ?? ""),
         explanation: String(form.get("explanation") ?? ""),
+        goodFaith: form.get("goodFaith") === "on",
         website: String(form.get("website") ?? ""),
       } as TakedownRequestInput);
       if (!response.success) {
@@ -176,6 +177,20 @@ export function TakedownForm({ rumourId }: { rumourId: string }) {
               required
               placeholder="Bijvoorbeeld: het klopt niet, het gaat over een minderjarige, of het is kwetsend."
             />
+          </div>
+
+          {/* DSA art. 16(2)(d): the notice is made in good faith (#94). */}
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id={`${id}-good-faith`}
+              name="goodFaith"
+              required
+              className="mt-0.5 h-4 w-4 accent-primary"
+            />
+            <Label htmlFor={`${id}-good-faith`} className="font-normal">
+              Ik verklaar te goeder trouw dat mijn verzoek juist en volledig is.
+            </Label>
           </div>
 
           {/* Honeypot: hidden from people and screen readers, filled by bots. */}
