@@ -10,7 +10,9 @@ import { formatDate } from "@/lib/dates";
 
 // Status of a takedown request (#68, D-014). The token in the link is the
 // only key: whoever has it may see this request, so the page reads it with
-// the service role after matching the token's hash. It shows no personal
+// the service role after matching the token's hash. Each request has two
+// links: the one shown after filing it and the one in the decision email
+// (#181). It shows no personal
 // data, only the reference, the rumour's name and the decision.
 
 export const metadata: Metadata = {
@@ -53,12 +55,13 @@ export default async function TakedownStatusPage({
   if (!TOKEN_PATTERN.test(token)) notFound();
 
   const admin = createAdminClient();
+  const hash = createHash("sha256").update(token).digest("hex");
   const { data } = await admin
     .from("takedown_requests")
     .select(
       "reference, status, decision_note, decided_at, created_at, rumour:rumour_id(player_name)",
     )
-    .eq("token_hash", createHash("sha256").update(token).digest("hex"))
+    .or(`token_hash.eq.${hash},email_token_hash.eq.${hash}`)
     .maybeSingle();
   if (!data) notFound();
   const request = data as unknown as TakedownStatusRow;

@@ -354,9 +354,10 @@ it taken down quickly, without needing an account.
   **stays visible until a moderator decides** (D-014) and the request appears
   in the moderators' inbox (`/admin/meldingen`).
 - **Given** a request, **then** the requester sees a reference and a private
-  status link. There is no email (D-014).
+  status link (D-014).
 - **Given** a moderator decides (J-15), **then** the status link shows the
-  outcome and the moderator's note; a removed rumour disappears from every
+  outcome and the moderator's note, and the requester gets one email with a
+  second link to it (D-037, D-039); a removed rumour disappears from every
   public view and its author sees it as "Verwijderd", without who asked.
 - **Given** the request contains personal data, **then** it is visible only to
   moderators, and name, email and reason are wiped 12 months after the request.

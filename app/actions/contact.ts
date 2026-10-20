@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import {
   CONTACT_CATEGORIES,
@@ -12,6 +13,7 @@ import {
   type ContactCategory,
 } from "@/lib/contact";
 import { dailyIpHash } from "@/lib/ip-hash";
+import { notifyStaff } from "@/lib/notifications";
 import { requireStaff } from "@/lib/staff";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import {
@@ -96,6 +98,7 @@ export async function submitContactMessage(
   }
 
   revalidatePath("/admin", "layout");
+  after(() => notifyStaff("contact"));
   return successResponse(null);
 }
 
