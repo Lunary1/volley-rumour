@@ -43,6 +43,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-034 | 2026-10-19 | Accepted | Production stays public while the site is in development; coming-soon goes back on before launch |
 | D-035 | 2026-10-19 | Accepted | Every approved rumour has its own shareable page, but rumour pages are never indexed by search engines |
 | D-039 | 2026-10-20 | Accepted | The takedown decision email carries a second status link; staff moderation emails ignore the profile opt-out |
+| D-040 | 2026-10-20 | Accepted | Cache Components stay off; every page keeps rendering per request with real 404 and redirect status codes |
 
 ---
 
@@ -908,3 +909,27 @@ wasn't said whether it applies to staff.
 
 **Consequences.** The status page accepts either token. DSA art. 16(5) is met
 for takedown requests; reporters still get a confirmation only (D-015).
+
+## D-040 — Cache Components stay off
+
+**Context.** Every page renders per request, because the header in the root
+layout reads the login cookie (X-9). #96 cached the data behind the busy pages
+but left the info pages (`/privacy`, `/voorwaarden`, `/over-ons`) dynamic: only
+Next 16's Cache Components (partial prerendering) could serve them static
+(#167). A trial build in #96 showed the cost: every route that reads cookies or
+`searchParams` needs a Suspense boundary or `loading.tsx`; `export const
+dynamic` and `revalidate` are no longer allowed; and once the shell streams
+first, `notFound()` and `redirect()` inside a page answer 200 and redirect in
+the browser.
+
+**Decision** (owner, 2026-10-20). Cache Components stay off. The gain is small:
+the info pages already fetch no data, and the proxy still checks the session
+with Supabase Auth on every request, static page or not. A static info page
+would only save rendering its text. The cost touches every route, and the
+Dutch 404s (#90), the `/admin` 404 gate (#63) and the login redirects would
+lose their status codes.
+
+**Consequences.** All pages stay dynamic; public data stays cached through the
+cookie-less client (#96). Revisit when Next keeps real status codes for
+`notFound()` and `redirect()` in streamed pages, or when measurements after
+launch show slow info pages. Load testing goes on in #97.
