@@ -62,6 +62,10 @@ a normal migration.
 - RLS is the security boundary. New tables enable RLS and ship their policies
   and grants in the same migration. Prefer column-level grants for anything a
   user must not change (roles, scores, statuses, flags).
+- A new table or sequence gets **no** grants by default (#196, like production
+  since Supabase's change of 2026-10-30). Grant explicitly to each role that
+  needs it, `service_role` included when the admin client touches the table;
+  without a grant the API answers `42501 permission denied`.
 - `profiles` has column-level SELECT: `role` is hidden from the API (#111), so
   never `select("*")` on it. A new column is unreadable until a migration adds
   it to the grant.
