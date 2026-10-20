@@ -78,6 +78,8 @@ as a migration in a `fix/` PR and never runs SQL against production.
 
 ## Before launch
 
+- [ ] Supabase on Pro, with daily backups showing (D-044, [`supabase.md`](supabase.md)).
+      A restore from backup is the last resort after section 3; the steps are there.
 - [ ] Note which Vercel plan the project is on: Hobby can roll back one step only.
 - [ ] Ship the launch (#95) as its own deployment with **no migration** in it,
       so rolling back the launch is one step and touches no data.
