@@ -40,6 +40,8 @@ export const E2E_SERVER_ENV = {
   SMTP_HOST: "127.0.0.1",
   SMTP_PORT: "54325",
   EMAIL_FROM: "VolleyRumours <noreply@volleyrumours.be>",
+  // Opens the test-only error page (app/e2e-fout, #186).
+  E2E_ERROR_PROBE: "1",
   // Render in UTC like Vercel and CI, also on a developer's machine in
   // Belgium; the browser runs in Europe/Brussels (#142).
   TZ: "UTC",
