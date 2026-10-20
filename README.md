@@ -69,4 +69,6 @@ other environment variables are in [CLAUDE.md](CLAUDE.md).
 ## Deployment
 
 `main` is production. Every merge deploys to volleyrumours.be through Vercel.
-Production database migrations are applied by the owner after merge.
+Production database migrations are applied by the owner just before their PR
+merges, and every migration keeps the code already on `main` working (D-043).
+Rolling back a release: [`docs/rollback.md`](docs/rollback.md).

@@ -67,8 +67,17 @@ a normal migration.
   it to the grant.
 - SECURITY DEFINER functions: set `search_path = ''`, qualify every name, and
   revoke `EXECUTE` from `anon`/`authenticated` unless they must call it.
-- **Production is migrated by the owner, after merge**: `npx supabase db push`.
-  Agents never push migrations or run SQL against the linked project.
+- **Every migration keeps the code on `main` working** (D-043), because a Vercel
+  rollback brings back older code but never undoes a migration. Adding is
+  safe: tables, nullable or defaulted columns, functions. To remove or rename
+  something the app uses, or to tighten a rule it relies on, split it: first a
+  PR that stops using it, then a later PR with the migration (expand first,
+  contract later). The PR notes give the SQL that would undo the migration.
+- **Production is migrated by the owner, before merge** (D-043): once CI is
+  green, the owner runs `npx supabase db push` from the up-to-date PR branch,
+  then the PR merges. Agents never push migrations or run SQL against the
+  linked project. A pushed migration's file must reach `main`: if the PR is
+  dropped, merge the file anyway, or a migration that undoes it.
 - `supabase/seed.sql` holds fake data for local development and tests only.
   Every seeded account logs in with `test-wachtwoord`; the accounts are listed
   at the top of the file and in `e2e/fixtures.ts`. Keep the two in sync.
@@ -107,7 +116,8 @@ Rules:
   enforces this, including for admins.
 - Hotfixes follow the same flow on a `fix/` branch — the gate is the safety net.
 - **Rollback**: promote the previous deployment in Vercel (Instant Rollback),
-  then fix forward or revert the PR through a new PR.
+  then fix forward or revert the PR through a new PR. Steps, closing the site
+  again and database fixes: `docs/rollback.md`.
 - **Preview deployments use the production Supabase database** (D-010). Use
   previews to look, not to write: no test data, no destructive flows, no
   migrations. Test anything that writes data against the local stack
@@ -118,7 +128,8 @@ Rules:
 - [ ] Acceptance criteria of the issue are met, with evidence per criterion.
 - [ ] Typecheck, lint, format check and build pass (CI green).
 - [ ] A Playwright test in `e2e/` covers the key flow of the change.
-- [ ] Schema changes are committed as Supabase migrations in `supabase/migrations/`.
+- [ ] Schema changes are committed as Supabase migrations in `supabase/migrations/`,
+      and the code on `main` still works against them (D-043).
 - [ ] UI copy is Dutch.
 - [ ] Privacy, moderation and minors impact considered.
 - [ ] Change checked: Vercel preview by hand, or (agents) a local production
