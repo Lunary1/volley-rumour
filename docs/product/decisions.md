@@ -42,6 +42,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-033 | 2026-10-19 | Accepted | Removing a rumour also deletes the transfer made when it was confirmed |
 | D-034 | 2026-10-19 | Accepted | Production stays public while the site is in development; coming-soon goes back on before launch |
 | D-035 | 2026-10-19 | Accepted | Every approved rumour has its own shareable page, but rumour pages are never indexed by search engines |
+| D-039 | 2026-10-20 | Accepted | The takedown decision email carries a second status link; staff moderation emails ignore the profile opt-out |
 
 ---
 
@@ -881,3 +882,29 @@ Gegevensbeschermingsautoriteit can still find the operator through DNS
 Belgium or the host. **The day anything is paid** (featured zoekertjes, ads),
 the operator's name and address go on the terms and privacy page first. A
 lawyer reviewing the texts (#94) is asked whether this holds.
+
+## D-039 — How the moderation emails work
+
+**Context.** D-037 promised a takedown requester one email with their status
+link, and staff an email for every new item. Building it (#181) showed the
+status link can't be sent again: the database keeps only a hash of its token
+(D-014). The profile has one switch for email notifications (D-032), and it
+wasn't said whether it applies to staff.
+
+**Decision.**
+- **A second link** (owner, 2026-10-20). When a moderator decides, the
+  database gives the request a second private token and the email carries
+  that link; the link from the form keeps working. Both open the same status
+  page. The email names the reference, not the outcome or the note.
+- **Every decision path emails.** Removing a reported rumour also decides its
+  open takedown requests, so the app claims every decided request that hasn't
+  been emailed after each such action (`claim_takedown_decision_emails()`).
+  Each is claimed once; a failed email isn't retried, since the first link
+  still works. Requests decided before #181 aren't emailed.
+- **Staff can't turn moderation emails off** (agent call, flagged in the PR).
+  The profile switch is for a user's own notifications; handling the inboxes
+  within 72 hours is the moderator's job (D-036). A moderator who no longer
+  wants them gives up the role.
+
+**Consequences.** The status page accepts either token. DSA art. 16(5) is met
+for takedown requests; reporters still get a confirmation only (D-015).

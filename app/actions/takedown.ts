@@ -2,11 +2,13 @@
 
 import { createHash, randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { dailyIpHash } from "@/lib/ip-hash";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/staff";
 import { expirePublicData } from "@/lib/public-data";
+import { notifyStaff, notifyTakedownDecisions } from "@/lib/notifications";
 import {
   TAKEDOWN_EMAIL_MAX_LENGTH,
   TAKEDOWN_EXPLANATION_MAX_LENGTH,
@@ -123,6 +125,7 @@ export async function requestTakedown(
   }
 
   revalidatePath("/admin", "layout");
+  after(() => notifyStaff("takedown"));
   return successResponse({
     reference: reference as string,
     statusPath: takedownStatusPath(token),
@@ -185,6 +188,7 @@ export async function removeRumourForTakedown(input: {
   if (error) return decisionError(error);
 
   revalidateTakedownPages();
+  after(notifyTakedownDecisions);
   return successResponse(null);
 }
 
@@ -208,5 +212,6 @@ export async function rejectTakedownRequest(input: {
   if (error) return decisionError(error);
 
   revalidateTakedownPages();
+  after(notifyTakedownDecisions);
   return successResponse(null);
 }

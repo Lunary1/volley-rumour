@@ -25,7 +25,7 @@ const processors = [
   {
     name: "Resend",
     purpose:
-      "Verstuurt e-mails over je account, zoals de bevestiging van je e-mailadres of een link voor een nieuw wachtwoord, en meldingen van een nieuw bericht of een beslissing over je gerucht. Resend krijgt je e-mailadres en de inhoud van die e-mail; een melding bevat nooit de tekst van een bericht of gerucht.",
+      "Verstuurt e-mails over je account, zoals de bevestiging van je e-mailadres of een link voor een nieuw wachtwoord, meldingen van een nieuw bericht of een beslissing over je gerucht, de beslissing over je verwijderverzoek, en aan moderators een melding van iets nieuws om te behandelen. Resend krijgt je e-mailadres en de inhoud van die e-mail; een melding bevat nooit de tekst van een bericht of gerucht.",
   },
   {
     name: "Google",
@@ -414,6 +414,11 @@ export default function PrivacyPage() {
                 <strong>Misbruik voorkomen:</strong> om te veel verzoeken te
                 beperken bewaren we een versleutelde code van je IP-adres die
                 elke dag verandert.
+              </li>
+              <li>
+                <strong>E-mail:</strong> zodra een moderator beslist, sturen we
+                je één e-mail met een link naar de beslissing. Daarvoor
+                gebruiken we je e-mailadres; meer e-mails krijg je niet.
               </li>
               <li>
                 <strong>Hoe lang:</strong> 12 maanden na je verzoek wissen we je

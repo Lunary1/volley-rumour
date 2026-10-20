@@ -83,9 +83,8 @@ export function TakedownForm({ rumourId }: { rumourId: string }) {
           <div className="space-y-1">
             <p className="font-medium">Bewaar deze link</p>
             <p className="text-muted-foreground">
-              Hiermee volg je je verzoek en lees je de beslissing. We sturen
-              geen e-mail, en zonder deze link kunnen we je de status niet
-              tonen.
+              Hiermee volg je je verzoek. Zodra een moderator beslist, sturen we
+              je één e-mail met een link naar de beslissing.
             </p>
             <p className="break-all rounded-md border bg-muted/30 p-2 font-mono text-xs">
               {sent.statusUrl}

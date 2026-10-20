@@ -71,7 +71,7 @@ reading. Micro enterprises are exempt from art. 20–28 except art. 24(3).
 | 16(1) easy electronic notice mechanism | Done | "Melden" (logged in) and `/verwijderverzoek` (no account) |
 | 16(2)(d) good-faith statement | **Added in #94** | Required checkbox on the takedown form, checked by the server action |
 | 16(4) confirmation of receipt | Done | Reference number and private status link on screen |
-| 16(5) notify the notifier of the decision and redress | **Partly** | Status page shows the decision, note and redress (#94). Email to the requester comes with #181 (D-037). Reporters only get a confirmation (D-015). Open question 5 |
+| 16(5) notify the notifier of the decision and redress | Done for takedowns | Status page shows the decision, note and redress (#94); the requester gets one email with a link to it (#181, D-039). Reporters only get a confirmation (D-015). Open question 5 |
 | 17 statement of reasons to the affected user | Done | Reason and note on the profile (rumour rejected or removed, zoekertje removed), suspension reason on every page, each with "Niet akkoord? Laat het ons weten" (#94). Shown on screen, not emailed (D-037) |
 | 20 internal complaint system | Voluntary | Contest via contact form within 6 months (Terms › Niet akkoord). Exempt as a micro enterprise |
 | 23 measures against misuse | Done | Suspensions; daily limits on takedown and contact forms |

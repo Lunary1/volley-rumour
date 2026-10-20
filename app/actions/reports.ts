@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/staff";
 import { expirePublicData } from "@/lib/public-data";
+import { notifyStaff, notifyTakedownDecisions } from "@/lib/notifications";
 import {
   CONTENT_REPORT_REASONS,
   CONVERSATION_REPORT_REASONS,
@@ -102,6 +104,7 @@ export async function reportContent(
     }
   }
   revalidatePath("/admin", "layout");
+  after(() => notifyStaff("report"));
 
   // Blocking is the user's own action, not a moderation step. submit_report
   // already checked that the user takes part in the conversation.
@@ -193,6 +196,8 @@ export async function removeReportedContent(input: {
   if (error) return decisionError(error);
 
   revalidateReportPages();
+  // Removing a rumour also decides its open takedown requests.
+  after(notifyTakedownDecisions);
   return successResponse(null);
 }
 

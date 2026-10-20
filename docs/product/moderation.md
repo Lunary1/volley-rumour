@@ -16,6 +16,13 @@ D-016 (sanctions). Journeys J-13, J-14 and J-15 in `journeys.md`.
 The targets count calendar hours, weekends included, during the transfer
 window. Outside the window they are a goal, not a promise.
 
+Every moderator and admin gets an email for each new takedown request,
+report and contact message, with a link to the inbox and nothing else (#181).
+It can't be turned off on the profile (D-039). Pending rumours send no email:
+check the queue at every check-in. When you decide a takedown request, the
+requester gets one email with a link to your decision and note, so write the
+note for them.
+
 ## Rota
 
 Until launch there is one moderator: the owner (admin). The transfer-window
