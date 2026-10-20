@@ -280,6 +280,10 @@ to be right.
 - **Given** a moderator approves or rejects my rumour, **then** I'm notified
   (in-app, and by email unless I turned that off, D-025), with the reason if
   rejected.
+- **Given** my rumour is still pending, **when** I choose "Bewerken" on my
+  profile, **then** I can change it with every check from submitting, and it
+  stays pending. Once a moderator approved or rejected it, I can't edit it
+  (D-042).
 
 ## J-10 — Rumour contributor follows own rumours, track record and voting
 
@@ -294,7 +298,12 @@ whether I believe other people's rumours.
 **Acceptance criteria.**
 - **Given** my rumours, **then** I see each one's status (in afwachting /
   afgewezen + reden / lopend / bevestigd / ontkracht / niet bevestigd /
-  verwijderd).
+  verwijderd / ingetrokken).
+- **Given** my rumour is pending or lopend, **when** I choose "Intrekken" and
+  confirm, **then** it disappears from the site and the moderation queue for
+  good, frees a pending slot, and shows as "Ingetrokken" on my profile.
+  Confirmed, denied and expired rumours can't be withdrawn, and withdrawn
+  rumours don't count in my track record (D-042).
 - **Given** resolved rumours, **then** my track record counts only confirmed
   vs denied; expired rumours are neutral (D-005).
 - **Given** a live rumour by someone else, **when** I vote, **then** I can vote

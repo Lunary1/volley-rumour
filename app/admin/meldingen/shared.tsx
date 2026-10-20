@@ -44,6 +44,14 @@ export function RumourSummary({ rumour }: { rumour: RumourSummaryRow }) {
           · door {rumour.creator?.username ?? "een verwijderd account"}
         </span>
       </div>
+      {/* The author took it back (#192, D-042): already off the site, but
+          the request or report still needs a decision. */}
+      {rumour.status === "withdrawn" && (
+        <p className="text-xs font-medium text-muted-foreground">
+          De auteur heeft dit gerucht ingetrokken. Het staat niet meer op de
+          site.
+        </p>
+      )}
       {(rumour.from_club_name || rumour.to_club_name) && (
         <p className="flex flex-wrap items-center gap-1.5">
           {rumour.from_club_name && <span>{rumour.from_club_name}</span>}
