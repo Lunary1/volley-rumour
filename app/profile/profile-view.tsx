@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ContestDecision } from "@/components/contest-decision";
+import { MyRumourActions } from "@/components/my-rumour-actions";
 import { useRouter } from "next/navigation";
 import { useIsClient } from "@/lib/use-is-client";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -410,6 +411,19 @@ export function ProfileView({
                           <ContestDecision />
                         </p>
                       )}
+                      {r.status === "withdrawn" && (
+                        <p className="mt-1 px-3 text-xs text-muted-foreground">
+                          Je hebt dit gerucht ingetrokken. Het staat niet meer
+                          op de site.
+                        </p>
+                      )}
+                      {/* Edit while pending, withdraw while pending or
+                          lopend (#192, D-042). */}
+                      <MyRumourActions
+                        id={r.id}
+                        playerName={r.player_name}
+                        status={r.status}
+                      />
                     </li>
                   ))}
                 </ul>

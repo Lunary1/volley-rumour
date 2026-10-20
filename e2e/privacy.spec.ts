@@ -24,7 +24,15 @@ test("privacy page lists every processor and how long data is kept", async ({
     retention.getByText("Logboek van moderatoracties"),
   ).toBeVisible();
   await expect(retention.getByText(/Wachtlijst/)).toBeVisible();
-  await expect(retention.getByText(/12\s+maanden/)).toBeVisible();
+  await expect(
+    retention.getByText(
+      /Verwijderverzoeken en contactberichten:\s+12\s+maanden/,
+    ),
+  ).toBeVisible();
+  // Withdrawn rumours (#192, D-042).
+  await expect(
+    retention.getByText(/Ingetrokken geruchten:.*12\s+maanden/),
+  ).toBeVisible();
 
   await expect(page.getByText(/datadog|session replay/i)).toHaveCount(0);
 });

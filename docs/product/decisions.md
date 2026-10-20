@@ -48,6 +48,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-039 | 2026-10-20 | Accepted | The takedown decision email carries a second status link; staff moderation emails ignore the profile opt-out |
 | D-040 | 2026-10-20 | Accepted | Cache Components stay off; every page keeps rendering per request with real 404 and redirect status codes |
 | D-041 | 2026-10-20 | Accepted | Production errors are recorded in our own database and alerted to info@volleyrumours.be; no error-tracking service |
+| D-042 | 2026-10-20 | Accepted | Authors withdraw their own pending or lopend rumour and edit it only while pending; messages stay undeletable |
 
 ---
 
@@ -962,3 +963,34 @@ browser errors.
 stack traces or source maps: the digest on `/admin/fouten` finds the full
 error in the Vercel logs. Someone has to read info@volleyrumours.be. Revisit
 if the errors turn out too hard to debug this way.
+
+## D-042 — Authors withdraw and edit their own rumours
+
+**Context.** Once submitted, a rumour couldn't be changed or removed by its
+author (#192). A player asking the author to take it down, or a typo in the
+club or division, needed a report, a takedown request or the contact form,
+and a moderator. Zoekertjes could already be edited and deleted (#72).
+
+**Decision** (owner, 2026-10-20).
+- **Withdraw**: an author can withdraw their own rumour while it is pending or
+  lopend. Confirmed, denied and expired rumours are the track record (D-005)
+  and a confirmed one has created a transfer, so those can't be withdrawn;
+  the author uses the contact form or a takedown request.
+- **Edit**: only while the rumour is pending. To correct a published rumour,
+  the author withdraws it and submits a new one, which is moderated again.
+- **Track record**: withdrawn rumours don't count, and no "ingetrokken" count
+  is shown.
+- **Messages** can't be deleted, because reports read the conversation
+  (D-015).
+- A withdrawn rumour gets the status `withdrawn` instead of being deleted, so
+  takedown requests and reports about it (`ON DELETE CASCADE`) stay in the
+  staff inbox, marked as withdrawn. Only its author and staff can still read
+  it. Its name, clubs, description and source link are wiped 12 months after
+  withdrawal, like takedown requests (D-014).
+- Suspended users may withdraw (it only removes content) but not edit
+  (agent call, confirmed in the PR).
+
+**Consequences.** `withdraw_rumour()` and an UPDATE policy limited to the
+author's own pending rumours, with the submission checks on every edit. The
+retention function `wipe_withdrawn_rumours()` still has to be scheduled, like
+the other retention functions.

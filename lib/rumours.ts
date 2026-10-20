@@ -4,7 +4,8 @@ import { CATEGORY_BADGE_CLASSES } from "@/lib/category-badges";
 // only become public once a moderator approves them; RLS enforces this
 // (issue #65). A moderator removes a public rumour after a takedown request
 // (#68). A moderator resolves a lopend rumour as confirmed, denied or expired
-// ("Niet bevestigd", neutral for the track record) (#70, D-020, D-005).
+// ("Niet bevestigd", neutral for the track record) (#70, D-020, D-005). An
+// author withdraws their own pending or lopend rumour (#192, D-042).
 export type RumourStatus =
   | "pending"
   | "rumour"
@@ -12,7 +13,8 @@ export type RumourStatus =
   | "denied"
   | "expired"
   | "rejected"
-  | "removed";
+  | "removed"
+  | "withdrawn";
 
 /** Statuses everyone may see. Authors and staff can also read the others. */
 export const PUBLIC_RUMOUR_STATUSES = [
@@ -35,7 +37,30 @@ export const RUMOUR_STATUS_LABELS: Record<RumourStatus, string> = {
   expired: "Niet bevestigd",
   rejected: "Afgewezen",
   removed: "Verwijderd",
+  withdrawn: "Ingetrokken",
 };
+
+// Withdrawing and editing your own rumour (#192, D-042). The database decides
+// in withdraw_rumour() and the UPDATE policy on rumours; these only pick the
+// buttons.
+
+/** Pending or lopend: the author may still take it back. */
+export function canWithdrawRumour(status: string): boolean {
+  return status === "pending" || status === "rumour";
+}
+
+/** Only while no moderator has looked at it yet. */
+export function canEditRumour(status: string): boolean {
+  return status === "pending";
+}
+
+/** SQLSTATE from withdraw_rumour() once the rumour is past withdrawing. */
+export const WITHDRAW_CLOSED_ERROR_CODE = "VR013";
+
+export const WITHDRAW_CLOSED_MESSAGE =
+  "Dit gerucht kan je niet meer intrekken: een moderator heeft het intussen afgerond.";
+export const EDIT_CLOSED_MESSAGE =
+  "Dit gerucht kan je niet meer bewerken: een moderator heeft het intussen nagekeken.";
 
 /**
  * Why a moderator rejected a rumour (Moderation Policy, #66). The author sees

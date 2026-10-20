@@ -288,6 +288,13 @@ export default function PrivacyPage() {
                 account verwijdert.
               </li>
               <li>
+                <strong>Ingetrokken geruchten:</strong> Trek je een gerucht in,
+                dan verdwijnt het meteen van de site. Jij en de moderators zien
+                het nog, zodat een open melding of verwijderverzoek erover
+                afgehandeld kan worden. 12 maanden na het intrekken wissen we de
+                naam, de clubs, de uitleg en de bronlink.
+              </li>
+              <li>
                 <strong>Account verwijderen:</strong> We wissen in één keer je
                 profiel, profielfoto, zoekertjes, stemmen, blokkeringen, je
                 gesprekken met alle berichten erin, en je geruchten die nog niet
