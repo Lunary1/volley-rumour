@@ -987,8 +987,11 @@ and a moderator. Zoekertjes could already be edited and deleted (#72).
   staff inbox, marked as withdrawn. Only its author and staff can still read
   it. Its name, clubs, description and source link are wiped 12 months after
   withdrawal, like takedown requests (D-014).
-- Suspended users may withdraw (it only removes content) but not edit
-  (agent call, confirmed in the PR).
+- Suspended users may withdraw but not edit (owner, 2026-10-20). It matches
+  zoekertjes, which a suspended user can delete but not edit (D-016).
+  Withdrawing only removes content, staff keep seeing the rumour and its open
+  reports and takedowns, and the person it names isn't kept waiting for the
+  suspension to end.
 
 **Consequences.** `withdraw_rumour()` and an UPDATE policy limited to the
 author's own pending rumours, with the submission checks on every edit. The
