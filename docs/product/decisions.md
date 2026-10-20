@@ -50,6 +50,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-041 | 2026-10-20 | Accepted | Production errors are recorded in our own database and alerted to info@volleyrumours.be; no error-tracking service |
 | D-042 | 2026-10-20 | Accepted | Authors withdraw their own pending or lopend rumour and edit it only while pending; messages stay undeletable |
 | D-043 | 2026-10-20 | Accepted | Every migration keeps the code on `main` working; the owner pushes it before its PR merges |
+| D-044 | 2026-10-20 | Accepted | Supabase moves to Pro a week before launch for daily backups; no PITR |
 
 ---
 
@@ -1026,3 +1027,25 @@ coming-soon mode; after launch, real users would hit them.
 **Consequences.** `CLAUDE.md`, the PR template and the README say so. The
 seven older migrations stay as they are: nobody will roll back weeks of
 deployments. A change that needs a contract step takes two PRs.
+
+## D-044 — Supabase Pro from a week before launch
+
+**Context.** Production runs on Supabase's Free plan, which has no backups at
+all (checked 2026-10-20: no daily backups, PITR off) and pauses a project after
+a week without activity. Its other limits fit the expected peak: under 500
+visitors a day during the window (owner, 2026-10-20). Details in
+`docs/supabase.md` (#187).
+
+**Decision** (owner, 2026-10-20). Upgrade to Pro ($25/month) a week before
+launch (#95) and stay on it: daily backups kept 7 days, no pausing, spend cap
+on, leaked-password protection (R-11) turned on. No point-in-time recovery
+(about $100/month more, and a bigger compute size); losing up to a day of data
+is acceptable at this size. Making our own dumps on the Free plan was
+considered: free, but the dumps hold personal data in a new place, and
+restoring them is manual.
+
+**Consequences.** Until the upgrade, production has no backups; it holds the
+waitlist and test accounts, and the owner accepts that. The plan is changed in
+Vercel, which manages the Supabase organisation. Resend stays on its Free plan
+(100 emails a day) except around launch: upgrade for the launch month if the
+waitlist and sign-ups need it, or send the launch email in batches.
