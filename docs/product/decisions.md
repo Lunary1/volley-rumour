@@ -49,6 +49,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-040 | 2026-10-20 | Accepted | Cache Components stay off; every page keeps rendering per request with real 404 and redirect status codes |
 | D-041 | 2026-10-20 | Accepted | Production errors are recorded in our own database and alerted to info@volleyrumours.be; no error-tracking service |
 | D-042 | 2026-10-20 | Accepted | Authors withdraw their own pending or lopend rumour and edit it only while pending; messages stay undeletable |
+| D-043 | 2026-10-20 | Accepted | Every migration keeps the code on `main` working; the owner pushes it before its PR merges |
 
 ---
 
@@ -997,3 +998,31 @@ and a moderator. Zoekertjes could already be edited and deleted (#72).
 author's own pending rumours, with the submission checks on every edit. The
 retention function `wipe_withdrawn_rumours()` still has to be scheduled, like
 the other retention functions.
+
+## D-043 — Migrations keep the code on `main` working, and are pushed before merge
+
+**Context.** Rollback is Vercel Instant Rollback (D-008), which brings back
+older code but never undoes a migration. The review for #188
+(`docs/rollback.md`) found seven migrations since the baseline that the code
+before them couldn't run against: dropped or renamed columns, a dropped table,
+a new NOT NULL column, a column-level SELECT grant and a stricter insert
+trigger. The owner also pushed every migration after its PR merged, so for a
+few minutes the new code ran against the old database. Both were harmless in
+coming-soon mode; after launch, real users would hit them.
+
+**Decision** (owner, 2026-10-20).
+- Every migration keeps the code on `main` working. Adding is fine. Removing
+  or renaming something the app uses, or tightening a rule it relies on, is
+  split: first a PR that stops using it, then a later PR with the migration
+  (expand first, contract later).
+- The owner runs `npx supabase db push` from the up-to-date PR branch once CI
+  is green, then the PR merges. New code never runs against an old database,
+  and the code that was live just before can always run against the new one.
+- Each migration PR notes the SQL that would undo it.
+- A pushed migration's file must reach `main`, even if the PR is dropped
+  (merge the file, or a migration that undoes it); otherwise `db push` finds a
+  remote version it doesn't know.
+
+**Consequences.** `CLAUDE.md`, the PR template and the README say so. The
+seven older migrations stay as they are: nobody will roll back weeks of
+deployments. A change that needs a contract step takes two PRs.
