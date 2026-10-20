@@ -42,6 +42,9 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-033 | 2026-10-19 | Accepted | Removing a rumour also deletes the transfer made when it was confirmed |
 | D-034 | 2026-10-19 | Accepted | Production stays public while the site is in development; coming-soon goes back on before launch |
 | D-035 | 2026-10-19 | Accepted | Every approved rumour has its own shareable page, but rumour pages are never indexed by search engines |
+| D-036 | 2026-10-19 | Accepted | Pending rumours are reviewed within 24 h; takedowns, reports and contact messages within 72 h; standard Dutch replies in the admin area |
+| D-037 | 2026-10-19 | Accepted | Moderation outcomes stay on screen; only takedown requesters and staff get an email |
+| D-038 | 2026-10-19 | Accepted | The operator stays anonymous while the site is free; name and address go on the site the day anything is paid |
 | D-039 | 2026-10-20 | Accepted | The takedown decision email carries a second status link; staff moderation emails ignore the profile opt-out |
 | D-040 | 2026-10-20 | Accepted | Cache Components stay off; every page keeps rendering per request with real 404 and redirect status codes |
 | D-041 | 2026-10-20 | Accepted | Production errors are recorded in our own database and alerted to info@volleyrumours.be; no error-tracking service |
