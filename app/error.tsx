@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useReportError } from "@/lib/use-report-error";
 
 /**
  * #90: a page that crashes shows this instead of Next's English
  * "Application error". The header and footer stay, so the visitor can
- * navigate away.
+ * navigate away. Browser errors are reported for /admin/fouten (#186).
  */
 export default function ErrorPage({
   error,
@@ -17,9 +17,7 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
+  useReportError(error);
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center bg-background px-4 py-16">

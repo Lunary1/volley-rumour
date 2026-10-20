@@ -19,7 +19,7 @@ const PROFILE_FOOTER: Footer = {
   path: "/profile",
 };
 
-function notificationEmail(
+export function notificationEmail(
   to: string,
   subject: string,
   body: string,

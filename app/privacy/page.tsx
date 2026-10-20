@@ -309,6 +309,12 @@ export default function PrivacyPage() {
                 maanden, zie hieronder.
               </li>
               <li>
+                <strong>Foutmeldingen:</strong> 90 dagen nadat een fout voor het
+                laatst voorkwam. Loopt een pagina vast, dan bewaren we op welke
+                pagina, wanneer en de technische foutmelding, zonder je account
+                of IP-adres.
+              </li>
+              <li>
                 <strong>Wachtlijst:</strong> Tot we de e-mail over de opening
                 van de site verstuurd hebben. Daarna wissen we de lijst.
               </li>

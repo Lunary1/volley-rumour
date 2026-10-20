@@ -53,4 +53,10 @@ export const adminSections: AdminSection[] = [
     href: "/admin/logboek",
     issue: 64,
   },
+  {
+    label: "Fouten",
+    description: "Fouten op de site: waar, hoe vaak en sinds wanneer.",
+    href: "/admin/fouten",
+    issue: 186,
+  },
 ];

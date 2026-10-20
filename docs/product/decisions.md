@@ -44,6 +44,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-035 | 2026-10-19 | Accepted | Every approved rumour has its own shareable page, but rumour pages are never indexed by search engines |
 | D-039 | 2026-10-20 | Accepted | The takedown decision email carries a second status link; staff moderation emails ignore the profile opt-out |
 | D-040 | 2026-10-20 | Accepted | Cache Components stay off; every page keeps rendering per request with real 404 and redirect status codes |
+| D-041 | 2026-10-20 | Accepted | Production errors are recorded in our own database and alerted to info@volleyrumours.be; no error-tracking service |
 
 ---
 
@@ -933,3 +934,28 @@ lose their status codes.
 cookie-less client (#96). Revisit when Next keeps real status codes for
 `notFound()` and `redirect()` in streamed pages, or when measurements after
 launch show slow info pages. Load testing goes on in #97.
+
+## D-041 — Errors are monitored without a new service
+
+**Context.** Since Datadog went (D-023), production errors were only visible
+in Vercel's logs, and nobody reads those during launch week (#186). Error
+reports carry routes and messages, so a service like Sentry would be a new
+processor on the privacy page. Vercel's own alerts need a paid plan and miss
+browser errors.
+
+**Decision** (owner, 2026-10-20).
+- **Errors are recorded in our own database** (`error_events`): server errors
+  through Next's `onRequestError` hook, browser errors from the error pages.
+  One row per distinct error, with a count and first/last seen; the route
+  pattern is stored, never the URL, and no account, IP address or request
+  body. Rows are deleted 90 days after the error was last seen.
+- **Alerts go to info@volleyrumours.be only** (owner), through Resend: one
+  content-free email for a new error, or one back after a quiet hour, at most
+  10 an hour. Staff read the messages on `/admin/fouten`.
+- At most 100 new errors are stored per hour, because anyone can report a
+  browser error.
+
+**Consequences.** No new processor; the privacy page lists the retention. No
+stack traces or source maps: the digest on `/admin/fouten` finds the full
+error in the Vercel logs. Someone has to read info@volleyrumours.be. Revisit
+if the errors turn out too hard to debug this way.
