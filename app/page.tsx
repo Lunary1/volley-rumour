@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { RumourCard } from "@/components/rumour-card";
-import { voteOnRumour } from "@/app/actions/vote";
+import { RumourVotesProvider } from "@/components/rumour-votes";
 import { getUserVotes } from "@/lib/votes";
+import { voteCounts } from "@/lib/rumours";
 import { TransferCard } from "@/components/transfer-card";
 import { getHomepageData } from "@/lib/public-data";
 import { TrustedSourcesPeek } from "@/components/trusted-sources-peek";
@@ -175,17 +176,21 @@ export default async function HomePage() {
           </div>
 
           {featuredRumours.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredRumours.map((rumour) => (
-                <RumourCard
-                  key={rumour.id}
-                  rumour={rumour}
-                  onVote={voteOnRumour}
-                  userVote={userVotes.votes[rumour.id] ?? null}
-                  currentUserId={userVotes.userId}
-                />
-              ))}
-            </div>
+            <RumourVotesProvider
+              rumours={voteCounts(featuredRumours)}
+              userVotes={userVotes.votes}
+              currentUserId={userVotes.userId}
+            >
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {featuredRumours.map((rumour) => (
+                  <RumourCard
+                    key={rumour.id}
+                    rumour={rumour}
+                    currentUserId={userVotes.userId}
+                  />
+                ))}
+              </div>
+            </RumourVotesProvider>
           ) : (
             <Card className="bg-card border-border">
               <CardContent className="py-12 text-center">

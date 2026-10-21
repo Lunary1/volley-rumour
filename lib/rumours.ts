@@ -144,6 +144,39 @@ export function isVotingOpen(status: string): boolean {
   return status === "rumour";
 }
 
+/**
+ * Why the vote buttons are off for this user, or null when they may vote.
+ * The database refuses these votes too (#78).
+ */
+export function votingClosedReason(
+  rumour: { status: string; creator_id: string | null },
+  currentUserId: string | null,
+): string | null {
+  if (!isVotingOpen(rumour.status)) return VOTING_CLOSED_MESSAGE;
+  if (currentUserId && rumour.creator_id === currentUserId) {
+    return OWN_RUMOUR_MESSAGE;
+  }
+  return null;
+}
+
+export type RumourVoteCounts = {
+  id: string;
+  votes_true: number;
+  votes_false: number;
+};
+
+/** Just the counts, for a RumourVotesProvider (#200). */
+export function voteCounts(rumours: RumourVoteCounts[]): RumourVoteCounts[] {
+  return rumours.map(({ id, votes_true, votes_false }) => ({
+    id,
+    votes_true,
+    votes_false,
+  }));
+}
+
+/** Author label for a rumour whose creator deleted their account. */
+export const DELETED_CREATOR_LABEL = "Verwijderd account";
+
 /** Senior divisions only (D-003). Keep in sync with the migrations. */
 export const RUMOUR_DIVISIONS = {
   liga_heren: "LIGA HEREN",

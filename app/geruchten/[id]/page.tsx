@@ -3,12 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RumourCard } from "@/components/rumour-card";
-import { voteOnRumour } from "@/app/actions/vote";
+import { RumourVotesProvider } from "@/components/rumour-votes";
 import { getUserVotes } from "@/lib/votes";
 import { getPublicRumour } from "@/lib/public-data";
 import {
   RUMOUR_STATUS_LABELS,
   rumourHeadline,
+  voteCounts,
   type RumourStatus,
 } from "@/lib/rumours";
 import { BASE_OPEN_GRAPH, NO_INDEX } from "@/lib/seo";
@@ -61,28 +62,30 @@ export default async function RumourPage({ params }: Props) {
         <h1 className="sr-only">
           Gerucht: {player} {move}
         </h1>
-        <RumourCard
-          rumour={{
-            id: rumour.id,
-            player_name: rumour.player_name,
-            from_club_name: rumour.from_club_name,
-            to_club_name: rumour.to_club_name,
-            category: rumour.category,
-            description: rumour.description,
-            source_type: rumour.source_type,
-            source_url: rumour.source_url,
-            resolution_source_url: rumour.resolution_source_url,
-            votes_true: rumour.votes_true,
-            votes_false: rumour.votes_false,
-            created_at: rumour.created_at,
-            status: rumour.status,
-            creator_id: rumour.creator_id,
-            creator: rumour.creator,
-          }}
-          onVote={voteOnRumour}
-          userVote={userVotes.votes[rumour.id] ?? null}
+        <RumourVotesProvider
+          rumours={voteCounts([rumour])}
+          userVotes={userVotes.votes}
           currentUserId={userVotes.userId}
-        />
+        >
+          <RumourCard
+            rumour={{
+              id: rumour.id,
+              player_name: rumour.player_name,
+              from_club_name: rumour.from_club_name,
+              to_club_name: rumour.to_club_name,
+              category: rumour.category,
+              description: rumour.description,
+              source_type: rumour.source_type,
+              source_url: rumour.source_url,
+              resolution_source_url: rumour.resolution_source_url,
+              created_at: rumour.created_at,
+              status: rumour.status,
+              creator_id: rumour.creator_id,
+              creator: rumour.creator,
+            }}
+            currentUserId={userVotes.userId}
+          />
+        </RumourVotesProvider>
       </div>
     </div>
   );

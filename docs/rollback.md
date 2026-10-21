@@ -130,7 +130,9 @@ against the code at the parent commit of each PR, on 2026-10-20.
 | `20261020094935_staff_and_takedown_emails` | #184 | Safe | New columns and functions |
 | `20261020113616_error_events` | #190 | Safe | New table and function |
 | `20261020130343_withdraw_own_rumour` | #193 | Safe | Withdrawn rumours show as "withdrawn" on the author's profile; RLS already hides them from everyone else |
+| `20261020143436_explicit_table_grants` | #197 | Safe | Changes default privileges only: existing tables keep their grants, and old code creates no tables |
 | `20261021084143_schedule_retention_jobs` | #202 | Safe | Nightly pg_cron jobs call existing functions; the app doesn't use them |
+| `20261021121405_rumours_realtime` | #200 | Safe | Adds rumours to the Realtime publication; old code's per-card channels start receiving vote counts |
 
 The seven that break are all from the stocktake clean-up, weeks of
 deployments back. Nobody will roll back that far: undoing them would mean
@@ -141,6 +143,13 @@ column.
 
 The ones a launch-day rollback could reach. Run as a new migration (section 3),
 not in the SQL editor.
+
+**#200 `rumours_realtime`.** Vote counts stop updating live; nothing else
+changes:
+
+```sql
+ALTER PUBLICATION supabase_realtime DROP TABLE public.rumours;
+```
 
 **#202 `schedule_retention_jobs`.** Stops the nightly jobs; the retention
 functions stay and can be run by hand:
