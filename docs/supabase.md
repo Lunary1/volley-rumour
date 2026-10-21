@@ -14,6 +14,7 @@ Checked 2026-10-20 through the linked Supabase CLI (`projects list`,
 | --- | --- |
 | Project | `supabase-violet-zebra` (ref `qaejtjgfkggcbgajmfcn`) |
 | Region | eu-west-3 (Paris) |
+| Vercel functions | `cdg1` (Paris), next to the database (`vercel.json`, D-048) |
 | Postgres | 17.6 |
 | Organisation | Created through the Vercel integration: plan and billing are managed from Vercel |
 | Plan | **Free** (owner, 2026-10-13) |

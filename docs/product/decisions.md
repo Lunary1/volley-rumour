@@ -54,6 +54,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-045 | 2026-10-21 | Accepted | No database load test; launch performance work goes into page speed in the browser |
 | D-046 | 2026-10-21 | Accepted | The retention functions run every night with pg_cron inside the database, not from a Vercel cron route |
 | D-047 | 2026-10-21 | Accepted | Rumour vote counts are live: `rumours` joins the Realtime publication, one channel per page |
+| D-048 | 2026-10-21 | Accepted | Vercel functions run in Paris (`cdg1`), next to the database, not in the default Washington region |
 
 ---
 
@@ -1073,6 +1074,10 @@ Icons and logos are served at the size they are shown. Supabase Pro is still
 the safety margin for the database; if the window brings far more traffic
 than expected, a load test can come back as its own issue.
 
+**Correction** (#205). The 20–50 ms server figure was Lighthouse's
+"server response time", which doesn't show the real wait: from Belgium the
+homepage HTML took 0.4–1.0 s, because functions ran in Washington. See D-048.
+
 ## D-046 — Retention runs every night with pg_cron
 
 **Context.** The privacy page promises how long we keep withdrawn rumours,
@@ -1116,3 +1121,26 @@ visitors only get changes to public rumours. Every vote sends one Realtime
 message to each open page that shows the rumour, which counts towards the
 plan's monthly Realtime messages (`docs/supabase.md`). The Supabase browser
 library still loads on rumour pages once they are idle (D-045).
+
+## D-048 — Vercel functions run in Paris
+
+**Context.** The homepage felt slow next to volleytransfers.be, although
+Lighthouse scored us 95 and them 92. Measured from Belgium on 2026-10-21, our
+HTML arrived after 0.4–1.0 s (theirs 0.17–0.29 s) and the page showed after
+1.1–1.7 s (theirs 0.4–0.6 s). Production answered with `X-Vercel-Id:
+fra1::iad1`: functions ran in Vercel's default region, Washington DC, while
+the database is in Paris. A page waits on Supabase several times in a row
+(the proxy's session check, the page's queries, the user's votes), and each
+wait was a round trip across the Atlantic.
+
+**Decision** (owner asked for a faster homepage; agent, #205). `vercel.json`
+sets `regions: ["cdg1"]`: every function runs in Paris, next to the
+database. The Hobby plan allows one region of our choice.
+
+**Consequences.** Every server-rendered page and server action gains, not
+only the homepage. Visitors from Belgium reach Paris in a few milliseconds.
+Personal data is processed in the EU by default; the privacy page already
+says Vercel may process data in the US, which stays true for its other
+services. A visitor far from Europe waits longer, which fits a Belgian site.
+Lighthouse's simulated "server response time" doesn't show this kind of
+delay: measure it with curl or the observed timings.
