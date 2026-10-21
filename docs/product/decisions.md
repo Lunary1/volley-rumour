@@ -52,6 +52,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-043 | 2026-10-20 | Accepted | Every migration keeps the code on `main` working; the owner pushes it before its PR merges |
 | D-044 | 2026-10-20 | Accepted | Supabase moves to Pro a week before launch for daily backups; no PITR |
 | D-045 | 2026-10-21 | Accepted | No database load test; launch performance work goes into page speed in the browser |
+| D-046 | 2026-10-21 | Accepted | The retention functions run every night with pg_cron inside the database, not from a Vercel cron route |
 
 ---
 
@@ -285,8 +286,8 @@ expired rows.
 takedown or complaint comes back a season or two later; short enough to
 justify as a legitimate interest.
 
-**Consequences.** The purge must be scheduled before the first entries expire
-(October 2028). The privacy page should mention the log and its retention
+**Consequences.** The purge runs every night since #202 (D-046); the first
+entries expire in October 2028. The privacy page should mention the log and its retention
 when it's updated (#77).
 
 ## D-012 — Moderation queue: who moderates and what they see
@@ -358,7 +359,7 @@ and how long requests are kept.
 
 **Consequences.** Because nothing is hidden automatically, response time
 matters: set a review target with the moderator rota (#93). The anonymise
-function must be scheduled before October 2027. Copy is reviewed in #94.
+function runs every night since #202 (D-046). Copy is reviewed in #94.
 
 ## D-015 — User reports
 
@@ -465,7 +466,7 @@ reachable then.
 
 **Consequences.** Messages are not forwarded by email; staff have to look at
 `/admin/contact`. Automatic notification comes with #53. The anonymisation
-function must be scheduled before October 2027, with the takedown one.
+function runs every night since #202 (D-046), with the takedown one.
 
 ## D-018 — Blocking
 
@@ -998,8 +999,8 @@ and a moderator. Zoekertjes could already be edited and deleted (#72).
 
 **Consequences.** `withdraw_rumour()` and an UPDATE policy limited to the
 author's own pending rumours, with the submission checks on every edit. The
-retention function `wipe_withdrawn_rumours()` still has to be scheduled, like
-the other retention functions.
+retention function `wipe_withdrawn_rumours()` runs every night since #202
+(D-046), like the other retention functions.
 
 ## D-043 — Migrations keep the code on `main` working, and are pushed before merge
 
@@ -1070,3 +1071,28 @@ the Supabase browser client, load on demand (`lib/supabase/load-client.ts`).
 Icons and logos are served at the size they are shown. Supabase Pro is still
 the safety margin for the database; if the window brings far more traffic
 than expected, a load test can come back as its own issue.
+
+## D-046 — Retention runs every night with pg_cron
+
+**Context.** The privacy page promises how long we keep withdrawn rumours,
+takedown requests and contact messages (12 months) and the staff log (2
+years). Four database functions carry that out (D-011, D-014, D-017, D-042),
+but nothing ran them. The first rows expire in October 2027. The options
+were pg_cron inside the database, or a Vercel cron route calling the
+functions through the admin client.
+
+**Decision** (agent, #202). pg_cron, scheduled in a migration: one job per
+function every night between 02:00 and 02:15 UTC, and a fifth that keeps the
+jobs' own run history 90 days.
+
+**Why.** The jobs run as `postgres`, which owns the functions, so nothing new
+is granted. A Vercel route would need an `EXECUTE` grant to `service_role`
+for four privacy functions, a public endpoint and a `CRON_SECRET`. pg_cron
+is on every Supabase plan and in the local stack, so pgTAP tests the
+schedule. It also doesn't depend on Vercel's Hobby cron limits or on a
+deployment.
+
+**Consequences.** A new retention function gets its job in the same
+migration. Job status is in Supabase → Integrations → Cron and in
+`cron.job_run_details` (`docs/supabase.md`); a failing job raises no alert
+of its own. Undoing the migration unschedules the jobs (`docs/rollback.md`).

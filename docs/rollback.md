@@ -130,6 +130,7 @@ against the code at the parent commit of each PR, on 2026-10-20.
 | `20261020094935_staff_and_takedown_emails` | #184 | Safe | New columns and functions |
 | `20261020113616_error_events` | #190 | Safe | New table and function |
 | `20261020130343_withdraw_own_rumour` | #193 | Safe | Withdrawn rumours show as "withdrawn" on the author's profile; RLS already hides them from everyone else |
+| `20261021084143_schedule_retention_jobs` | #202 | Safe | Nightly pg_cron jobs call existing functions; the app doesn't use them |
 
 The seven that break are all from the stocktake clean-up, weeks of
 deployments back. Nobody will roll back that far: undoing them would mean
@@ -141,10 +142,22 @@ column.
 The ones a launch-day rollback could reach. Run as a new migration (section 3),
 not in the SQL editor.
 
-**#193 `withdraw_own_rumour`.** Withdrawn rumours first need a status the old
-check allows. `removed` hides them in the same way:
+**#202 `schedule_retention_jobs`.** Stops the nightly jobs; the retention
+functions stay and can be run by hand:
 
 ```sql
+SELECT cron.unschedule(jobname) FROM cron.job
+ WHERE jobname IN ('wipe-withdrawn-rumours', 'anonymise-takedown-requests',
+                   'anonymise-contact-messages', 'purge-staff-actions',
+                   'trim-cron-history');
+```
+
+**#193 `withdraw_own_rumour`.** Withdrawn rumours first need a status the old
+check allows. `removed` hides them in the same way. Its wipe function has a
+nightly job since #202, so unschedule that first:
+
+```sql
+SELECT cron.unschedule('wipe-withdrawn-rumours');
 UPDATE public.rumours SET status = 'removed' WHERE status = 'withdrawn';
 ALTER TABLE public.rumours DROP CONSTRAINT rumours_status_check;
 ALTER TABLE public.rumours ADD CONSTRAINT rumours_status_check

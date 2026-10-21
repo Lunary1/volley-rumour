@@ -71,6 +71,9 @@ a normal migration.
   it to the grant.
 - SECURITY DEFINER functions: set `search_path = ''`, qualify every name, and
   revoke `EXECUTE` from `anon`/`authenticated` unless they must call it.
+- A retention function (one that wipes data after the period on the privacy
+  page) gets its nightly pg_cron job in the same migration, with
+  `cron.schedule()` (D-046; jobs listed in `docs/supabase.md`).
 - **Every migration keeps the code on `main` working** (D-043), because a Vercel
   rollback brings back older code but never undoes a migration. Adding is
   safe: tables, nullable or defaulted columns, functions. To remove or rename
