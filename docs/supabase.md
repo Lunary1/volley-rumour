@@ -66,6 +66,8 @@ waitlist and test accounts; the owner accepts that risk until then.
 - [ ] Authentication → turn on leaked-password protection (R-11).
 - [ ] Try a restore once (below), if the dashboard offers a restore to a new
       project.
+- [ ] Integrations → Cron: the nightly retention jobs (below) succeeded on
+      their last run.
 - [ ] Count the waitlist (`waitlist_subscribers`) in the Table Editor.
 - [ ] If the waitlist plus the expected sign-ups go over ~80 emails a day,
       upgrade Resend to Pro ($20/month, no daily limit) for the launch month.
@@ -81,6 +83,42 @@ waitlist and test accounts; the owner accepts that risk until then.
 - [ ] Resend back to Free if the month's volume allows it.
 - [ ] Look at the usage page (egress, Realtime peak, database size) and note
       the numbers here, to plan the next window.
+
+## Nightly retention jobs
+
+The privacy page promises how long we keep each kind of data. Four database
+functions carry that out, and pg_cron runs them every night inside the
+database, as `postgres` (#202, D-046). Times are UTC, so an hour or two later
+in Belgium.
+
+| Job | Time (UTC) | Runs | Keeps |
+| --- | --- | --- | --- |
+| `wipe-withdrawn-rumours` | 02:00 | `wipe_withdrawn_rumours()` | a withdrawn rumour's text 12 months (D-042) |
+| `anonymise-takedown-requests` | 02:05 | `anonymise_expired_takedown_requests()` | a decided request's name, email, explanation 12 months (D-014) |
+| `anonymise-contact-messages` | 02:10 | `anonymise_expired_contact_messages()` | a handled contact message 12 months (D-017) |
+| `purge-staff-actions` | 02:15 | `purge_expired_staff_actions()` | staff log entries 2 years (D-011) |
+| `trim-cron-history` | 02:20 | deletes `cron.job_run_details` rows | the jobs' own run history 90 days |
+
+Error events need no job: `record_error_event()` deletes those older than 90
+days each time it records one.
+
+**Did they run?** Supabase → Integrations → Cron lists each job with its last
+run and status. Or in the SQL editor:
+
+```sql
+SELECT j.jobname, d.status, d.return_message, d.end_time
+  FROM cron.job_run_details d JOIN cron.job j USING (jobid)
+ ORDER BY d.end_time DESC LIMIT 10;
+```
+
+A job that wiped nothing still says `succeeded`, with `1 row` (the count it
+returns). A `failed` row carries the database error in `return_message`. Until
+October 2027 there's nothing old enough to wipe, so each run returns 0.
+
+**Changing them** goes through a migration, like the schema: `cron.schedule()`
+with an existing job name updates that job. A paused Free project runs no
+jobs, and pg_cron doesn't repeat missed runs; the next run wipes everything
+that expired in between.
 
 ## Restoring the database
 
