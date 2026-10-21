@@ -30,14 +30,19 @@ export const metadata: Metadata = {
   description,
   openGraph: { ...BASE_OPEN_GRAPH, description },
   twitter: { card: "summary_large_image" },
+  // Small, purpose-sized icons (#199): the 2048px logos weighed 180 KB each.
+  // Black lines on light browser chrome, white lines on dark.
   icons: {
     icon: [
+      { url: "/icon.png", type: "image/png", sizes: "48x48" },
       {
-        url: "/volleyrumours_logo.png",
+        url: "/icon-dark.png",
         type: "image/png",
+        sizes: "48x48",
+        media: "(prefers-color-scheme: dark)",
       },
     ],
-    apple: "/volleyrumours_logo.png",
+    apple: { url: "/apple-icon.png", sizes: "180x180" },
   },
 };
 
@@ -53,8 +58,6 @@ export default function RootLayout({
           name="facebook-domain-verification"
           content="rfsxnkp2bfyfjsmsijd0juphva8ibt"
         />
-        <link rel="icon" href="/volleyrumours_logo_inverted.png" />
-        <link rel="shortcut icon" href="/volleyrumours_logo_inverted.png" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <ThemeProvider

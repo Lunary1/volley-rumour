@@ -7,7 +7,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { createClient } from "@/lib/supabase/client";
+import { loadClient, whenIdle } from "@/lib/supabase/load-client";
 
 export interface NavItem {
   href?: string;
@@ -47,27 +47,42 @@ export function HeaderClient({
   // it's detecting the session for the first time. If the server render
   // missed the session (race between cookie storage and SSR), we need to
   // force a refresh so the header picks up the authenticated state.
+  //
+  // The Supabase library loads once the page is idle, not with the page
+  // (#199), and not at all in coming-soon mode, where nobody can log in.
   useEffect(() => {
-    const supabase = createClient();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (
-        event === "SIGNED_OUT" ||
-        event === "SIGNED_IN" ||
-        event === "TOKEN_REFRESHED"
-      ) {
-        router.refresh(); // Force server component tree to re-render
-      }
+    if (!showUserMenu) return;
 
-      // Recovery: server rendered without auth but client detects a valid
-      // session from cookies → force server re-render to pick up the user.
-      if (event === "INITIAL_SESSION" && session && !hasUser) {
-        router.refresh();
-      }
+    let cancelled = false;
+    let unsubscribe = () => {};
+    const cancelIdle = whenIdle(async () => {
+      const supabase = await loadClient();
+      if (cancelled) return;
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        if (
+          event === "SIGNED_OUT" ||
+          event === "SIGNED_IN" ||
+          event === "TOKEN_REFRESHED"
+        ) {
+          router.refresh(); // Force server component tree to re-render
+        }
+
+        // Recovery: server rendered without auth but client detects a valid
+        // session from cookies → force server re-render to pick up the user.
+        if (event === "INITIAL_SESSION" && session && !hasUser) {
+          router.refresh();
+        }
+      });
+      unsubscribe = () => subscription.unsubscribe();
     });
-    return () => subscription.unsubscribe();
-  }, [router, hasUser]);
+    return () => {
+      cancelled = true;
+      cancelIdle();
+      unsubscribe();
+    };
+  }, [router, hasUser, showUserMenu]);
 
   // Determine active main nav item and its submenu
   const activeMainItem = useMemo(() => {
@@ -101,17 +116,17 @@ export function HeaderClient({
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/volleyrumours_logo_text.png"
+              src="/logo-text-header.png"
               alt="VolleyRumours"
               width={320}
-              height={48}
+              height={65}
               className="h-8 w-auto dark:hidden"
             />
             <Image
-              src="/volleyrumours_logo_text_inverted.png"
+              src="/logo-text-header-inverted.png"
               alt="VolleyRumours"
               width={320}
-              height={48}
+              height={65}
               className="h-8 w-auto hidden dark:block"
             />
           </Link>

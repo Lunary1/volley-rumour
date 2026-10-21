@@ -12,7 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { logout } from "@/app/actions/auth";
-import { createClient } from "@/lib/supabase/client";
+import { loadClient } from "@/lib/supabase/load-client";
 import { CurrentUserAvatar } from "@/components/current-user-avatar";
 
 interface UserMenuProps {
@@ -35,47 +35,52 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
   useEffect(() => {
     if (!userId) return;
 
-    const supabase = createClient();
-
-    // Messages addressed to me that I haven't read. The database sets
-    // `recipient_id` (#74), so no conversation lookup is needed.
-    async function getUnreadCount() {
-      const { count } = await supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("recipient_id", userId)
-        .eq("is_read", false);
-      setUnreadCount(count ?? 0);
-    }
-
-    getUnreadCount();
-
-    // Only my own incoming messages: a new one raises the count, marking one
-    // read lowers it. Realtime applies the filter on the server, so other
-    // messages never reach this browser (#74).
-    const filter = `recipient_id=eq.${userId}`;
-    const channel = supabase
-      .channel(`unread-${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter },
-        () => getUnreadCount(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "messages", filter },
-        () => getUnreadCount(),
-      );
-
-    // Join with the user's token, not as anon (see ChatInterface)
     let cancelled = false;
-    supabase.realtime.setAuth().then(() => {
+    let unsubscribe = () => {};
+
+    // Loaded on demand, so logged-out pages never download it (#199).
+    loadClient().then(async (supabase) => {
+      if (cancelled) return;
+
+      // Messages addressed to me that I haven't read. The database sets
+      // `recipient_id` (#74), so no conversation lookup is needed.
+      async function getUnreadCount() {
+        const { count } = await supabase
+          .from("messages")
+          .select("id", { count: "exact", head: true })
+          .eq("recipient_id", userId)
+          .eq("is_read", false);
+        if (!cancelled) setUnreadCount(count ?? 0);
+      }
+
+      getUnreadCount();
+
+      // Only my own incoming messages: a new one raises the count, marking one
+      // read lowers it. Realtime applies the filter on the server, so other
+      // messages never reach this browser (#74).
+      const filter = `recipient_id=eq.${userId}`;
+      const channel = supabase
+        .channel(`unread-${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "messages", filter },
+          () => getUnreadCount(),
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "messages", filter },
+          () => getUnreadCount(),
+        );
+      unsubscribe = () => channel.unsubscribe();
+
+      // Join with the user's token, not as anon (see ChatInterface)
+      await supabase.realtime.setAuth();
       if (!cancelled) channel.subscribe();
     });
 
     return () => {
       cancelled = true;
-      channel.unsubscribe();
+      unsubscribe();
     };
   }, [userId]);
 
