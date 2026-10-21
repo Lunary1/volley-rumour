@@ -16,7 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { reportContent } from "@/app/actions/reports";
-import { createClient } from "@/lib/supabase/client";
+import { loadClient } from "@/lib/supabase/load-client";
 import {
   REPORT_EXPLANATION_MAX_LENGTH,
   REPORT_EXPLANATION_MIN_LENGTH,
@@ -70,7 +70,7 @@ export function ReportDialog({
   const explanationRequired = reason === "other";
 
   async function start() {
-    const supabase = createClient();
+    const supabase = await loadClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();

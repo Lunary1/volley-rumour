@@ -13,7 +13,7 @@ import {
   ArrowRight,
   MessageSquare,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { loadClient, whenIdle } from "@/lib/supabase/load-client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
   RumourDetailModal,
@@ -119,12 +119,15 @@ export function RumourCard({
     votesRef.current = { up: localUpvotes, down: localDownvotes };
   }, [localUpvotes, localDownvotes]);
 
-  // Subscribe to real-time updates for this rumour's vote counts
+  // Subscribe to real-time updates for this rumour's vote counts, once the
+  // page is idle: the Supabase library stays out of the first load (#199).
   useEffect(() => {
     let channel: RealtimeChannel | null = null;
+    let cancelled = false;
 
     const subscribeToRumourUpdates = async () => {
-      const supabase = await createClient();
+      const supabase = await loadClient();
+      if (cancelled) return;
 
       channel = supabase
         .channel(`rumour:${rumour.id}`)
@@ -148,9 +151,11 @@ export function RumourCard({
         .subscribe();
     };
 
-    subscribeToRumourUpdates();
+    const cancelIdle = whenIdle(subscribeToRumourUpdates);
 
     return () => {
+      cancelled = true;
+      cancelIdle();
       if (channel) {
         channel.unsubscribe();
       }

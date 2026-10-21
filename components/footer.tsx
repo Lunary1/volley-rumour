@@ -13,17 +13,17 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Image
-                src="/volleyrumours_logo_text.png"
+                src="/logo-text-header.png"
                 alt="VolleyRumours"
-                width={240}
-                height={36}
+                width={320}
+                height={65}
                 className="h-8 w-auto dark:hidden"
               />
               <Image
-                src="/volleyrumours_logo_text_inverted.png"
+                src="/logo-text-header-inverted.png"
                 alt="VolleyRumours"
-                width={240}
-                height={36}
+                width={320}
+                height={65}
                 className="h-8 w-auto hidden dark:block"
               />
             </Link>

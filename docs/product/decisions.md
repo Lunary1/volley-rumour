@@ -51,6 +51,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-042 | 2026-10-20 | Accepted | Authors withdraw their own pending or lopend rumour and edit it only while pending; messages stay undeletable |
 | D-043 | 2026-10-20 | Accepted | Every migration keeps the code on `main` working; the owner pushes it before its PR merges |
 | D-044 | 2026-10-20 | Accepted | Supabase moves to Pro a week before launch for daily backups; no PITR |
+| D-045 | 2026-10-21 | Accepted | No database load test; launch performance work goes into page speed in the browser |
 
 ---
 
@@ -1049,3 +1050,23 @@ waitlist and test accounts, and the owner accepts that. The plan is changed in
 Vercel, which manages the Supabase organisation. Resend stays on its Free plan
 (100 emails a day) except around launch: upgrade for the launch month if the
 waitlist and sign-ups need it, or send the launch email in batches.
+
+## D-045 — No database load test; speed work goes to the browser
+
+**Context.** #97 planned a load test of the database against a non-production
+target. The expected peak is under 500 visitors a day, on Supabase Pro from a
+week before launch (D-044), and #96 measured local p95 under 60 ms with 500
+rows. Vercel Speed Insights meanwhile gave production a desktop Real Experience
+Score of 64 (2026-10-21), and Lighthouse mobile scored the homepage 53: the
+server answers in 20–50 ms, the browser then spends over a second on
+JavaScript.
+
+**Decision** (owner, 2026-10-21). No database load test; #97 is dropped. Launch
+performance work goes into page speed in the browser (#199), measured with
+Lighthouse mobile against a local production build, before and after.
+
+**Consequences.** Libraries that a page needs only after it has loaded, like
+the Supabase browser client, load on demand (`lib/supabase/load-client.ts`).
+Icons and logos are served at the size they are shown. Supabase Pro is still
+the safety margin for the database; if the window brings far more traffic
+than expected, a load test can come back as its own issue.
