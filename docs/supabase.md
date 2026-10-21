@@ -34,7 +34,8 @@ window, tens of people logged in at the same time (2026-10-20).
 | File storage (avatars) | 1 GB | 100 GB | 400×400 WebP, ~30 KB each | Yes |
 | Egress | 5 GB/month | 250 GB/month | pages are server-rendered on Vercel; avatars are small | Yes; watch it in the usage page |
 | Monthly active users | 50,000 | 100,000 | hundreds | Yes |
-| Realtime connections at once | 200 | 500 | one per open tab of a logged-in user (unread badge, chat) | Yes |
+| Realtime connections at once | 200 | 500 | one per open tab of a logged-in user (unread badge, chat) and per open page with rumour cards (live vote counts, D-047) | Yes; watch the peak in launch week |
+| Realtime messages | 2 million/month | 5 million/month | one per vote for each open page showing that rumour | Yes |
 | Compute | shared, 500 MB RAM | Micro, 1 GB RAM | local p95 < 60 ms with 500 rows (#96) | Yes |
 | Auth emails (sign-up, reset) | 30/hour by default with custom SMTP | same | a burst after the launch email | **Raise for launch week** |
 | Resend | 100/day on Free | — | Auth + notifications + moderation + the launch email | **Upgrade for launch month** |

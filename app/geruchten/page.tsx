@@ -1,13 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import { RumourCard } from "@/components/rumour-card";
-import { voteOnRumour } from "@/app/actions/vote";
+import { RumourVotesProvider } from "@/components/rumour-votes";
 import { getUserVotes } from "@/lib/votes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PUBLIC_RUMOUR_STATUSES, isPublicRumourStatus } from "@/lib/rumours";
+import {
+  PUBLIC_RUMOUR_STATUSES,
+  isPublicRumourStatus,
+  voteCounts,
+} from "@/lib/rumours";
 import {
   RUMOURS_PER_PAGE,
   getRumourStatusCounts,
@@ -190,33 +194,35 @@ export default async function GeruchtenPage(props: {
         {/* Rumours Grid - 1 col mobile, 2–3 desktop */}
         {displayRumours.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {displayRumours.map((rumour) => (
-                <RumourCard
-                  key={rumour.id}
-                  rumour={{
-                    id: rumour.id,
-                    player_name: rumour.player_name,
-                    from_club_name: rumour.from_club_name,
-                    to_club_name: rumour.to_club_name,
-                    category: rumour.category,
-                    description: rumour.description,
-                    source_type: rumour.source_type,
-                    source_url: rumour.source_url,
-                    resolution_source_url: rumour.resolution_source_url,
-                    votes_true: rumour.votes_true,
-                    votes_false: rumour.votes_false,
-                    created_at: rumour.created_at,
-                    status: rumour.status,
-                    creator_id: rumour.creator_id,
-                    creator: rumour.creator,
-                  }}
-                  onVote={voteOnRumour}
-                  userVote={userVotes.votes[rumour.id] ?? null}
-                  currentUserId={userVotes.userId}
-                />
-              ))}
-            </div>
+            <RumourVotesProvider
+              rumours={voteCounts(displayRumours)}
+              userVotes={userVotes.votes}
+              currentUserId={userVotes.userId}
+            >
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {displayRumours.map((rumour) => (
+                  <RumourCard
+                    key={rumour.id}
+                    rumour={{
+                      id: rumour.id,
+                      player_name: rumour.player_name,
+                      from_club_name: rumour.from_club_name,
+                      to_club_name: rumour.to_club_name,
+                      category: rumour.category,
+                      description: rumour.description,
+                      source_type: rumour.source_type,
+                      source_url: rumour.source_url,
+                      resolution_source_url: rumour.resolution_source_url,
+                      created_at: rumour.created_at,
+                      status: rumour.status,
+                      creator_id: rumour.creator_id,
+                      creator: rumour.creator,
+                    }}
+                    currentUserId={userVotes.userId}
+                  />
+                ))}
+              </div>
+            </RumourVotesProvider>
             <PageNav
               currentPage={page}
               totalPages={totalPages}

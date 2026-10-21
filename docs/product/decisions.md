@@ -53,6 +53,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-044 | 2026-10-20 | Accepted | Supabase moves to Pro a week before launch for daily backups; no PITR |
 | D-045 | 2026-10-21 | Accepted | No database load test; launch performance work goes into page speed in the browser |
 | D-046 | 2026-10-21 | Accepted | The retention functions run every night with pg_cron inside the database, not from a Vercel cron route |
+| D-047 | 2026-10-21 | Accepted | Rumour vote counts are live: `rumours` joins the Realtime publication, one channel per page |
 
 ---
 
@@ -1096,3 +1097,22 @@ deployment.
 migration. Job status is in Supabase → Integrations → Cron and in
 `cron.job_run_details` (`docs/supabase.md`); a failing job raises no alert
 of its own. Undoing the migration unschedules the jobs (`docs/rollback.md`).
+
+## D-047 — Rumour vote counts are live
+
+**Context.** The rumour cards subscribed to Realtime for live vote counts, one
+channel per card, but `rumours` was never in the `supabase_realtime`
+publication, so Realtime refused every subscription: counts only changed on
+the user's own vote or a reload, in production too. #200 found it while
+moving the cards to the server. The options were to drop live counts or to
+make them work.
+
+**Decision** (owner, 2026-10-21, #200). Make them work: a migration adds
+`rumours` to the publication, and each page with rumour cards opens one
+channel for all of them.
+
+**Consequences.** Realtime applies the table's RLS to each subscriber, so
+visitors only get changes to public rumours. Every vote sends one Realtime
+message to each open page that shows the rumour, which counts towards the
+plan's monthly Realtime messages (`docs/supabase.md`). The Supabase browser
+library still loads on rumour pages once they are idle (D-045).

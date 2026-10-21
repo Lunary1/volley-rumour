@@ -23,6 +23,7 @@ import {
   RUMOUR_CATEGORY_BADGE_CLASSES,
   RUMOUR_CATEGORY_LABELS,
   RUMOUR_SOURCE_TYPES,
+  DELETED_CREATOR_LABEL,
   belief,
   formatBelief,
   formatTrackRecord,
@@ -51,9 +52,6 @@ export type RumourForModal = {
       } & TrackRecord)
     | null;
 };
-
-/** Author label for a rumour whose creator deleted their account. */
-export const DELETED_CREATOR_LABEL = "Verwijderd account";
 
 const statusLabels: Record<string, string> = {
   rumour: "Gerucht",
