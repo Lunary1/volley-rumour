@@ -114,7 +114,10 @@ chore/61-eslint           ──PR──┘   protected · CI required · squash
    becomes the squash commit). Link the issue with `Closes #42`.
 5. **Gate**: CI green, Definition of Done ticked, the change checked. Vercel
    previews sit behind Vercel's login, so an agent checks with a local
-   production build and smoke test instead, and says so in the PR.
+   production build and smoke test instead, and says so in the PR. A PR that
+   only touches Markdown, `docs/` or issue templates skips `checks` and
+   `e2e` (#215), so it merges within a minute. Put doc updates for a code change
+   in that change's PR, not in a PR of their own.
 6. **Squash merge**, then delete the branch. The author merges their own PR
    once the gate passes, agents included (owner's call, 2026-10-13).
 
