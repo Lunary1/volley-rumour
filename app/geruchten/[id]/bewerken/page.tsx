@@ -80,7 +80,7 @@ export default async function EditRumourPage({
 
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-2xl gradient-text-neon">
+            <CardTitle className="text-2xl font-bold">
               Gerucht bewerken
             </CardTitle>
             <CardDescription>

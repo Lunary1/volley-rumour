@@ -153,7 +153,7 @@ export default async function GeruchtenPage(props: {
                 status === "rumour" ? "bg-primary text-primary-foreground" : ""
               }
             >
-              <Flame className="mr-2 h-4 w-4 text-accent" />
+              <Flame className="mr-2 h-4 w-4" />
               Trending{tabCount(counts?.rumour)}
             </Button>
           </Link>

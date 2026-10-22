@@ -31,6 +31,7 @@ const CLASSIFIED_COLUMNS = `
   description,
   province,
   position,
+  trainer_diploma,
   team_name,
   contact_name,
   division,
@@ -159,19 +160,16 @@ export default async function ZoekertjesPage(props: {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-1.5">
+          <h1 className="text-4xl leading-tight font-bold tracking-tight text-foreground">
             Zoekertjes
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-base text-secondary-foreground">
             Spelers, trainers en clubs op zoek naar nieuwe uitdagingen
           </p>
         </div>
-        <Button
-          asChild
-          className="mt-4 md:mt-0 bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
+        <Button asChild size="xl">
           <Link href="/zoekertjes/nieuw">
             <Plus className="mr-2 h-4 w-4" />
             Plaats zoekertje

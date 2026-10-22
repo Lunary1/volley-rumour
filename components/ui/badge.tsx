@@ -17,10 +17,20 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        // #207: green only for "Aanbevolen"-type highlights; the rest neutral.
+        soft: "border-transparent bg-primary-soft text-primary-text",
+        neutral: "border-transparent bg-muted text-foreground",
+        subtle: "border-border-strong bg-transparent text-secondary-foreground",
+      },
+      size: {
+        default: "",
+        // A 26px pill, as on the zoekertjes cards.
+        pill: "h-6.5 gap-1.5 rounded-full px-2.5 py-0 text-label font-semibold [&>svg]:size-3.5",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   },
 );
@@ -28,6 +38,7 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant,
+  size,
   asChild = false,
   ...props
 }: React.ComponentProps<"span"> &
@@ -37,7 +48,7 @@ function Badge({
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
+      className={cn(badgeVariants({ variant, size }), className)}
       {...props}
     />
   );

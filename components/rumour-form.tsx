@@ -314,8 +314,8 @@ export function RumourForm({
           {/* ── Destination club section — transfer types only ── */}
           {showDestination && (
             <div className="space-y-4 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-              <div className="pb-3 border-b border-accent/40">
-                <h3 className="text-lg font-semibold text-accent-foreground flex items-center gap-2">
+              <div className="pb-3 border-b border-border">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
                   <span className="text-xl"></span> Gegevens Nieuwe Club
                 </h3>
               </div>

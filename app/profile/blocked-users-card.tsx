@@ -15,7 +15,7 @@ export function BlockedUsersCard({ users }: { users: BlockedUser[] }) {
     <Card className="mb-6 border-border bg-card">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-          <Ban className="h-5 w-5 text-accent" />
+          <Ban className="h-5 w-5 text-muted-foreground" />
           Geblokkeerde gebruikers
         </CardTitle>
         <p className="text-sm text-muted-foreground">

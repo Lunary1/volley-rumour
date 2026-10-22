@@ -304,7 +304,7 @@ export function ProfileView({
         <Card className="mb-6 border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <Target className="h-5 w-5 text-accent" />
+              <Target className="h-5 w-5 text-muted-foreground" />
               Statistieken
             </CardTitle>
           </CardHeader>
@@ -349,7 +349,7 @@ export function ProfileView({
         <Card className="mb-6 border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <CheckCircle className="h-5 w-5 text-accent" />
+              <CheckCircle className="h-5 w-5 text-muted-foreground" />
               Mijn geruchten
             </CardTitle>
           </CardHeader>
@@ -440,7 +440,7 @@ export function ProfileView({
         <Card className="mb-6 border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <Activity className="h-5 w-5 text-accent" />
+              <Activity className="h-5 w-5 text-muted-foreground" />
               Recente zoekertjes
             </CardTitle>
           </CardHeader>
@@ -530,7 +530,7 @@ export function ProfileView({
         <Card className="mb-6 border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <Shield className="h-5 w-5 text-accent" />
+              <Shield className="h-5 w-5 text-muted-foreground" />
               Beveiliging
             </CardTitle>
             <p className="text-sm text-muted-foreground">Wachtwoord wijzigen</p>
