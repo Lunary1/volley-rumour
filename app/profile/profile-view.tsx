@@ -371,26 +371,32 @@ export function ProfileView({
             </div>
             {recentActivity?.rumours && recentActivity.rumours.length > 0 ? (
               <div>
-                <ul aria-label="Mijn geruchten" className="space-y-2">
+                {/* In a narrow card the status and time go under the name,
+                    so the name keeps the full width (#219). */}
+                <ul
+                  aria-label="Mijn geruchten"
+                  className="@container space-y-2"
+                >
                   {recentActivity.rumours.map((r) => (
                     <li key={r.id}>
                       <Link
                         href="/geruchten"
-                        className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40"
+                        className="flex items-start gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40 @md:items-center"
                       >
-                        <Zap className="h-4 w-4 text-muted-foreground" />
-                        <span className="truncate font-medium text-foreground">
-                          {r.player_name}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="ml-auto shrink-0 text-xs"
-                        >
-                          {RUMOUR_STATUS_LABELS[r.status as RumourStatus] ??
-                            r.status}
-                        </Badge>
-                        <span className="shrink-0 text-xs text-muted-foreground">
-                          <RelativeTime date={r.created_at} />
+                        <Zap className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground @md:mt-0" />
+                        <span className="flex min-w-0 flex-1 flex-col gap-1 @md:flex-row @md:items-center @md:gap-2">
+                          <span className="truncate font-medium text-foreground @md:flex-1">
+                            {r.player_name}
+                          </span>
+                          <span className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <Badge variant="outline" className="text-xs">
+                              {RUMOUR_STATUS_LABELS[r.status as RumourStatus] ??
+                                r.status}
+                            </Badge>
+                            <span className="whitespace-nowrap text-xs text-muted-foreground">
+                              <RelativeTime date={r.created_at} />
+                            </span>
+                          </span>
                         </span>
                       </Link>
                       {r.status === "rejected" && r.rejection_reason && (
