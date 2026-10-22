@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ComingSoonPage } from "@/components/coming-soon-page";
 import {
   FeaturedRumours,
@@ -35,7 +34,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <SpeedInsights />
       <Hero
         aside={
           <Suspense fallback={<TrustedSourcesSkeleton />}>

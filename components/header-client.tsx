@@ -7,7 +7,11 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { loadClient, whenIdle } from "@/lib/supabase/load-client";
+import {
+  hasSessionCookie,
+  loadClient,
+  whenIdle,
+} from "@/lib/supabase/load-client";
 
 export interface NavItem {
   href?: string;
@@ -50,8 +54,21 @@ export function HeaderClient({
   //
   // The Supabase library loads once the page is idle, not with the page
   // (#199), and not at all in coming-soon mode, where nobody can log in.
+  // A visitor without a session cookie doesn't load it either (#221): when
+  // the tab is shown again and a cookie has appeared (a login in another
+  // tab), a refresh picks up the user.
   useEffect(() => {
     if (!showUserMenu) return;
+
+    if (!hasUser && !hasSessionCookie()) {
+      const onVisible = () => {
+        if (document.visibilityState === "visible" && hasSessionCookie()) {
+          router.refresh();
+        }
+      };
+      document.addEventListener("visibilitychange", onVisible);
+      return () => document.removeEventListener("visibilitychange", onVisible);
+    }
 
     let cancelled = false;
     let unsubscribe = () => {};

@@ -22,3 +22,34 @@ export function whenIdle(callback: () => void): () => void {
   const id = window.setTimeout(callback, 1000);
   return () => window.clearTimeout(id);
 }
+
+// Whether the browser holds a Supabase session cookie (`sb-<ref>-auth-token`,
+// split into `.0`, `.1` … when long). Without one there is no session to
+// listen to, so a logged-out visitor's page needn't load the library (#221).
+export function hasSessionCookie(): boolean {
+  return /(?:^|;\s*)sb-[^=]+-auth-token(?:\.\d+)?=/.test(document.cookie);
+}
+
+// Runs `callback` once any element matching `selector` comes near the screen,
+// then when idle: work for content further down waits until the visitor
+// scrolls to it (#221). Returns a function that cancels it.
+export function whenInView(selector: string, callback: () => void): () => void {
+  const elements = document.querySelectorAll(selector);
+  if (elements.length === 0 || typeof IntersectionObserver !== "function") {
+    return whenIdle(callback);
+  }
+  let cancelIdle = () => {};
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      cancelIdle = whenIdle(callback);
+    },
+    { rootMargin: "200px" },
+  );
+  elements.forEach((element) => observer.observe(element));
+  return () => {
+    observer.disconnect();
+    cancelIdle();
+  };
+}

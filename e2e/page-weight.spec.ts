@@ -1,5 +1,5 @@
-import type { APIRequestContext } from "@playwright/test";
-import { test, expect, seed } from "./fixtures";
+import type { APIRequestContext, Page } from "@playwright/test";
+import { test, expect, loginAs, seed, seedUsers } from "./fixtures";
 
 // Page weight (#199): the Supabase browser library loads on demand, not with
 // the page, and the icons are small files. The rumour and zoekertje cards
@@ -68,4 +68,59 @@ test("icons are small, purpose-sized files", async ({ request }) => {
     expect(response.status(), href).toBe(200);
     expect((await response.body()).length, href).toBeLessThan(10 * 1024);
   }
+});
+
+/** Records whether the page has loaded the Supabase library by now. */
+function watchSupabaseLibrary(page: Page) {
+  const loaded: string[] = [];
+  page.on("response", async (response) => {
+    if (!response.url().endsWith(".js")) return;
+    const body = await response.text().catch(() => "");
+    if (body.includes("GoTrueClient")) loaded.push(response.url());
+  });
+  return loaded;
+}
+
+// After the first load (#221): a visitor without a session doesn't load the
+// library for the header, and the live vote counts wait until the rumour
+// cards are near the screen.
+test("a visitor's phone loads the Supabase library only once the rumours are in view", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const loaded = watchSupabaseLibrary(page);
+  await page.goto("/");
+  const voteBar = page.locator("[data-live-votes]").first();
+  await expect(voteBar).toBeAttached();
+  await expect(voteBar).not.toBeInViewport();
+
+  // Longer than whenIdle()'s 3 s timeout, so anything waiting for idle ran.
+  await page.waitForTimeout(4000);
+  expect(loaded).toEqual([]);
+
+  await voteBar.scrollIntoViewIfNeeded();
+  await expect.poll(() => loaded.length).toBeGreaterThan(0);
+});
+
+test("logging in in another tab shows in this tab when it's shown again", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/over-ons");
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "Inloggen" }),
+  ).toBeVisible();
+
+  const other = await context.newPage();
+  await loginAs(other, "jana");
+  await other.close();
+
+  // Switching back to a tab fires visibilitychange; headless tabs never
+  // become hidden, so send it by hand.
+  await page.evaluate(() =>
+    document.dispatchEvent(new Event("visibilitychange")),
+  );
+  await expect(
+    page.getByRole("banner").getByText(seedUsers.jana.username),
+  ).toBeVisible();
 });
