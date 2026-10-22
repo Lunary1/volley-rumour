@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { Header } from "@/components/header";
 import { HeaderSkeleton } from "@/components/header-skeleton";
@@ -76,6 +77,8 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
           <Analytics />
+          {/* Every page, for field LCP and INP (Q17, #221). */}
+          <SpeedInsights />
           <ToasterProvider />
         </ThemeProvider>
       </body>

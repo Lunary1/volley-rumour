@@ -7,7 +7,7 @@ import { ThumbsDown, ThumbsUp } from "lucide-react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { voteOnRumour } from "@/app/actions/vote";
-import { loadClient, whenIdle } from "@/lib/supabase/load-client";
+import { loadClient, whenInView } from "@/lib/supabase/load-client";
 import { useIsClient } from "@/lib/use-is-client";
 import {
   LOGIN_TO_VOTE_MESSAGE,
@@ -101,8 +101,9 @@ export function RumourVotesProvider({
     setVotes(initialVotes(rumours, userVotes));
   }
 
-  // One channel for all the page's rumours, once the page is idle: the
-  // Supabase library stays out of the first load (#199).
+  // One channel for all the page's rumours, once the page is idle (#199) and
+  // a vote bar is near the screen (#221): a visitor who never scrolls to the
+  // rumours loads no Supabase library and holds no Realtime connection.
   const ids = rumours.map((rumour) => rumour.id).join(",");
   useEffect(() => {
     if (!ids) return;
@@ -144,7 +145,7 @@ export function RumourVotesProvider({
         .subscribe();
     };
 
-    const cancelIdle = whenIdle(subscribe);
+    const cancelIdle = whenInView("[data-live-votes]", subscribe);
     return () => {
       cancelled = true;
       cancelIdle();
@@ -230,7 +231,10 @@ export function RumourVoteBar({ rumourId, closedReason }: RumourVoteBarProps) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-2 my-4 py-4 border-y border-border">
+      <div
+        data-live-votes
+        className="flex flex-col items-center gap-2 my-4 py-4 border-y border-border"
+      >
         <div
           className="w-24 h-2 bg-muted rounded-full overflow-hidden"
           aria-hidden
