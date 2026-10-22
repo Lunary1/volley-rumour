@@ -1,4 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["cdg1"]
+  "regions": ["cdg1"],
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build"
 }
