@@ -184,6 +184,10 @@ to Dutch messages. On the client, `handleServerActionResponse()` from
 - Browser: `createClient()` from `@/lib/supabase/client`.
 - Admin: `createAdminClient()` bypasses RLS with `SUPABASE_SERVICE_ROLE_KEY`.
   Server-only, use sparingly, and check authorisation yourself first.
+- Who is looking, in a page: `getSessionUser()` from `@/lib/supabase/session`
+  reads the verified JWT without a call to Supabase Auth (D-049). Server
+  actions and staff checks use `supabase.auth.getUser()`, which asks Auth, so
+  a deleted or signed-out account fails at once.
 - Security lives in RLS. Any new table or policy change ships as a migration.
 
 ### Staff and moderation

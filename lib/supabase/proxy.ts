@@ -34,26 +34,28 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  // supabase.auth.getClaims(). A simple mistake could make it very hard to
+  // debug issues with users being randomly logged out.
 
-  // IMPORTANT: If you remove getUser() and you use server-side rendering
+  // IMPORTANT: If you remove getClaims() and you use server-side rendering
   // with the Supabase client, your users may be randomly logged out.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() refreshes an expired session, then verifies the JWT against
+  // the project's public signing key in the process, so a request makes no
+  // call to Supabase Auth (#212). The key is cached for 10 minutes.
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims.sub;
 
   // Age and terms gate (#75). Coming-soon mode closes these routes anyway,
   // and /welkom with them, so the gate waits for the launch.
   if (
-    user &&
+    userId &&
     !isComingSoon() &&
     !isOpenWithoutTerms(request.nextUrl.pathname) &&
-    request.cookies.get(TERMS_COOKIE)?.value !== user.id
+    request.cookies.get(TERMS_COOKIE)?.value !== userId
   ) {
     const { data: accepted, error } = await supabase.rpc("has_accepted_terms");
     if (accepted === true) {
-      supabaseResponse.cookies.set(TERMS_COOKIE, user.id, {
+      supabaseResponse.cookies.set(TERMS_COOKIE, userId, {
         httpOnly: true,
         sameSite: "lax",
         secure: request.nextUrl.protocol === "https:",

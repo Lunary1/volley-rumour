@@ -55,6 +55,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-046 | 2026-10-21 | Accepted | The retention functions run every night with pg_cron inside the database, not from a Vercel cron route |
 | D-047 | 2026-10-21 | Accepted | Rumour vote counts are live: `rumours` joins the Realtime publication, one channel per page |
 | D-048 | 2026-10-21 | Accepted | Vercel functions run in Paris (`cdg1`), next to the database, not in the default Washington region |
+| D-049 | 2026-10-22 | Accepted | Pages read the logged-in user from the verified JWT (`getClaims()`), without a call to Supabase Auth; server actions and staff checks keep `getUser()` |
 
 ---
 
@@ -1144,3 +1145,26 @@ says Vercel may process data in the US, which stays true for its other
 services. A visitor far from Europe waits longer, which fits a Belgian site.
 Lighthouse's simulated "server response time" doesn't show this kind of
 delay: measure it with curl or the observed timings.
+
+## D-049 — Pages read the user from the verified JWT
+
+**Context.** Every logged-in page view made two calls to Supabase Auth
+(`GET /auth/v1/user`): one in the proxy, one while rendering the header.
+Locally that made a logged-in page ~95 ms against ~25 ms logged out. The
+project signs its tokens with an asymmetric key (ES256; production and the
+local stack both publish one), so the token can be checked in the process.
+
+**Decision** (agent, #212, including the ticket's optional step 3). The proxy
+calls `getClaims()`: it refreshes an expired session as before and verifies
+the JWT against the project's public key, cached for 10 minutes. Pages read
+the user with `getSessionUser()` (`lib/supabase/session.ts`), also from the
+verified token: the header, the suspension notice and the user's votes.
+Server actions, staff checks (`lib/staff.ts`) and the pages only the owner of
+the data opens (profile, edit pages) keep `getUser()`.
+
+**Consequences.** A logged-in page makes no call to Auth: locally `/over-ons`
+95 → 25 ms first byte, `/` 94 → 33 ms. A deleted account, or a session ended
+on another device, still looks logged in on pages until its token expires (1
+hour); the database refuses its writes anyway (RLS, the suspension trigger
+`VR005`), and a suspension shows at once because it is read from our own
+table. To undo: call `getUser()` in `getSessionUser()` and in the proxy.
