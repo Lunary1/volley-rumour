@@ -30,7 +30,7 @@ export function EmailNotificationsCard({ enabled }: { enabled: boolean }) {
     <Card className="mb-6 border-border bg-card">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-          <Mail className="h-5 w-5 text-accent" />
+          <Mail className="h-5 w-5 text-muted-foreground" />
           E-mailmeldingen
         </CardTitle>
         <p className="text-sm text-muted-foreground">

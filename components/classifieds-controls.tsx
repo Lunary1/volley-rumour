@@ -120,7 +120,7 @@ export function ClassifiedsSearch() {
 
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
       <Input
         type="search"
         aria-label="Zoeken"
@@ -128,14 +128,14 @@ export function ClassifiedsSearch() {
         value={searchQuery}
         onChange={(e) => handleSearchChange(e.target.value)}
         maxLength={100}
-        className="pl-10 bg-background"
+        className="h-11.5 bg-background pl-10.5 text-md md:text-md"
       />
     </div>
   );
 }
 
 const SELECT_CLASS =
-  "flex-1 sm:flex-none px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm";
+  "h-10.5 w-full sm:w-auto sm:flex-1 sm:basis-48 rounded-md border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
 /** Province, division, position and sort. */
 export function ClassifiedsSelects() {
@@ -147,7 +147,7 @@ export function ClassifiedsSelects() {
         aria-label="Provincie"
         value={filters.province ?? ""}
         onChange={(e) => navigate({ province: e.target.value || null })}
-        className={cn(SELECT_CLASS, "sm:min-w-45")}
+        className={SELECT_CLASS}
       >
         <option value="">Alle provincies</option>
         {Object.entries(PROVINCE_LABELS).map(([key, label]) => (
@@ -161,7 +161,7 @@ export function ClassifiedsSelects() {
         aria-label="Reeks"
         value={filters.division ?? ""}
         onChange={(e) => navigate({ division: e.target.value || null })}
-        className={cn(SELECT_CLASS, "sm:min-w-45")}
+        className={SELECT_CLASS}
       >
         <option value="">Alle reeksen</option>
         {Object.entries(DIVISION_LABELS).map(([key, label]) => (
@@ -175,7 +175,7 @@ export function ClassifiedsSelects() {
         aria-label="Positie"
         value={filters.position ?? ""}
         onChange={(e) => navigate({ position: e.target.value || null })}
-        className={cn(SELECT_CLASS, "sm:min-w-40")}
+        className={SELECT_CLASS}
       >
         <option value="">Alle posities</option>
         {Object.entries(POSITION_LABELS).map(([key, label]) => (
@@ -189,7 +189,7 @@ export function ClassifiedsSelects() {
         aria-label="Sorteren"
         value={filters.sort}
         onChange={(e) => navigate({ sort: e.target.value as ClassifiedSort })}
-        className={cn(SELECT_CLASS, "sm:min-w-40")}
+        className={SELECT_CLASS}
       >
         {Object.entries(CLASSIFIED_SORTS).map(([key, label]) => (
           <option key={key} value={key}>

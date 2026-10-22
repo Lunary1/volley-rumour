@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import { getExistingConversation } from "@/app/actions/messages";
-import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 // The message form loads when it is first wanted, not with the list (#200).
 const ContactModal = dynamic(
@@ -18,7 +18,7 @@ interface ClassifiedContactButtonProps {
   classifiedId: string;
   userId: string;
   userName: string;
-  /** Featured cards get the larger button. */
+  /** Featured cards get the larger, green button; others an outline one. */
   featured?: boolean;
 }
 
@@ -59,14 +59,12 @@ export function ClassifiedContactButton({
         type="button"
         onClick={handleClick}
         disabled={checking}
-        className={cn(
-          "w-full font-semibold text-primary-foreground text-sm bg-primary hover:bg-primary/90 transition-all duration-150 flex items-center justify-center gap-2",
-          featured
-            ? "mt-6 px-4 py-3 rounded-xl group-hover:shadow-md"
-            : "px-3 py-2 rounded-lg mt-auto",
-        )}
+        className={buttonVariants({
+          variant: featured ? "default" : "outline",
+          size: featured ? "xl" : "default",
+        })}
       >
-        <MessageSquare className={featured ? "h-4 w-4" : "h-3.5 w-3.5"} />
+        <MessageSquare aria-hidden />
         {featured ? "Contact opnemen" : "Contact"}
       </button>
       {showModal && (

@@ -21,7 +21,6 @@ import {
   getPositionLabel,
   CLASSIFIED_GENDERS,
   CLASSIFIED_TYPE_LABELS,
-  CLASSIFIED_TYPE_COLORS,
   TRAINER_DIPLOMA_LABELS,
   classifiedLastDay,
   isClassifiedExpired,
@@ -29,6 +28,7 @@ import {
 import { labelFor } from "@/lib/rumours";
 import { ClassifiedDetailContact } from "@/components/classified-detail-contact";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ClassifiedTypeLabel } from "@/components/classified-type-label";
 import { ShareButton } from "@/components/share-button";
 import { NO_INDEX, pageMetadata, truncate } from "@/lib/seo";
 import { ReportDialog } from "@/components/report-dialog";
@@ -164,14 +164,7 @@ export default async function ClassifiedDetailPage({
       <article className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${
-                CLASSIFIED_TYPE_COLORS[classified.type] ??
-                "bg-primary/20 text-primary border-primary/30"
-              }`}
-            >
-              {CLASSIFIED_TYPE_LABELS[classified.type] ?? classified.type}
-            </span>
+            <ClassifiedTypeLabel type={classified.type} />
             <span className="text-sm text-muted-foreground">
               {formatDistanceToNow(new Date(classified.created_at), {
                 addSuffix: true,
@@ -190,12 +183,12 @@ export default async function ClassifiedDetailPage({
               {title}
             </h1>
             {classified.position && (
-              <p className="text-lg font-semibold text-primary mt-1">
+              <p className="text-lg font-semibold text-secondary-foreground mt-1">
                 {getPositionLabel(classified.position)}
               </p>
             )}
             {diploma && (
-              <p className="text-lg font-semibold text-primary mt-1 flex items-center gap-2">
+              <p className="text-lg font-semibold text-secondary-foreground mt-1 flex items-center gap-2">
                 <GraduationCap className="h-5 w-5" />
                 {classified.type === "team_seeks_trainer"
                   ? `Minimaal diploma: ${diploma}`

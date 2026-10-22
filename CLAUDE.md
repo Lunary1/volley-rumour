@@ -211,6 +211,24 @@ direction.
 - Use `@/` imports, `cn()` from `@/lib/utils`, shadcn components in `components/ui/`.
 - Support light (default) and dark themes.
 
+### Styling
+Style lives in one place (#207), so the look can't drift page by page:
+- **Colours** only from the tokens in `app/globals.css` (`bg-card`,
+  `text-secondary-foreground`, `border-border-strong`, `text-primary-text`,
+  `bg-feature-bg` …), never Tailwind palette colours (`text-blue-600`) or hex.
+  Green (`primary`) is for actions, "Aanbevolen", the verified check, focus
+  rings and link hover; everything else is neutral. Meaning never by hue alone.
+- **Sizes and radii** from tokens (`text-label`, `text-meta`, `text-md`,
+  `text-card-title`, `rounded-md` = 10px, `rounded-xl`, `rounded-2xl`,
+  `grid-cards`) or Tailwind's own scale, never arbitrary values like
+  `text-[13px]` in feature code.
+- **Shared UI** lives in `components/ui/` as components with variants (cva):
+  `Button`, `Badge`, `chipVariants`, `Initials` … Feature code composes them;
+  a new look is a new variant or token, not a class string in a page.
+- No emoji, glows, blurred blobs or gradient text.
+- ESLint warns on palette colours and arbitrary values (`no-restricted-syntax`
+  in `eslint.config.mjs`). It becomes an error once #208 clears the rest.
+
 ### Formatting
 - Prettier with its default style; run `npm run format` before you commit.
   Markdown is not formatted (`.prettierignore`), because Prettier pads every

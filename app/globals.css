@@ -5,92 +5,101 @@
 
 /* ================================================================
    LIGHT THEME (default)
-   Sporty, trustworthy, informational — inspired by volleyball sites.
-   All text combos target WCAG AA (≥ 4.5:1 body, ≥ 3:1 large/muted).
+   Calm and neutral, with one accent: the logo green (#207). Green is for
+   actions, "Aanbevolen", the verified check, focus rings and link hover;
+   everything else is neutral. All text meets WCAG AA (4.5:1).
    ================================================================ */
 :root {
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0.005 250);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0.005 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0.005 250);
-  --primary: oklch(0.45 0.16 160);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.955 0.005 250);
-  --secondary-foreground: oklch(0.25 0.01 250);
-  --muted: oklch(0.955 0.005 250);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.94 0.02 160);
-  --accent-foreground: oklch(0.25 0.05 160);
+  --background: #f6f7f6;
+  --foreground: #111815;
+  --card: #ffffff;
+  --card-foreground: #111815;
+  --popover: #ffffff;
+  --popover-foreground: #111815;
+  --primary: #0b6e4f;
+  --primary-foreground: #ffffff;
+  --primary-hover: #095c42;
+  --primary-soft: #e5f2ea;
+  --primary-text: #0a6146;
+  --secondary: #eef1ef;
+  --secondary-foreground: #3f4944;
+  --muted: #eef1ef;
+  --muted-foreground: #5c6661;
+  /* A neutral hover surface, as in shadcn; not a second brand colour. */
+  --accent: #eef1ef;
+  --accent-foreground: #111815;
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.905 0.005 250);
-  --input: oklch(0.905 0.005 250);
-  --ring: oklch(0.45 0.16 160);
+  --border: #dfe4e1;
+  --border-strong: #c4ccc8;
+  --input: #dfe4e1;
+  --ring: #0b6e4f;
+  /* Featured zoekertjes: a tinted card instead of a glow. */
+  --feature-bg: #f2f8f4;
+  --feature-border: #cde3d6;
+  /* For charts only; no badge uses them. */
   --chart-1: oklch(0.45 0.16 160);
   --chart-2: oklch(0.6 0.15 50);
   --chart-3: oklch(0.5 0.12 250);
   --chart-4: oklch(0.65 0.15 80);
   --chart-5: oklch(0.55 0.22 25);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.975 0.005 250);
-  --sidebar-foreground: oklch(0.145 0.005 250);
-  --sidebar-primary: oklch(0.45 0.16 160);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.955 0.005 250);
-  --sidebar-accent-foreground: oklch(0.25 0.01 250);
-  --sidebar-border: oklch(0.905 0.005 250);
-  --sidebar-ring: oklch(0.45 0.16 160);
-  /* Neon colors — muted in light mode */
-  --neon-cyan: oklch(0.55 0.12 260);
-  --neon-magenta: oklch(0.5 0.12 330);
-  --neon-coral: oklch(0.6 0.12 45);
-  --neon-silver: oklch(0.75 0.04 260);
+  /* Buttons, inputs and selects round to 10px (radius-md), panels and
+     cards to 16px (radius-xl), featured cards to 18px (radius-2xl). */
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111815;
+  --sidebar-primary: #0b6e4f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef1ef;
+  --sidebar-accent-foreground: #111815;
+  --sidebar-border: #dfe4e1;
+  --sidebar-ring: #0b6e4f;
 }
 
 /* ================================================================
    DARK THEME (opt-in via toggle)
-   Previous default palette — preserved for dark-mode users.
+   A green-tinted near-black, so the accent and the ground share a hue
+   family (#207).
    ================================================================ */
 .dark {
-  --background: oklch(0.13 0.02 250);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.18 0.02 250);
-  --card-foreground: oklch(0.97 0 0);
-  --popover: oklch(0.18 0.02 250);
-  --popover-foreground: oklch(0.97 0 0);
-  --primary: oklch(0.65 0.2 145);
-  --primary-foreground: oklch(0.13 0.02 250);
-  --secondary: oklch(0.25 0.02 250);
-  --secondary-foreground: oklch(0.97 0 0);
-  --muted: oklch(0.22 0.02 250);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.7 0.18 50);
-  --accent-foreground: oklch(0.13 0.02 250);
+  --background: #0e1311;
+  --foreground: #edf1ef;
+  --card: #151b18;
+  --card-foreground: #edf1ef;
+  --popover: #151b18;
+  --popover-foreground: #edf1ef;
+  --primary: #43c08a;
+  --primary-foreground: #07110c;
+  --primary-hover: #5cce9c;
+  --primary-soft: #163024;
+  --primary-text: #7dd9ae;
+  --secondary: #1e2622;
+  --secondary-foreground: #b7c0bb;
+  --muted: #1e2622;
+  --muted-foreground: #8f9994;
+  --accent: #1e2622;
+  --accent-foreground: #edf1ef;
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.97 0 0);
-  --border: oklch(0.28 0.02 250);
-  --input: oklch(0.22 0.02 250);
-  --ring: oklch(0.65 0.2 145);
+  --border: #28312d;
+  --border-strong: #3a4540;
+  --input: #28312d;
+  --ring: #43c08a;
+  --feature-bg: #122019;
+  --feature-border: #244232;
   --chart-1: oklch(0.65 0.2 145);
   --chart-2: oklch(0.7 0.18 50);
   --chart-3: oklch(0.6 0.15 200);
   --chart-4: oklch(0.7 0.15 80);
   --chart-5: oklch(0.55 0.22 25);
-  --sidebar: oklch(0.15 0.02 250);
-  --sidebar-foreground: oklch(0.97 0 0);
-  --sidebar-primary: oklch(0.65 0.2 145);
-  --sidebar-primary-foreground: oklch(0.13 0.02 250);
-  --sidebar-accent: oklch(0.22 0.02 250);
-  --sidebar-accent-foreground: oklch(0.97 0 0);
-  --sidebar-border: oklch(0.28 0.02 250);
-  --sidebar-ring: oklch(0.65 0.2 145);
-  /* Neon colors — vibrant in dark mode */
-  --neon-cyan: oklch(0.7 0.28 260);
-  --neon-magenta: oklch(0.65 0.32 330);
-  --neon-coral: oklch(0.7 0.27 45);
-  --neon-silver: oklch(0.92 0.08 260);
+  --sidebar: #151b18;
+  --sidebar-foreground: #edf1ef;
+  --sidebar-primary: #43c08a;
+  --sidebar-primary-foreground: #07110c;
+  --sidebar-accent: #1e2622;
+  --sidebar-accent-foreground: #edf1ef;
+  --sidebar-border: #28312d;
+  --sidebar-ring: #43c08a;
 }
 
 @theme inline {
@@ -104,6 +113,9 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-text: var(--primary-text);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -113,8 +125,11 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-feature-bg: var(--feature-bg);
+  --color-feature-border: var(--feature-border);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -124,6 +139,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 6px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -132,10 +148,27 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-neon-cyan: var(--neon-cyan);
-  --color-neon-magenta: var(--neon-magenta);
-  --color-neon-coral: var(--neon-coral);
-  --color-neon-silver: var(--neon-silver);
+}
+
+/* Type sizes between Tailwind's steps, from the #207 design. Use these, or
+   Tailwind's own scale; never an arbitrary size like text-[13px]. */
+@theme {
+  --text-label: 0.78125rem; /* 12.5px: labels, chips */
+  --text-label--line-height: 1rem;
+  --text-meta: 0.8125rem; /* 13px: times, provinces */
+  --text-meta--line-height: 1.25rem;
+  --text-md: 0.9375rem; /* 15px: featured meta, search, large buttons */
+  --text-md--line-height: 1.5rem;
+  --text-card-title: 1.0625rem; /* 17px: card titles */
+  --text-card-title--line-height: 1.4;
+}
+
+/* Card grids: as many columns as fit (three at 1200-1280px), never wider than the screen. */
+@utility grid-cards {
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+}
+@utility grid-cards-featured {
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
 }
 
 @layer base {
@@ -174,106 +207,5 @@
       oklch(0.18 0.03 145) 40%,
       oklch(0.16 0.04 145) 100%
     );
-  }
-
-  /* ── Neon / glow effects — dark mode only ──────────────────── */
-  .neon-pulse {
-    animation: none;
-  }
-  .dark .neon-pulse {
-    animation: neon-pulse 2s ease-in-out infinite;
-  }
-
-  .glow-cyan,
-  .glow-magenta,
-  .glow-coral {
-    /* no glow in light mode */
-  }
-  .dark .glow-cyan {
-    @apply shadow-lg transition-shadow hover:shadow-cyan-500/50;
-  }
-  .dark .glow-magenta {
-    @apply shadow-lg transition-shadow hover:shadow-pink-500/50;
-  }
-  .dark .glow-coral {
-    @apply shadow-lg transition-shadow hover:shadow-orange-500/50;
-  }
-
-  .border-glow-cyan {
-    @apply border border-primary/30;
-  }
-  .dark .border-glow-cyan {
-    @apply border-neon-cyan/70 shadow-[0_0_15px_rgba(120,140,255,0.3)];
-  }
-
-  .border-glow-magenta {
-    @apply border border-primary/30;
-  }
-  .dark .border-glow-magenta {
-    @apply border-neon-magenta/70 shadow-[0_0_15px_rgba(200,100,255,0.3)];
-  }
-
-  .gradient-text-neon {
-    @apply font-bold text-primary;
-  }
-  .dark .gradient-text-neon {
-    @apply bg-linear-to-r from-neon-coral via-neon-magenta to-neon-cyan bg-clip-text text-transparent;
-  }
-
-  .featured-item-glow {
-    @apply border-primary/20 transition-shadow;
-  }
-  .dark .featured-item-glow {
-    @apply shadow-[0_0_20px_rgba(178,190,255,0.3)] border-neon-cyan/60;
-  }
-  .dark .featured-item-glow:hover {
-    @apply shadow-[0_0_30px_rgba(178,190,255,0.5)];
-  }
-
-  .gradient-cyber-hero {
-    @apply relative overflow-hidden;
-    background: linear-gradient(
-      135deg,
-      var(--background) 0%,
-      oklch(0.96 0.02 160) 50%,
-      var(--background) 100%
-    );
-  }
-  .dark .gradient-cyber-hero {
-    background: linear-gradient(
-      135deg,
-      oklch(0.1 0 0) 0%,
-      oklch(0.16 0.15 300) 25%,
-      oklch(0.15 0.12 260) 50%,
-      oklch(0.1 0 0) 100%
-    );
-  }
-
-  .gradient-neon-accent {
-    @apply relative;
-    background: linear-gradient(
-      90deg,
-      var(--primary),
-      var(--accent),
-      var(--primary)
-    );
-  }
-  .dark .gradient-neon-accent {
-    background: linear-gradient(
-      90deg,
-      var(--neon-coral),
-      var(--neon-magenta),
-      var(--neon-cyan)
-    );
-  }
-}
-
-@keyframes neon-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(120, 140, 255, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(120, 140, 255, 0.8);
   }
 }

@@ -4,6 +4,7 @@ import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "./local-supabase.mjs";
 
 // Zoekertjes cards are headed by the ad title, with the poster as secondary
 // text (#173), and open the ad's detail page, featured cards too (#172).
+// Type labels differ by shape and icon, not by colour (#207).
 // Every test makes its own ads and deletes them again.
 
 const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -16,7 +17,11 @@ test.afterEach(async () => {
   await admin.from("classifieds").delete().in("id", created.splice(0));
 });
 
-async function createAd(title: string, featured: boolean): Promise<string> {
+async function createAd(
+  title: string,
+  featured: boolean,
+  fields: Record<string, unknown> = {},
+): Promise<string> {
   const { data: club } = await admin
     .from("profiles")
     .select("id")
@@ -39,6 +44,7 @@ async function createAd(title: string, featured: boolean): Promise<string> {
       featured_until: featured
         ? new Date(Date.now() + 86_400_000).toISOString()
         : null,
+      ...fields,
     })
     .select("id")
     .single();
@@ -102,6 +108,63 @@ test("the contact button on a featured card doesn't open the ad", async ({
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page).toHaveURL("/zoekertjes");
+});
+
+test("a card shows its type label, meta line and an outline contact button", async ({
+  page,
+}) => {
+  const stamp = Date.now();
+  const teamTitle = `Teamlabel ${stamp}`;
+  const trainerTitle = `Trainerlabel ${stamp}`;
+  await createAd(teamTitle, false);
+  await createAd(trainerTitle, false, {
+    type: "trainer_seeks_team",
+    position: null,
+    trainer_diploma: "trainer_b",
+  });
+
+  await page.goto(`/zoekertjes?q=${stamp}`);
+  const team = page.locator("article", { hasText: teamTitle });
+  const trainer = page.locator("article", { hasText: trainerTitle });
+
+  // Team ads: a filled label; ads by a person: an outlined one.
+  const teamLabel = team.locator("[data-type-label]");
+  const trainerLabel = trainer.locator("[data-type-label]");
+  await expect(teamLabel).toHaveText("Team zoekt speler");
+  await expect(teamLabel).toHaveAttribute("data-type-label", "team");
+  await expect(trainerLabel).toHaveText("Trainer zoekt team");
+  await expect(trainerLabel).toHaveAttribute("data-type-label", "person");
+  const fill = (label: typeof teamLabel) =>
+    label.evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(await fill(trainerLabel)).toBe("rgba(0, 0, 0, 0)");
+  expect(await fill(teamLabel)).not.toBe("rgba(0, 0, 0, 0)");
+
+  await expect(team.getByText("Setter · Nationale 2 Heren")).toBeVisible();
+  await expect(
+    trainer.getByText("Trainer B · Nationale 2 Heren"),
+  ).toBeVisible();
+
+  // An outline button: green is for the featured cards and the page CTA.
+  const contact = team.getByRole("button", { name: "Contact" });
+  await expect(contact).toBeVisible();
+  expect(
+    await contact.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).toBe("rgba(0, 0, 0, 0)");
+});
+
+test("a featured card shows the description and no emoji", async ({ page }) => {
+  const title = `Uitgelichte beschrijving ${Date.now()}`;
+  await createAd(title, true);
+
+  await page.goto("/zoekertjes");
+  const card = featuredSection(page).locator("article", { hasText: title });
+  await expect(card.getByText("Aangemaakt door een test.")).toBeVisible();
+  await expect(card.getByText("Aanbevolen", { exact: true })).toBeVisible();
+  await expect(card.locator("[data-type-label]")).toHaveText(
+    "Team zoekt speler",
+  );
+  // The label used to be "⭐ AANBEVOLEN".
+  expect(await card.textContent()).not.toContain("⭐");
 });
 
 test.describe("on a phone", () => {

@@ -118,7 +118,7 @@ export default function NewRumourPage() {
         <Card className="bg-card border-border">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <CardTitle className="text-2xl gradient-text-neon">
+              <CardTitle className="text-2xl font-bold">
                 Nieuw Gerucht
               </CardTitle>
             </div>

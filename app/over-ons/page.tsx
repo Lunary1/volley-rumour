@@ -62,7 +62,7 @@ export default function OverOnsPage() {
             </div>
 
             {/* Classifieds */}
-            <div className="border-l-4 border-accent pl-6">
+            <div className="border-l-4 border-border-strong pl-6">
               <h3 className="text-lg font-semibold mb-2 text-foreground">
                 Zoekertjes
               </h3>
@@ -86,7 +86,7 @@ export default function OverOnsPage() {
             </div>
 
             {/* Conversations */}
-            <div className="border-l-4 border-accent pl-6">
+            <div className="border-l-4 border-border-strong pl-6">
               <h3 className="text-lg font-semibold mb-2 text-foreground">
                 Privéberichten
               </h3>
