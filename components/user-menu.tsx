@@ -117,16 +117,25 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
     ? ""
     : "flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50";
 
+  // On desktop the buttons show only their icon, with the label as a tooltip
+  // and for screen readers, so the menu fits beside a centred nav (#228).
+  const labelClass = isMobile ? "" : "sr-only";
+
   return (
     <div className={containerClass}>
       {/* Messages link with badge */}
-      <Link href="/messages" className={isMobile ? "w-full" : ""}>
+      <Link
+        href="/messages"
+        className={isMobile ? "w-full" : ""}
+        title={isMobile ? undefined : "Berichten"}
+      >
         <Button
           variant="ghost"
           size="sm"
           className={`relative ${isMobile ? "w-full justify-start" : ""}`}
         >
           <MessageSquare className="h-4 w-4" />
+          <span className={labelClass}>Berichten</span>
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
@@ -139,26 +148,35 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
       </Link>
 
       {user.is_staff && (
-        <Link href="/admin" className={isMobile ? "w-full" : ""}>
+        <Link
+          href="/admin"
+          className={isMobile ? "w-full" : ""}
+          title={isMobile ? undefined : "Beheer"}
+        >
           <Button
             variant="ghost"
             size="sm"
             className={isMobile ? "w-full justify-start" : ""}
           >
             <ShieldCheck className="h-4 w-4" />
-            Beheer
+            <span className={labelClass}>Beheer</span>
           </Button>
         </Link>
       )}
 
       {/* Profile settings link */}
-      <Link href="/profile" className={isMobile ? "w-full" : ""}>
+      <Link
+        href="/profile"
+        className={isMobile ? "w-full" : ""}
+        title={isMobile ? undefined : "Profiel"}
+      >
         <Button
           variant="ghost"
           size="sm"
           className={isMobile ? "w-full justify-start" : ""}
         >
           <Settings className="h-4 w-4" />
+          <span className={labelClass}>Profiel</span>
         </Button>
       </Link>
 
@@ -173,14 +191,15 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
           type="submit"
           variant="ghost"
           size="sm"
+          title={isMobile ? undefined : "Uitloggen"}
           className={
             isMobile
               ? "w-full justify-start text-destructive-text hover:text-destructive-text"
               : ""
           }
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          Uitloggen
+          <LogOut className="h-4 w-4" />
+          <span className={labelClass}>Uitloggen</span>
         </Button>
       </form>
     </div>
