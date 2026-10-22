@@ -132,11 +132,40 @@ export const getHomepageData = unstable_cache(
   },
 );
 
+/**
+ * getHomepageData for the homepage sections: read once per request, however
+ * many sections use it, and empty when it fails to load.
+ */
+export const getHomepageDataOrEmpty = cache(() =>
+  getHomepageData().catch((error) => {
+    console.error("Error loading homepage data:", error);
+    return {
+      latestTransfers: [] as TransferCardData[],
+      counts: { rumours: 0, transfers: 0, users: 0 },
+    };
+  }),
+);
+
 /** Columns a rumour card needs, with the author's track record. */
 export const RUMOUR_CARD_SELECT = `
   *,
   creator:creator_id(username, is_verified_source, rumours_confirmed, rumours_denied)
 `;
+
+/**
+ * The homepage's hot topics: the three lopende rumours with the most "true"
+ * votes. Not cached across requests: the vote counts must be fresh (#129).
+ */
+export async function getFeaturedRumours() {
+  const { data, error } = await createPublicClient()
+    .from("rumours")
+    .select(RUMOUR_CARD_SELECT)
+    .eq("status", "rumour")
+    .order("votes_true", { ascending: false })
+    .limit(3);
+  if (error) console.error("Error loading featured rumours:", error);
+  return data ?? [];
+}
 
 /**
  * One approved rumour for /geruchten/[id], its metadata and share image

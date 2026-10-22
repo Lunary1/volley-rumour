@@ -24,6 +24,8 @@ const buttonVariants = cva(
         // down look the same: the icon tells them apart, not a colour.
         toggle:
           "text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-primary-soft aria-pressed:text-primary-text",
+        // A quiet link to more of the same, e.g. "Bekijk alle" (#211).
+        more: "text-primary-text hover:bg-accent hover:text-primary-text",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

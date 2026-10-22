@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Header } from "@/components/header";
@@ -12,8 +12,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SITE_URL } from "@/lib/site-url";
 import { BASE_OPEN_GRAPH } from "@/lib/seo";
 
+// The only web font, so the only one preloaded. Monospace text (takedown
+// reference codes) uses the system font (#211).
 const _inter = Inter({ subsets: ["latin"] });
-const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 
 const description =
   "Zoekertjes, transfers en Transfer Talk voor het Belgische volleybal. Vind een club, speler of trainer en stem op de geruchten van de transfermarkt.";
