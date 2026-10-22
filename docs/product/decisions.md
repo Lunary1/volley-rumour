@@ -205,6 +205,12 @@ instructions also mandate npm.
 of this size, and switching means regenerating the lockfile, which changes
 the resolved dependency tree in the middle of a stabilisation effort.
 
+**Update (2026-10-22, #223).** The `packageManager` field didn't reach
+Vercel: the project, created from v0, overrode the commands with `bun install`
+and `bun run build`. Bun converted the npm lockfile on every build, skipped
+the nested `overrides` and blocked a postinstall script. `vercel.json` now
+sets `npm ci` and `npm run build`, like CI, and overrides the dashboard.
+
 ## D-008 — Branching: protected `main` is production
 
 **Context.** Vercel deploys `main` to volleyrumours.be on every push, and
