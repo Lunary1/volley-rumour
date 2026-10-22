@@ -92,9 +92,11 @@ a normal migration.
 ## Branching and release
 
 `main` **is production**: every merge deploys to volleyrumours.be via Vercel.
-Coming-soon mode (D-009) closes every route except the homepage and info pages,
-but those pages, the Supabase API and the waitlist are live. Treat every merge
-as a release.
+**The whole site is public**: coming-soon mode is off during development
+(D-034), so the owner can test production and follow progress live. Check and
+measure on production directly, read-only (look, don't write). Coming-soon
+(D-009) goes back on only before launch (#95); sign-ups stay disabled in
+Supabase until then. Treat every merge as a release.
 
 ```
 feature/42-password-reset ──PR──┐
