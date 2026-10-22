@@ -1121,7 +1121,8 @@ channel for all of them.
 visitors only get changes to public rumours. Every vote sends one Realtime
 message to each open page that shows the rumour, which counts towards the
 plan's monthly Realtime messages (`docs/supabase.md`). The Supabase browser
-library still loads on rumour pages once they are idle (D-045).
+library still loads on rumour pages once they are idle (D-045); since #221
+only once a rumour card is near the screen.
 
 ## D-048 — Vercel functions run in Paris
 
