@@ -4,7 +4,7 @@ import { RumourVotesProvider } from "@/components/rumour-votes";
 import { getUserVotes } from "@/lib/votes";
 import { Button } from "@/components/ui/button";
 import { chipVariants } from "@/components/ui/chip";
-import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -129,12 +129,12 @@ export default async function GeruchtenPage(props: {
               waar zijn
             </p>
           </div>
-          <Link href="/geruchten/nieuw">
-            <Button>
-              <Plus className="mr-2 h-5 w-5" />
+          <Button asChild>
+            <Link href="/geruchten/nieuw">
+              <Plus className="size-5" />
               Nieuw Gerucht
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Status filter, as chips like the zoekertjes types (#208) */}
@@ -211,25 +211,22 @@ export default async function GeruchtenPage(props: {
             />
           </>
         ) : (
-          <Card className="bg-card border-border">
-            <CardContent className="py-16 text-center">
-              <Flame className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">
-                {status ? emptyTitles[status] : "Nog geen geruchten"}
-              </h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                {status
-                  ? "Er zijn nog geen geruchten in deze categorie. Kom later terug!"
-                  : "Wees de eerste om een gerucht te delen! Heb je gehoord over een mogelijke transfer?"}
-              </p>
+          <EmptyState
+            icon={Flame}
+            title={status ? emptyTitles[status] : "Nog geen geruchten"}
+            description={
+              status
+                ? "Er zijn nog geen geruchten in deze categorie. Kom later terug!"
+                : "Wees de eerste om een gerucht te delen! Heb je gehoord over een mogelijke transfer?"
+            }
+          >
+            <Button asChild>
               <Link href="/geruchten/nieuw">
-                <Button>
-                  <Plus className="mr-2 h-5 w-5" />
-                  {status ? "Gerucht Delen" : "Deel je eerste gerucht"}
-                </Button>
+                <Plus className="size-5" />
+                {status ? "Gerucht Delen" : "Deel je eerste gerucht"}
               </Link>
-            </CardContent>
-          </Card>
+            </Button>
+          </EmptyState>
         )}
       </div>
     </div>

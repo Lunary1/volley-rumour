@@ -151,6 +151,9 @@ Rules:
 
 ### Server vs client
 - Pages are async Server Components that fetch data directly.
+- A section with its own data streams: an async component behind
+  `<Suspense>`, whose fallback has the same size, so nothing moves when it
+  arrives (`components/home/`, #211). The page itself sends at once.
 - Mutations go through **Server Actions** in `app/actions/<domain>.ts`
   (`"use server"`). Don't insert or update from the browser.
 - Add `"use client"` only for forms, interactivity and Realtime subscriptions.
@@ -233,7 +236,7 @@ Style lives in one place (#207), so the look can't drift page by page:
   `text-[13px]` in feature code.
 - **Shared UI** lives in `components/ui/` as components with variants (cva):
   `Button`, `Badge`, `Alert`, `chipVariants`, `Initials`, `MessagePanel`,
-  `Honeypot` … Feature code composes them; a new look is a new variant or
+  `Honeypot`, `SectionHeader`, `EmptyState` … Feature code composes them; a new look is a new variant or
   token, not a class string in a page. Dialogs already fit the phone and
   scroll; give `DialogContent` only a width (`max-w-md`).
 - No emoji, glows, blurred blobs or gradient text.

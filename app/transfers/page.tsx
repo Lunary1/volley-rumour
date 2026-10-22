@@ -1,5 +1,6 @@
 import { TransferCard } from "@/components/transfer-card";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageNav } from "@/components/page-nav";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -77,7 +78,10 @@ export default async function TransfersPage(props: {
       </nav>
 
       {result.transfers.length === 0 ? (
-        <EmptyState message={emptyMessages[tab]} />
+        <EmptyState
+          title={emptyMessages[tab]}
+          description="Transfers worden toegevoegd wanneer een moderator een gerucht bevestigt."
+        />
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -104,17 +108,6 @@ export default async function TransfersPage(props: {
           </Link>
         </Button>
       </div>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="text-center py-12 bg-card rounded-lg border border-border">
-      <p className="text-muted-foreground">{message}</p>
-      <p className="text-sm text-muted-foreground mt-2">
-        Transfers worden toegevoegd wanneer een moderator een gerucht bevestigt
-      </p>
     </div>
   );
 }

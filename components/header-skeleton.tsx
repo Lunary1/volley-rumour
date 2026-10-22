@@ -1,15 +1,21 @@
-// Fast loading skeleton for header - renders immediately while auth completes
+// Shown while the header checks who is logged in. Same box as HeaderClient
+// (h-16 plus the border), so the page doesn't move when it's replaced (#211).
 export function HeaderSkeleton() {
   return (
-    <header className="border-b border-border bg-background sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="h-8 w-32 bg-muted rounded animate-pulse" />
-        <div className="hidden lg:flex gap-8">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-4 w-20 bg-muted rounded animate-pulse" />
-          ))}
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="h-8 w-32 animate-pulse rounded bg-muted" />
+          <div className="hidden gap-8 lg:flex">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-4 w-20 animate-pulse rounded bg-muted"
+              />
+            ))}
+          </div>
+          <div className="size-10 animate-pulse rounded-full bg-muted" />
         </div>
-        <div className="h-10 w-10 bg-muted rounded-full animate-pulse" />
       </div>
     </header>
   );

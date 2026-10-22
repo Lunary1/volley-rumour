@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireStaff } from "@/lib/staff";
+import { expirePublicData } from "@/lib/public-data";
 import {
   SANCTION_NOTE_MAX_LENGTH,
   SUSPENSION_REASON_MAX_LENGTH,
@@ -170,6 +171,7 @@ export async function setVerifiedSource(input: {
   revalidateUserPages(parsed.data.userId);
   // The badge shows on ads, rumours, Betrouwbare bronnen and the profile.
   revalidatePath("/", "layout");
+  expirePublicData("rumours");
   return successResponse(null);
 }
 

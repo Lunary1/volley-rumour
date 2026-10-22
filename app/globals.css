@@ -120,7 +120,8 @@
 
 @theme inline {
   --font-sans: "Inter", "Inter Fallback", sans-serif;
-  --font-mono: "Space Grotesk", "Space Grotesk Fallback", monospace;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

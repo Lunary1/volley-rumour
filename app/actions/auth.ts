@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { isRecoverySession } from "@/lib/supabase/recovery";
 import { safeNextPath } from "@/lib/utils";
+import { expirePublicData } from "@/lib/public-data";
 import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_MIN_MESSAGE,
@@ -444,5 +445,7 @@ export async function deleteAccount(): Promise<ActionResponse> {
   // The user and their sessions are gone; only the cookies are left to clear.
   await supabase.auth.signOut({ scope: "local" });
   revalidatePath("/", "layout");
+  // Their rumours and their place in Betrouwbare bronnen go too (D-021).
+  expirePublicData("rumours");
   return successResponse(undefined);
 }
