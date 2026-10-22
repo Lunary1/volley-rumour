@@ -8,9 +8,12 @@ import { RumourVoteBar } from "@/components/rumour-votes";
 import { RumourDetailButton } from "@/components/rumour-detail-button";
 import {
   DELETED_CREATOR_LABEL,
-  RUMOUR_CATEGORY_BADGE_CLASSES,
+  RUMOUR_CATEGORY_BADGE_VARIANTS,
   RUMOUR_CATEGORY_LABELS,
   RUMOUR_SOURCE_SHORT_LABELS,
+  RUMOUR_STATUS_BADGE_VARIANTS,
+  RUMOUR_STATUS_LABELS,
+  type RumourStatus,
   formatTrackRecord,
   labelFor,
   votingClosedReason,
@@ -50,43 +53,21 @@ interface RumourCardProps {
   currentUserId: string | null;
 }
 
-const statusLabels: Record<string, string> = {
-  rumour: "Lopend",
-  confirmed: "Bevestigd ✓",
-  denied: "Ontkracht ✗",
-  expired: "Niet bevestigd",
-};
-
-const statusColors: Record<string, string> = {
-  rumour:
-    "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
-  confirmed:
-    "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
-  denied:
-    "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
-  expired: "bg-muted text-muted-foreground border-border",
-};
-
 export function RumourCard({ rumour, currentUserId }: RumourCardProps) {
   const closedReason = votingClosedReason(rumour, currentUserId);
   const sourceLabel = labelFor(RUMOUR_SOURCE_SHORT_LABELS, rumour.source_type);
   const trackRecord = rumour.creator ? formatTrackRecord(rumour.creator) : null;
 
   return (
-    <Card
-      className={`bg-card border-border hover:border-primary/40 transition-all h-full flex flex-col hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(178,190,255,0.15)] group`}
-    >
+    <Card className="bg-card border-border hover:border-border-strong transition-colors h-full flex flex-col group">
       <CardContent className="p-5 flex flex-col h-full">
         {/* Top Section: Category & Status Badges + Time */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <Badge
-            variant="outline"
-            className={RUMOUR_CATEGORY_BADGE_CLASSES[rumour.category]}
-          >
+          <Badge variant={RUMOUR_CATEGORY_BADGE_VARIANTS[rumour.category]}>
             {RUMOUR_CATEGORY_LABELS[rumour.category]}
           </Badge>
-          <Badge variant="outline" className={statusColors[rumour.status]}>
-            {statusLabels[rumour.status]}
+          <Badge variant={RUMOUR_STATUS_BADGE_VARIANTS[rumour.status]}>
+            {RUMOUR_STATUS_LABELS[rumour.status as RumourStatus]}
           </Badge>
           <span className="text-xs text-muted-foreground ml-auto">
             <RelativeTime date={rumour.created_at} />
@@ -103,10 +84,10 @@ export function RumourCard({ rumour, currentUserId }: RumourCardProps) {
                 {rumour.from_club_name && (
                   <>
                     <span className="text-xs">{rumour.from_club_name}</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-red-500" />
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                   </>
                 )}
-                <span className="text-red-600 dark:text-red-400 font-bold text-sm uppercase">
+                <span className="text-foreground font-bold text-sm uppercase">
                   Stopt
                 </span>
               </>

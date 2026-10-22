@@ -26,6 +26,7 @@ import {
   CONTACT_NAME_MAX_LENGTH,
   type ContactCategory,
 } from "@/lib/contact";
+import { Honeypot } from "@/components/ui/honeypot";
 import { useIsClient } from "@/lib/use-is-client";
 
 const categories = Object.entries(CONTACT_CATEGORIES) as [
@@ -80,7 +81,7 @@ export function ContactForm({
     return (
       <div role="status" className="space-y-2 rounded-lg border bg-card p-6">
         <h2 className="flex items-center gap-2 text-xl font-semibold">
-          <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden />
+          <CheckCircle2 className="h-5 w-5 text-success-text" aria-hidden />
           Je bericht is verstuurd
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -153,20 +154,7 @@ export function ContactForm({
         />
       </div>
 
-      {/* Honeypot: hidden from people and screen readers, filled by bots. */}
-      <div
-        aria-hidden
-        className="absolute -left-[9999px] h-px w-px overflow-hidden"
-      >
-        <label htmlFor={`${id}-website`}>Website</label>
-        <input
-          id={`${id}-website`}
-          name="website"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-        />
-      </div>
+      <Honeypot id={`${id}-website`} />
 
       <p className="text-xs text-muted-foreground">
         Alleen moderators en beheerders lezen je bericht. We wissen je naam,
@@ -179,7 +167,7 @@ export function ContactForm({
       </p>
 
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-destructive-text">
           {error}
         </p>
       )}

@@ -66,7 +66,7 @@ export function BlockUserDialog({
         <span className="hidden sm:inline">Blokkeren</span>
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md sm:w-full">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{userName} blokkeren?</DialogTitle>
             <DialogDescription>

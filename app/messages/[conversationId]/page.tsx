@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { avatarUrl } from "@/lib/avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatInterface, type Message } from "@/components/chat-interface";
@@ -52,9 +52,7 @@ export default async function ConversationPage({
               ← Terug
             </Button>
           </Link>
-          <Card className="p-6 border-destructive/50 bg-destructive/5">
-            <p className="text-destructive">Conversatie niet gevonden</p>
-          </Card>
+          <Alert variant="destructive">Conversatie niet gevonden</Alert>
         </div>
       </div>
     );
@@ -97,9 +95,7 @@ export default async function ConversationPage({
               ← Terug
             </Button>
           </Link>
-          <Card className="p-6 border-red-200 bg-red-50">
-            <p className="text-red-800">Gebruiker niet gevonden</p>
-          </Card>
+          <Alert variant="destructive">Gebruiker niet gevonden</Alert>
         </div>
       </div>
     );
@@ -183,10 +179,7 @@ export default async function ConversationPage({
                 </h1>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] px-1.5 py-0 h-4 font-medium"
-                >
+                <Badge variant="secondary" size="xs">
                   Zoekertje
                 </Badge>
                 {adData && !adOnline ? (

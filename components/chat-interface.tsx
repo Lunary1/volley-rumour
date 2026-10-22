@@ -357,7 +357,7 @@ export function ChatInterface({
                       }`}
                     >
                       <span
-                        className={`text-[10px] text-muted-foreground ${
+                        className={`text-tiny text-muted-foreground ${
                           showAvatar ? "opacity-100" : "opacity-0"
                         }`}
                       >
@@ -431,15 +431,15 @@ export function ChatInterface({
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               disabled={sending}
-              className="flex-1 bg-background min-h-[44px] rounded-full px-4 text-sm"
+              className="flex-1 bg-background min-h-11 rounded-full px-4 text-sm"
               enterKeyHint="send"
               autoComplete="off"
             />
             <Button
               type="submit"
               disabled={sending || !newMessage.trim()}
-              size="icon"
-              className="h-[44px] w-[44px] rounded-full shrink-0"
+              size="icon-xl"
+              className="rounded-full"
               aria-label="Verstuur bericht"
             >
               <SendHorizontal className="h-5 w-5" />

@@ -114,7 +114,7 @@ export default async function OpenRumoursPage(props: {
       <ListTabs closed={closed} />
 
       {error ? (
-        <p className="text-destructive">
+        <p className="text-destructive-text">
           {closed
             ? "De afgesloten geruchten konden niet geladen worden."
             : "De lopende geruchten konden niet geladen worden."}

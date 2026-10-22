@@ -74,7 +74,7 @@ export function WaitlistForm() {
       />
 
       {status === "error" && (
-        <div className="flex items-center gap-2 text-destructive text-sm">
+        <div className="flex items-center gap-2 text-destructive-text text-sm">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <p>{errorMessage}</p>
         </div>

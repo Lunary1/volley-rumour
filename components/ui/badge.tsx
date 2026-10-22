@@ -21,11 +21,20 @@ const badgeVariants = cva(
         soft: "border-transparent bg-primary-soft text-primary-text",
         neutral: "border-transparent bg-muted text-foreground",
         subtle: "border-border-strong bg-transparent text-secondary-foreground",
+        muted: "border-transparent bg-muted text-muted-foreground",
+        // Statuses (#208): always with a text label, never colour alone.
+        success: "border-transparent bg-success-soft text-success-text",
+        warning: "border-transparent bg-warning-soft text-warning-text",
+        danger: "border-transparent bg-destructive-soft text-destructive-text",
       },
       size: {
         default: "",
         // A 26px pill, as on the zoekertjes cards.
         pill: "h-6.5 gap-1.5 rounded-full px-2.5 py-0 text-label font-semibold [&>svg]:size-3.5",
+        // A 16px tag next to a name, e.g. "Zoekertje" in the inbox.
+        xs: "h-4 px-1.5 py-0 text-tiny",
+        // An unread counter.
+        count: "h-5 min-w-5 rounded-full px-1.5 py-0 text-tiny font-bold",
       },
     },
     defaultVariants: {
@@ -54,4 +63,6 @@ function Badge({
   );
 }
 
-export { Badge, badgeVariants };
+type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>["variant"]>;
+
+export { Badge, badgeVariants, type BadgeVariant };

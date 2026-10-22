@@ -43,7 +43,7 @@ export default async function ProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-destructive mb-4">
+          <p className="text-destructive-text mb-4">
             Je profiel kon niet geladen worden.
           </p>
           <Link href="/profile">

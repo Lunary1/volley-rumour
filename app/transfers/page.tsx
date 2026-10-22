@@ -4,7 +4,7 @@ import { PageNav } from "@/components/page-nav";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, UserPlus, UserMinus, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { chipVariants } from "@/components/ui/chip";
 import { TRANSFER_TABS, parseTransferTab, transfersUrl } from "@/lib/transfers";
 import {
   TRANSFERS_PER_PAGE,
@@ -58,10 +58,7 @@ export default async function TransfersPage(props: {
         </p>
       </div>
 
-      <nav
-        aria-label="Soort transfer"
-        className="grid w-full grid-cols-4 mb-8 rounded-lg bg-secondary p-[3px]"
-      >
+      <nav aria-label="Soort transfer" className="mb-8 flex flex-wrap gap-2">
         {TRANSFER_TABS.map((t) => {
           const Icon = tabIcons[t.value];
           const active = t.value === tab;
@@ -70,14 +67,9 @@ export default async function TransfersPage(props: {
               key={t.value}
               href={transfersUrl(t.value)}
               aria-current={active ? "page" : undefined}
-              className={cn(
-                "inline-flex items-center justify-center rounded-md px-2 py-1 text-sm font-medium transition-colors",
-                active
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-foreground hover:bg-background/60",
-              )}
+              className={chipVariants({ active })}
             >
-              <Icon className="hidden sm:block w-4 h-4 mr-2 shrink-0" />
+              <Icon className="mr-1.5 h-4 w-4 shrink-0" aria-hidden />
               {t.label}
             </Link>
           );
@@ -105,10 +97,7 @@ export default async function TransfersPage(props: {
         <p className="text-muted-foreground mb-4">
           Ken je een transfer die nog niet vermeld staat?
         </p>
-        <Button
-          asChild
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
+        <Button asChild>
           <Link href="/geruchten/nieuw">
             Maak een gerucht aan
             <ArrowRight className="ml-2 h-4 w-4" />

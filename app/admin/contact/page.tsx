@@ -150,7 +150,7 @@ export default async function ContactMessagesPage() {
       </div>
 
       {failed ? (
-        <p className="text-destructive">
+        <p className="text-destructive-text">
           De berichten konden niet geladen worden.
         </p>
       ) : (

@@ -51,7 +51,7 @@ export default async function ErrorsPage() {
       </div>
 
       {error ? (
-        <p className="text-destructive">
+        <p className="text-destructive-text">
           De fouten konden niet geladen worden.
         </p>
       ) : events.length === 0 ? (

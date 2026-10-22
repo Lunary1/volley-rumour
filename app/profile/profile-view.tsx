@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -311,21 +312,21 @@ export function ProfileView({
           <CardContent>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
-                <Flame className="mb-2 h-6 w-6 text-orange-500" />
+                <Flame className="mb-2 h-6 w-6 text-muted-foreground" />
                 <p className="text-2xl font-bold text-foreground">
                   {stats?.rumourCount ?? 0}
                 </p>
                 <p className="text-xs text-muted-foreground">Geruchten</p>
               </div>
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
-                <MessageSquare className="mb-2 h-6 w-6 text-blue-500" />
+                <MessageSquare className="mb-2 h-6 w-6 text-muted-foreground" />
                 <p className="text-2xl font-bold text-foreground">
                   {stats?.voteCount ?? 0}
                 </p>
                 <p className="text-xs text-muted-foreground">Stemmen</p>
               </div>
               <div className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4">
-                <CheckCircle className="mb-2 h-6 w-6 text-green-500" />
+                <CheckCircle className="mb-2 h-6 w-6 text-muted-foreground" />
                 <p className="text-2xl font-bold text-foreground">
                   {profile.rumours_confirmed}
                 </p>
@@ -335,7 +336,7 @@ export function ProfileView({
                 href="/zoekertjes/mijn"
                 className="flex flex-col items-center rounded-lg border border-border bg-muted/20 p-4 transition-colors hover:bg-muted/40"
               >
-                <ShoppingBag className="mb-2 h-6 w-6 text-purple-500" />
+                <ShoppingBag className="mb-2 h-6 w-6 text-muted-foreground" />
                 <p className="text-2xl font-bold text-foreground">
                   {stats?.classifiedCount ?? 0}
                 </p>
@@ -377,7 +378,7 @@ export function ProfileView({
                         href="/geruchten"
                         className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40"
                       >
-                        <Zap className="h-4 w-4 text-orange-500" />
+                        <Zap className="h-4 w-4 text-muted-foreground" />
                         <span className="truncate font-medium text-foreground">
                           {r.player_name}
                         </span>
@@ -467,7 +468,7 @@ export function ProfileView({
                           href="/zoekertjes/mijn"
                           className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-sm transition-colors hover:bg-muted/40"
                         >
-                          <ShoppingBag className="h-4 w-4 text-purple-500" />
+                          <ShoppingBag className="h-4 w-4 text-muted-foreground" />
                           <span className="truncate font-medium text-foreground">
                             {c.title}
                           </span>
@@ -508,18 +509,14 @@ export function ProfileView({
 
         {/* Error/Success */}
         {error && (
-          <Card className="mb-6 border-red-500 bg-red-500/10">
-            <CardContent className="pt-6">
-              <p className="text-red-600 dark:text-red-400">{error}</p>
-            </CardContent>
-          </Card>
+          <Alert variant="destructive" className="mb-6">
+            {error}
+          </Alert>
         )}
         {success && (
-          <Card className="mb-6 border-green-500 bg-green-500/10">
-            <CardContent className="pt-6">
-              <p className="text-green-600 dark:text-green-400">{success}</p>
-            </CardContent>
-          </Card>
+          <Alert variant="success" className="mb-6">
+            {success}
+          </Alert>
         )}
 
         <EmailNotificationsCard enabled={emailNotifications} />
@@ -613,7 +610,7 @@ export function ProfileView({
         {/* Danger zone – account deletion */}
         <Card className="border-destructive/40 bg-destructive/5">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+            <CardTitle className="flex items-center gap-2 text-lg text-destructive-text">
               <Trash2 className="h-5 w-5" />
               Gevaarzone
             </CardTitle>
@@ -640,7 +637,7 @@ export function ProfileView({
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent showCloseButton className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-destructive">
+            <DialogTitle className="text-destructive-text">
               Account verwijderen
             </DialogTitle>
             <DialogDescription>
@@ -721,7 +718,7 @@ export function ProfileView({
                     htmlFor="avatar-file"
                     className={cn(
                       buttonVariants({ variant: "outline", size: "sm" }),
-                      "cursor-pointer peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50 peer-disabled:pointer-events-none peer-disabled:opacity-50",
+                      "cursor-pointer peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 peer-disabled:pointer-events-none peer-disabled:opacity-50",
                     )}
                   >
                     {avatarBusy ? "Bezig..." : "Foto kiezen"}

@@ -52,7 +52,7 @@ export function CountdownTimer({ launchDate }: { launchDate: string }) {
 
   // Countdown finished
   if (!timeLeft) {
-    return <p className="text-2xl font-bold text-primary">🎉 We zijn live!</p>;
+    return <p className="text-2xl font-bold text-primary">We zijn live!</p>;
   }
 
   const units = [

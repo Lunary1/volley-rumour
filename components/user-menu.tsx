@@ -175,7 +175,7 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
           size="sm"
           className={
             isMobile
-              ? "w-full justify-start text-destructive hover:text-destructive"
+              ? "w-full justify-start text-destructive-text hover:text-destructive-text"
               : ""
           }
         >

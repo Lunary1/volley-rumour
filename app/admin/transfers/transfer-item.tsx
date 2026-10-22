@@ -107,7 +107,7 @@ export function TransferItemActions({
         </Button>
       </div>
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md sm:w-full">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Transfer van {playerName} verwijderen?</DialogTitle>
             <DialogDescription>

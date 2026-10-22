@@ -67,7 +67,7 @@ export function MyRumourActions({
         type="button"
         variant="ghost"
         size="sm"
-        className="text-destructive hover:text-destructive"
+        className="text-destructive-text hover:text-destructive-text"
         onClick={() => setConfirmOpen(true)}
         disabled={!isClient || pending}
       >
@@ -76,7 +76,7 @@ export function MyRumourActions({
       </Button>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md sm:w-full">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Gerucht intrekken?</DialogTitle>
             <DialogDescription>

@@ -1,4 +1,5 @@
-import { CATEGORY_BADGE_CLASSES } from "@/lib/category-badges";
+import type { BadgeVariant } from "@/components/ui/badge";
+import { CATEGORY_BADGE_VARIANTS } from "@/lib/category-badges";
 
 // Rumour statuses (Moderation Policy, D-002). New rumours start pending and
 // only become public once a moderator approves them; RLS enforces this
@@ -88,12 +89,23 @@ export const RUMOUR_CATEGORY_LABELS: Record<string, string> = {
   trainer_retirement: "Trainer Stopt",
 };
 
-/** Badge colours per category, shared by the card and the detail view (#174). */
-export const RUMOUR_CATEGORY_BADGE_CLASSES: Record<string, string> = {
-  transfer: CATEGORY_BADGE_CLASSES.player,
-  trainer_transfer: CATEGORY_BADGE_CLASSES.trainer,
-  player_retirement: CATEGORY_BADGE_CLASSES.retirement,
-  trainer_retirement: CATEGORY_BADGE_CLASSES.retirement,
+/** Badge variant per category, shared by the card and the detail view (#174). */
+export const RUMOUR_CATEGORY_BADGE_VARIANTS: Record<string, BadgeVariant> = {
+  transfer: CATEGORY_BADGE_VARIANTS.player,
+  trainer_transfer: CATEGORY_BADGE_VARIANTS.trainer,
+  player_retirement: CATEGORY_BADGE_VARIANTS.retirement,
+  trainer_retirement: CATEGORY_BADGE_VARIANTS.retirement,
+};
+
+/**
+ * Badge variant per public status (#208). The badge always shows
+ * RUMOUR_STATUS_LABELS too, so the colour is never the only signal.
+ */
+export const RUMOUR_STATUS_BADGE_VARIANTS: Record<string, BadgeVariant> = {
+  rumour: "warning",
+  confirmed: "success",
+  denied: "danger",
+  expired: "muted",
 };
 
 /**

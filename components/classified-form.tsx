@@ -60,7 +60,7 @@ export interface ClassifiedFormValues {
 }
 
 function Required() {
-  return <span className="text-destructive">*</span>;
+  return <span className="text-destructive-text">*</span>;
 }
 
 function SelectField({
@@ -388,7 +388,7 @@ export function ClassifiedForm({
       {error && (
         <div
           role="alert"
-          className="p-3 bg-destructive/10 border border-destructive rounded-md text-destructive text-sm"
+          className="p-3 bg-destructive/10 border border-destructive rounded-md text-destructive-text text-sm"
         >
           {error}
         </div>

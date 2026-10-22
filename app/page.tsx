@@ -74,7 +74,7 @@ export default async function HomePage() {
       <SpeedInsights />
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-border hero-sport">
+      <section className="relative overflow-hidden border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-8 items-start">
             {/* Left — value prop + single CTA */}

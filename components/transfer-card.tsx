@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { ArrowRight, Calendar, ExternalLink, UserCircle } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
-import { CATEGORY_BADGE_CLASSES } from "@/lib/category-badges";
+import { CATEGORY_BADGE_VARIANTS } from "@/lib/category-badges";
 import { formatDate } from "@/lib/dates";
 import {
   TRANSFER_CATEGORIES,
@@ -24,13 +24,13 @@ export interface TransferCardData {
   source_url: string | null;
 }
 
-const categoryColors: Record<TransferCategory, string> = {
-  player_male: CATEGORY_BADGE_CLASSES.player,
-  player_female: CATEGORY_BADGE_CLASSES.player,
-  trainer_male: CATEGORY_BADGE_CLASSES.trainer,
-  trainer_female: CATEGORY_BADGE_CLASSES.trainer,
-  player_retirement: CATEGORY_BADGE_CLASSES.retirement,
-  trainer_retirement: CATEGORY_BADGE_CLASSES.retirement,
+const categoryVariants: Record<TransferCategory, BadgeVariant> = {
+  player_male: CATEGORY_BADGE_VARIANTS.player,
+  player_female: CATEGORY_BADGE_VARIANTS.player,
+  trainer_male: CATEGORY_BADGE_VARIANTS.trainer,
+  trainer_female: CATEGORY_BADGE_VARIANTS.trainer,
+  player_retirement: CATEGORY_BADGE_VARIANTS.retirement,
+  trainer_retirement: CATEGORY_BADGE_VARIANTS.retirement,
 };
 
 /**
@@ -47,17 +47,15 @@ export function TransferCard({
 }) {
   const category = transfer.category as TransferCategory;
   const retirement = isRetirement(transfer.category);
-  const typeColor =
-    categoryColors[category] ?? CATEGORY_BADGE_CLASSES.retirement;
+  const typeVariant =
+    categoryVariants[category] ?? CATEGORY_BADGE_VARIANTS.retirement;
   const typeLabel = TRANSFER_CATEGORIES[category] ?? "Transfer";
 
   return (
-    <Card className="bg-card border-border hover:border-primary/40 transition-all hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(255,127,80,0.15)]">
+    <Card className="bg-card border-border hover:border-border-strong transition-colors">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <Badge variant="outline" className={typeColor}>
-            {typeLabel}
-          </Badge>
+          <Badge variant={typeVariant}>{typeLabel}</Badge>
         </div>
 
         <div className="flex items-center gap-2 mb-2">
@@ -73,12 +71,10 @@ export function TransferCard({
                   <span className="text-muted-foreground">
                     {transfer.from_club}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-red-500 shrink-0" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 </>
               )}
-              <span className="text-red-600 dark:text-red-400 font-bold uppercase">
-                Stopt
-              </span>
+              <span className="text-foreground font-bold uppercase">Stopt</span>
             </>
           ) : (
             <>

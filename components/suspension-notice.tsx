@@ -20,7 +20,10 @@ export async function SuspensionNotice() {
       className="border-b border-destructive/30 bg-destructive/10 text-foreground"
     >
       <div className="container mx-auto flex gap-3 px-4 py-3 text-sm">
-        <Ban className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden />
+        <Ban
+          className="mt-0.5 h-4 w-4 shrink-0 text-destructive-text"
+          aria-hidden
+        />
         <div className="space-y-1">
           <p className="font-medium">
             Je account is geschorst {suspensionEndLabel(until)}.

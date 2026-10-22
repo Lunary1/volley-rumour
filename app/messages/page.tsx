@@ -197,10 +197,7 @@ export default async function MessagesPage({
                           >
                             {conversation.other_user_name}
                           </h3>
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] px-1.5 py-0 h-4 font-medium shrink-0"
-                          >
+                          <Badge variant="secondary" size="xs">
                             Zoekertje
                           </Badge>
                         </div>
@@ -238,9 +235,9 @@ export default async function MessagesPage({
 
                         {/* Unread count badge */}
                         {conversation.unread_count > 0 && (
-                          <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 shrink-0">
+                          <Badge size="count">
                             {conversation.unread_count}
-                          </span>
+                          </Badge>
                         )}
                       </div>
                     </div>

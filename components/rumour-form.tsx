@@ -143,7 +143,7 @@ export function RumourForm({
       )}
 
       {error && (
-        <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20">
+        <div className="p-3 text-sm text-destructive-text bg-destructive/10 rounded-md border border-destructive/20">
           {error}
         </div>
       )}
@@ -152,7 +152,7 @@ export function RumourForm({
       <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border">
         <div className="space-y-2">
           <Label htmlFor="category">
-            Soort Gerucht <span className="text-destructive">*</span>
+            Soort Gerucht <span className="text-destructive-text">*</span>
           </Label>
           <p className="text-xs text-muted-foreground">
             Selecteer wat voor type gerucht dit is
@@ -184,7 +184,7 @@ export function RumourForm({
       {!selectedCategory && (
         <div className="text-center py-8 text-muted-foreground">
           <p className="text-sm">
-            👆 Selecteer eerst een type gerucht om de rest van het formulier te
+            Selecteer eerst een type gerucht om de rest van het formulier te
             zien.
           </p>
         </div>
@@ -204,7 +204,7 @@ export function RumourForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="lastName">
-                  Achternaam <span className="text-destructive">*</span>
+                  Achternaam <span className="text-destructive-text">*</span>
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   {isPlayerCategory(selectedCategory)
@@ -223,7 +223,7 @@ export function RumourForm({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="firstName">
-                  Voornaam <span className="text-destructive">*</span>
+                  Voornaam <span className="text-destructive-text">*</span>
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   {isPlayerCategory(selectedCategory)
@@ -247,7 +247,7 @@ export function RumourForm({
               {showGender && (
                 <div className="space-y-2 animate-in fade-in-0 duration-200">
                   <Label htmlFor="gender">
-                    Geslacht <span className="text-destructive">*</span>
+                    Geslacht <span className="text-destructive-text">*</span>
                   </Label>
                   <p className="text-xs text-muted-foreground">Man of vrouw</p>
                   <Select name="gender" required defaultValue={rumour?.gender}>
@@ -268,7 +268,7 @@ export function RumourForm({
               {/* Current club */}
               <div className="space-y-2">
                 <Label htmlFor="currentClub">
-                  Huidige Club <span className="text-destructive">*</span>
+                  Huidige Club <span className="text-destructive-text">*</span>
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   {isPlayerCategory(selectedCategory)
@@ -323,7 +323,7 @@ export function RumourForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="destinationClub">
-                    Doelclub <span className="text-destructive">*</span>
+                    Doelclub <span className="text-destructive-text">*</span>
                   </Label>
                   <p className="text-xs text-muted-foreground">
                     {isPlayerCategory(selectedCategory)
@@ -405,7 +405,7 @@ export function RumourForm({
               <div className="space-y-2">
                 <Label htmlFor="sourceType">
                   Waar komt je gerucht vandaan?{" "}
-                  <span className="text-destructive">*</span>
+                  <span className="text-destructive-text">*</span>
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   Lezers en moderators zien de bron bij je gerucht
@@ -460,7 +460,7 @@ export function RumourForm({
               />
               <span>
                 Dit gerucht gaat over een seniorspeler of -trainer{" "}
-                <span className="text-destructive">*</span>
+                <span className="text-destructive-text">*</span>
               </span>
             </label>
             <label className="flex items-start gap-3 text-sm">
@@ -473,7 +473,7 @@ export function RumourForm({
               <span>
                 Ik deel dit gerucht te goeder trouw: ik geloof dat het klopt en
                 het bevat geen beledigingen of privézaken{" "}
-                <span className="text-destructive">*</span>
+                <span className="text-destructive-text">*</span>
               </span>
             </label>
           </fieldset>

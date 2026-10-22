@@ -20,6 +20,10 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // Selected state, e.g. the current page (#207).
         inverted: "bg-foreground text-background hover:bg-foreground/90",
+        // An on/off button with aria-pressed, e.g. a vote (#208). Up and
+        // down look the same: the icon tells them apart, not a colour.
+        toggle:
+          "text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-primary-soft aria-pressed:text-primary-text",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -30,6 +34,8 @@ const buttonVariants = cva(
         icon: "size-9",
         "icon-sm": "size-8",
         "icon-lg": "size-10",
+        // A 44px touch target, e.g. the chat's send button.
+        "icon-xl": "size-11",
       },
     },
     defaultVariants: {
