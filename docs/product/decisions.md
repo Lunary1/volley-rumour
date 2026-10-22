@@ -210,6 +210,11 @@ Vercel: the project, created from v0, overrode the commands with `bun install`
 and `bun run build`. Bun converted the npm lockfile on every build, skipped
 the nested `overrides` and blocked a postinstall script. `vercel.json` now
 sets `npm ci` and `npm run build`, like CI, and overrides the dashboard.
+Newer npm (12) runs a dependency's install scripts only when `allowScripts`
+in `package.json` allows them. The only one we have is `unrs-resolver`'s
+(ESLint's import resolver), which downloads its native binding if the
+optional dependency is missing; `npm ci` installs that dependency, so the
+script is denied.
 
 ## D-008 — Branching: protected `main` is production
 
