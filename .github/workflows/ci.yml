@@ -13,8 +13,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Markdown and docs/ don't reach the app, and Prettier skips *.md, so a
+  # change to only those skips checks and e2e (#215). A job skipped by its
+  # `if:` counts as passing for branch protection; `paths-ignore` would leave
+  # the required checks pending instead. Anything else, or a diff that can't
+  # be computed, runs everything.
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Changed files
+        id: diff
+        env:
+          # A PR is checked out as its merge commit: HEAD^1 is the base.
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: |
+          code=true
+          if files=$(git diff --name-only "$BASE" HEAD) && [ -n "$files" ]; then
+            code=false
+            while IFS= read -r file; do
+              case "$file" in
+                *.md | docs/* | .github/ISSUE_TEMPLATE/* | LICENSE) ;;
+                *) code=true ;;
+              esac
+            done <<< "$files"
+          fi
+          echo "$files"
+          echo "code=$code" | tee -a "$GITHUB_OUTPUT"
+
   checks:
     name: checks
+    needs: changes
+    # Runs unless `changes` said docs only, also when `changes` failed.
+    if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -46,6 +84,9 @@ jobs:
   # supabase/seed.sql. Never against a preview or production (D-010).
   e2e:
     name: e2e
+    needs: changes
+    # Runs unless `changes` said docs only, also when `changes` failed.
+    if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
