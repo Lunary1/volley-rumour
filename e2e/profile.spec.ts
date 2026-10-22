@@ -77,3 +77,28 @@ test("profile says it failed to load instead of asking to log in", async ({
     await admin.auth.admin.deleteUser(userId);
   }
 });
+
+test.describe("on a phone", () => {
+  test("my rumours keep the player name readable", async ({ page }) => {
+    // The status and time used to squeeze the name to nothing (#219).
+    // loginAs checks the header, which hides the username on a phone.
+    await loginAs(page, "jana");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/profile");
+
+    const row = page
+      .getByRole("list", { name: "Mijn geruchten" })
+      .getByRole("listitem")
+      .filter({ hasText: seed.janaRumour.playerName });
+    const name = row.getByText(seed.janaRumour.playerName, { exact: true });
+    await expect(name).toBeVisible();
+    // Not cut off with an ellipsis…
+    expect(await name.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
+      true,
+    );
+    // …because the status goes on its own line under the name.
+    const nameBox = (await name.boundingBox())!;
+    const timeBox = (await row.locator("time").first().boundingBox())!;
+    expect(timeBox.y).toBeGreaterThanOrEqual(nameBox.y + nameBox.height);
+  });
+});
