@@ -41,36 +41,37 @@ export function CountdownTimer({ launchDate }: { launchDate: string }) {
     return () => clearInterval(interval);
   }, [launchDate]);
 
-  // SSR / pre-hydration placeholder
-  if (!isClient) {
+  // Countdown finished
+  if (isClient && !timeLeft) {
     return (
-      <p className="text-lg text-muted-foreground font-medium">
-        Binnenkort beschikbaar
-      </p>
+      <p className="text-2xl font-bold text-primary-text">We zijn live!</p>
     );
   }
 
-  // Countdown finished
-  if (!timeLeft) {
-    return <p className="text-2xl font-bold text-primary">We zijn live!</p>;
-  }
-
+  // Before hydration the same boxes show dashes, so nothing moves when the
+  // numbers arrive (#229).
   const units = [
-    { label: "Dagen", value: timeLeft.days },
-    { label: "Uren", value: timeLeft.hours },
-    { label: "Min", value: timeLeft.minutes },
-    { label: "Sec", value: timeLeft.seconds },
+    { label: "Dagen", value: timeLeft?.days },
+    { label: "Uren", value: timeLeft?.hours },
+    { label: "Min", value: timeLeft?.minutes },
+    { label: "Sec", value: timeLeft?.seconds },
   ];
 
   return (
-    <div className="flex gap-3 sm:gap-4">
+    <div
+      role="timer"
+      aria-label="Tijd tot de lancering"
+      className="flex gap-3 sm:gap-4"
+    >
       {units.map((unit) => (
         <div
           key={unit.label}
           className="flex flex-col items-center justify-center rounded-xl bg-card border border-border p-3 sm:p-4 min-w-16 sm:min-w-20 shadow-sm"
         >
           <span className="text-2xl sm:text-3xl font-bold tabular-nums text-foreground">
-            {String(unit.value).padStart(2, "0")}
+            {isClient && unit.value !== undefined
+              ? String(unit.value).padStart(2, "0")
+              : "--"}
           </span>
           <span className="text-xs sm:text-sm text-muted-foreground mt-1">
             {unit.label}

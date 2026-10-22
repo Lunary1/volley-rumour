@@ -1,9 +1,21 @@
-import { CheckCircle, Flame, MessageSquare, Search, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  CalendarDays,
+  CheckCircle,
+  Flame,
+  MessageSquare,
+  Search,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/section-header";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { WaitlistForm } from "@/components/waitlist-form";
+import { Volleyball } from "@/components/coming-soon/volleyball";
 import { getInterestCount } from "@/app/actions/waitlist";
-import Link from "next/link";
+import { formatDate } from "@/lib/dates";
 
 const FEATURES = [
   {
@@ -30,71 +42,92 @@ const FEATURES = [
   },
 ];
 
+// How a rumour goes from tip to verdict (D-002, D-005, D-020).
+const STEPS = [
+  {
+    icon: Flame,
+    title: "Iemand meldt een gerucht",
+    description: "Altijd met een bron: wie het zegt en waar het vandaan komt.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Een moderator kijkt het na",
+    description:
+      "Pas daarna komt het online, en een speler kan het laten verwijderen.",
+  },
+  {
+    icon: BadgeCheck,
+    title: "Bevestigd of ontkracht",
+    description: "Na de officiële bekendmaking zie je wie het vooraf goed had.",
+  },
+];
+
 export async function ComingSoonPage() {
-  const launchDate =
+  const date =
     process.env.NEXT_PUBLIC_LAUNCH_DATE || "2027-02-15T18:00:00+01:00";
   const interestCount = await getInterestCount();
 
   return (
-    <div className="flex flex-col items-center">
-      {/* Hero Section */}
-      <section className="w-full py-16 sm:py-24 lg:py-32 px-4">
-        <div className="mx-auto max-w-3xl text-center space-y-8">
-          {/* Brand */}
-          <div className="flex items-center justify-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-              <Flame className="h-7 w-7 text-primary-foreground" />
+    <div className="flex flex-col">
+      {/* Hero: text and waitlist beside a turning volleyball (#229) */}
+      <section className="overflow-hidden border-b border-border">
+        <div className="mx-auto grid max-w-7xl items-center gap-6 px-4 py-8 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-24">
+          <Volleyball className="mx-auto aspect-square w-full max-w-48 sm:max-w-64 lg:order-2 lg:max-w-none" />
+
+          <div className="flex flex-col items-center gap-7 text-center lg:items-start lg:text-left">
+            <Badge variant="soft" size="pill">
+              <CalendarDays />
+              Lancering op {formatDate(date, "d MMMM yyyy")}
+            </Badge>
+
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+                Dé community voor Belgische volleybaltransfers
+              </h1>
+              <p className="mx-auto max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0">
+                Geruchten met een bron, bevestigde transfers en zoekertjes voor
+                spelers, trainers en clubs. Schrijf je in en hoor als eerste
+                wanneer we live gaan.
+              </p>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              VolleyRumours
-            </h1>
-          </div>
 
-          {/* Tagline */}
-          <p className="text-xl sm:text-2xl text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            Dé community voor Belgische volleybal transfers
-          </p>
+            <CountdownTimer launchDate={date} />
 
-          {/* Countdown */}
-          <div className="flex justify-center">
-            <CountdownTimer launchDate={launchDate} />
-          </div>
-
-          {/* Interest counter */}
-          {interestCount > 0 && (
-            <p className="text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
-                Al <strong className="text-foreground">
-                  {interestCount}+
-                </strong>{" "}
-                geïnteresseerden!
-              </span>
-            </p>
-          )}
-
-          {/* Waitlist form */}
-          <div className="flex justify-center">
-            <WaitlistForm />
+            <div className="flex w-full flex-col items-center gap-3 lg:items-start">
+              <WaitlistForm />
+              {interestCount > 0 && (
+                <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Users className="size-4" />
+                  Al{" "}
+                  <strong className="text-foreground">
+                    {interestCount}+
+                  </strong>{" "}
+                  geïnteresseerden
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Feature Preview */}
-      <section className="w-full py-12 sm:py-16 px-4 bg-muted/30">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="text-xl sm:text-2xl font-bold text-center mb-8">
-            Wat je binnenkort kan verwachten
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* What's coming */}
+      <section className="bg-muted/40 py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeader
+            title="Wat je binnenkort kan verwachten"
+            description="Alles over de Belgische volleybalmarkt, op één plek."
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((feature) => (
-              <Card key={feature.title} className="border-border/60">
-                <CardContent className="pt-6 space-y-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <feature.icon className="h-5 w-5 text-primary" />
+              <Card key={feature.title}>
+                <CardContent className="space-y-3">
+                  <div className="flex size-11 items-center justify-center rounded-lg bg-primary-soft">
+                    <feature.icon className="size-5 text-primary-text" />
                   </div>
-                  <h3 className="font-semibold">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="text-card-title font-semibold">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -104,33 +137,31 @@ export async function ComingSoonPage() {
         </div>
       </section>
 
-      {/* Footer links (in-page, the layout footer is also present) */}
-      <section className="w-full py-8 px-4">
-        <div className="mx-auto max-w-3xl flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-          <Link
-            href="/privacy"
-            className="hover:text-foreground transition-colors"
-          >
-            Privacy
-          </Link>
-          <Link
-            href="/voorwaarden"
-            className="hover:text-foreground transition-colors"
-          >
-            Voorwaarden
-          </Link>
-          <Link
-            href="/over-ons"
-            className="hover:text-foreground transition-colors"
-          >
-            Over Ons
-          </Link>
-          <Link
-            href="/contact"
-            className="hover:text-foreground transition-colors"
-          >
-            Contact
-          </Link>
+      {/* How Transfer Talk works */}
+      <section className="py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeader
+            title="Zo werkt Transfer Talk"
+            description="Geen roddels zonder bron: elk gerucht wordt nagekeken."
+          />
+          <ol className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {STEPS.map((step, i) => (
+              <li key={step.title} className="flex gap-4">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border-strong text-sm font-semibold tabular-nums">
+                  {i + 1}
+                </span>
+                <div className="space-y-1">
+                  <h3 className="flex items-center gap-2 font-semibold">
+                    <step.icon className="size-4 text-muted-foreground" />
+                    {step.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {step.description}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
     </div>
