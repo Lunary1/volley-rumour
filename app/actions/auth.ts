@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { isRecoverySession } from "@/lib/supabase/recovery";
+import { getSessionUser } from "@/lib/supabase/session";
 import { safeNextPath } from "@/lib/utils";
 import { expirePublicData } from "@/lib/public-data";
 import {
@@ -191,15 +192,15 @@ export async function signUp(
 
 // Use React cache() for request-scoped deduplication — automatically
 // scoped to a single server request, so no stale data persists across requests.
+// The user comes from the session's JWT, without a call to Auth (#212).
 export const getCurrentUser = cache(async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     return null;
   }
+
+  const supabase = await createClient();
 
   // Get user profile for additional info. Roles aren't readable through the
   // API (#111); is_staff() answers for the caller only. RLS shows a user only

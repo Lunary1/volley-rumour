@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/session";
 import type { VoteType } from "@/lib/rumours";
 
 export type UserVotes = {
@@ -15,13 +16,11 @@ export type UserVotes = {
  * close voting on the user's own rumours (#78).
  */
 export async function getUserVotes(rumourIds: string[]): Promise<UserVotes> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return { userId: null, votes: {} };
   if (rumourIds.length === 0) return { userId: user.id, votes: {} };
 
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("rumour_votes")
     .select("rumour_id, vote_type")
