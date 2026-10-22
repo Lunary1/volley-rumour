@@ -106,7 +106,8 @@ test("the unread badge counts a new message without a reload", async ({
   });
   expect(error).toBeNull();
 
-  await expect(messagesLink).toHaveText("1");
+  // The link reads "Berichten" (for screen readers) followed by the count.
+  await expect(messagesLink).toHaveText("Berichten1");
 
   await jana.removeAllChannels();
   await admin.from("conversations").delete().eq("id", conversationId);

@@ -129,26 +129,35 @@ export function HeaderClient({
       suppressHydrationWarning
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Main Header */}
+        {/* Main Header. On desktop the logo and the controls each take an
+            equal share of the leftover width, so the nav sits on the page's
+            centre however wide the user menu is, or with no menu at all in
+            coming-soon mode (#228). Below lg the menu sits behind the
+            hamburger: a logged-in menu doesn't fit beside the nav there. */}
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/logo-text-header.png"
-              alt="VolleyRumours"
-              width={320}
-              height={65}
-              className="h-8 w-auto dark:hidden"
-            />
-            <Image
-              src="/logo-text-header-inverted.png"
-              alt="VolleyRumours"
-              width={320}
-              height={65}
-              className="h-8 w-auto hidden dark:block"
-            />
-          </Link>
+          <div className="flex lg:flex-1 lg:basis-0">
+            <Link href="/" className="flex shrink-0 items-center gap-2">
+              <Image
+                src="/logo-text-header.png"
+                alt="VolleyRumours"
+                width={320}
+                height={65}
+                className="h-8 w-auto dark:hidden"
+              />
+              <Image
+                src="/logo-text-header-inverted.png"
+                alt="VolleyRumours"
+                width={320}
+                height={65}
+                className="h-8 w-auto hidden dark:block"
+              />
+            </Link>
+          </div>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav
+            aria-label="Hoofdmenu"
+            className="hidden lg:flex items-center gap-1"
+          >
             {navItems.map((item) => {
               const isActive = item === activeMainItem;
               return (
@@ -191,14 +200,16 @@ export function HeaderClient({
             })}
           </nav>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex flex-1 basis-0 items-center justify-end gap-1">
             <ThemeToggle />
             {showUserMenu && <UserMenu user={user} />}
           </div>
 
           <button
             type="button"
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+            className="lg:hidden p-2 text-muted-foreground hover:text-foreground"
+            aria-label={mobileMenuOpen ? "Menu sluiten" : "Menu openen"}
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -211,7 +222,7 @@ export function HeaderClient({
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div className="lg:hidden py-4 border-t border-border">
             <nav className="flex flex-col gap-2">
               {navItems.map((item) => (
                 <div key={item.label}>
