@@ -112,7 +112,7 @@ export default function OverOnsPage() {
             <div className="bg-card border border-border rounded-lg p-6 space-y-3">
               <div>
                 <p className="font-semibold text-foreground mb-1">
-                  ✓ Bevestigd of ontkracht
+                  Bevestigd of ontkracht
                 </p>
                 <p className="text-sm">
                   Telt mee zodra een moderator het gerucht afrondt op basis van
@@ -121,7 +121,7 @@ export default function OverOnsPage() {
               </div>
               <div>
                 <p className="font-semibold text-foreground mb-1">
-                  – Niet bevestigd
+                  Niet bevestigd
                 </p>
                 <p className="text-sm">
                   Geruchten die niet bevestigd en niet ontkracht raakten, tellen
@@ -147,7 +147,7 @@ export default function OverOnsPage() {
           <div className="grid gap-4">
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="font-semibold text-foreground mb-2">
-                🤝 Community First
+                Community First
               </h3>
               <p className="text-muted-foreground text-sm">
                 Alles draait om elkaar helpen. Moderatie is transparent, eerlijk
@@ -156,7 +156,7 @@ export default function OverOnsPage() {
             </div>
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="font-semibold text-foreground mb-2">
-                💯 Eerlijkheid
+                Eerlijkheid
               </h3>
               <p className="text-muted-foreground text-sm">
                 Misinformatie en bedrog zijn niet welkom. Laten we
@@ -165,7 +165,7 @@ export default function OverOnsPage() {
             </div>
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="font-semibold text-foreground mb-2">
-                🏐 Voor Volleyballiefhebbers
+                Voor Volleyballiefhebbers
               </h3>
               <p className="text-muted-foreground text-sm">
                 VolleyRumours is gebouwd door volleyballiefhebbers, voor
@@ -174,7 +174,7 @@ export default function OverOnsPage() {
             </div>
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="font-semibold text-foreground mb-2">
-                🚀 Altijd Evoluerend
+                Altijd Evoluerend
               </h3>
               <p className="text-muted-foreground text-sm">
                 We luisteren naar community-feedback en voegen regelmatig

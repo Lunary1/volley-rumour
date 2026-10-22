@@ -98,7 +98,7 @@ export function ReportFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-md overflow-y-auto sm:w-full">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{TITLES[targetType]}</DialogTitle>
           <DialogDescription>
@@ -184,7 +184,7 @@ export function ReportFormDialog({
             )}
 
             {error && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="text-sm text-destructive-text">
                 {error}
               </p>
             )}

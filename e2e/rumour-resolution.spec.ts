@@ -145,7 +145,7 @@ test("a moderator confirms a rumour with a source and it becomes a transfer", as
   const rumour = page
     .locator('[data-slot="card"]')
     .filter({ has: page.getByRole("heading", { name: playerName }) });
-  await expect(rumour.getByText("Bevestigd ✓")).toBeVisible();
+  await expect(rumour.getByText("Bevestigd", { exact: true })).toBeVisible();
   await expect(
     rumour.getByRole("link", { name: "een officiële bron" }),
   ).toHaveAttribute("href", source);

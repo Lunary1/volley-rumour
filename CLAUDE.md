@@ -218,16 +218,22 @@ Style lives in one place (#207), so the look can't drift page by page:
   `bg-feature-bg` …), never Tailwind palette colours (`text-blue-600`) or hex.
   Green (`primary`) is for actions, "Aanbevolen", the verified check, focus
   rings and link hover; everything else is neutral. Meaning never by hue alone.
-- **Sizes and radii** from tokens (`text-label`, `text-meta`, `text-md`,
+  Statuses use `success`, `warning` and `destructive` (`bg-success-soft`,
+  `text-warning-text`, `text-destructive-text` …) through Badge variants
+  `success`/`warning`/`danger` or `Alert`, always with a text label. Red text
+  is `text-destructive-text`; `destructive` itself is the red button fill.
+- **Sizes and radii** from tokens (`text-tiny`, `text-label`, `text-meta`, `text-md`,
   `text-card-title`, `rounded-md` = 10px, `rounded-xl`, `rounded-2xl`,
   `grid-cards`) or Tailwind's own scale, never arbitrary values like
   `text-[13px]` in feature code.
 - **Shared UI** lives in `components/ui/` as components with variants (cva):
-  `Button`, `Badge`, `chipVariants`, `Initials` … Feature code composes them;
-  a new look is a new variant or token, not a class string in a page.
+  `Button`, `Badge`, `Alert`, `chipVariants`, `Initials`, `MessagePanel`,
+  `Honeypot` … Feature code composes them; a new look is a new variant or
+  token, not a class string in a page. Dialogs already fit the phone and
+  scroll; give `DialogContent` only a width (`max-w-md`).
 - No emoji, glows, blurred blobs or gradient text.
-- ESLint warns on palette colours and arbitrary values (`no-restricted-syntax`
-  in `eslint.config.mjs`). It becomes an error once #208 clears the rest.
+- ESLint fails on palette colours and arbitrary values (`no-restricted-syntax`
+  in `eslint.config.mjs`; #208), so CI catches them.
 
 ### Formatting
 - Prettier with its default style; run `npm run format` before you commit.

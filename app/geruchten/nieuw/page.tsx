@@ -129,11 +129,11 @@ export default function NewRumourPage() {
           </CardHeader>
           <CardContent>
             {/* Help Callout */}
-            <div className="mb-6 p-4 rounded-lg bg-primary/10 border border-primary/30 flex gap-3">
-              <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="mb-6 p-4 rounded-lg bg-muted border border-border flex gap-3">
+              <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium text-foreground mb-1">
-                  💡 Hoe werkt het?
+                  Hoe werkt het?
                 </p>
                 <p>
                   Als een moderator je gerucht bevestigt of ontkracht, telt het

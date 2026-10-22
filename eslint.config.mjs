@@ -53,7 +53,7 @@ export default defineConfig([
     // Styling goes through the tokens in app/globals.css and the variants in
     // components/ui (#207): no Tailwind palette colours (text-blue-600) and,
     // outside components/ui, no arbitrary values (text-[13px], bg-[#fff]).
-    // A warning until the existing ones are gone (#208), then an error.
+    // An error since #208 moved every page onto them.
     files: [
       "app/**/*.{ts,tsx}",
       "components/**/*.{ts,tsx}",
@@ -61,13 +61,13 @@ export default defineConfig([
     ],
     ignores: ["components/ui/**"],
     rules: {
-      "no-restricted-syntax": ["warn", ...styleRestrictions(true)],
+      "no-restricted-syntax": ["error", ...styleRestrictions(true)],
     },
   },
   {
     files: ["components/ui/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-syntax": ["warn", ...styleRestrictions(false)],
+      "no-restricted-syntax": ["error", ...styleRestrictions(false)],
     },
   },
   globalIgnores([

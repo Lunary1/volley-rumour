@@ -20,9 +20,12 @@ import { ShareButton } from "@/components/share-button";
 import { ReportDialog } from "@/components/report-dialog";
 import Link from "next/link";
 import {
-  RUMOUR_CATEGORY_BADGE_CLASSES,
+  RUMOUR_CATEGORY_BADGE_VARIANTS,
   RUMOUR_CATEGORY_LABELS,
   RUMOUR_SOURCE_TYPES,
+  RUMOUR_STATUS_BADGE_VARIANTS,
+  RUMOUR_STATUS_LABELS,
+  type RumourStatus,
   DELETED_CREATOR_LABEL,
   belief,
   formatBelief,
@@ -51,23 +54,6 @@ export type RumourForModal = {
         is_verified_source?: boolean;
       } & TrackRecord)
     | null;
-};
-
-const statusLabels: Record<string, string> = {
-  rumour: "Gerucht",
-  confirmed: "Bevestigd ✓",
-  denied: "Ontkracht ✗",
-  expired: "Niet bevestigd",
-};
-
-const statusColors: Record<string, string> = {
-  rumour:
-    "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
-  confirmed:
-    "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
-  denied:
-    "bg-red-500/20 text-red-700 border-red-200 dark:text-red-300 dark:border-red-500/50",
-  expired: "bg-muted text-muted-foreground border-border",
 };
 
 interface RumourDetailModalProps {
@@ -105,17 +91,14 @@ export function RumourDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden max-w-lg w-[calc(100vw-2rem)] sm:w-full">
+      <DialogContent className="overflow-x-hidden">
         <DialogHeader className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className={RUMOUR_CATEGORY_BADGE_CLASSES[rumour.category]}
-            >
+            <Badge variant={RUMOUR_CATEGORY_BADGE_VARIANTS[rumour.category]}>
               {RUMOUR_CATEGORY_LABELS[rumour.category]}
             </Badge>
-            <Badge variant="outline" className={statusColors[rumour.status]}>
-              {statusLabels[rumour.status]}
+            <Badge variant={RUMOUR_STATUS_BADGE_VARIANTS[rumour.status]}>
+              {RUMOUR_STATUS_LABELS[rumour.status as RumourStatus]}
             </Badge>
             <span className="text-xs text-muted-foreground ml-auto">
               <RelativeTime date={rumour.created_at} />
@@ -135,10 +118,10 @@ export function RumourDetailModal({
                     <span className="text-muted-foreground">
                       {rumour.from_club_name}
                     </span>
-                    <ArrowRight className="h-4 w-4 text-red-500 shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
                   </>
                 )}
-                <span className="text-red-600 dark:text-red-400 font-bold uppercase">
+                <span className="text-foreground font-bold uppercase">
                   Stopt
                 </span>
               </>
@@ -187,7 +170,7 @@ export function RumourDetailModal({
               {formatBelief(votes.up, votes.down)}
             </p>
             <div
-              className="w-full max-w-[200px] h-2 bg-muted rounded-full overflow-hidden"
+              className="w-full max-w-50 h-2 bg-muted rounded-full overflow-hidden"
               aria-hidden
             >
               <div
@@ -199,16 +182,12 @@ export function RumourDetailModal({
 
           <div className="flex items-center justify-center gap-6 py-4 border-y border-border">
             <Button
-              variant="ghost"
+              variant="toggle"
               size="sm"
               onClick={() => handleVote("up")}
               disabled={isVoting || !!votingClosedReason}
               aria-pressed={userVote === "up"}
-              className={`gap-2 ${
-                userVote === "up"
-                  ? "text-blue-600 bg-blue-600/10 hover:bg-blue-600/20 dark:text-blue-400"
-                  : "text-muted-foreground hover:text-blue-600"
-              }`}
+              className="gap-2"
             >
               <ThumbsUp className="h-5 w-5" />
               <span className="sr-only">Waar</span>
@@ -218,16 +197,12 @@ export function RumourDetailModal({
               {total > 0 ? `${total} stemmen` : "Wees eerst"}
             </span>
             <Button
-              variant="ghost"
+              variant="toggle"
               size="sm"
               onClick={() => handleVote("down")}
               disabled={isVoting || !!votingClosedReason}
               aria-pressed={userVote === "down"}
-              className={`gap-2 ${
-                userVote === "down"
-                  ? "text-red-600 bg-red-600/10 hover:bg-red-600/20 dark:text-red-400"
-                  : "text-muted-foreground hover:text-red-600"
-              }`}
+              className="gap-2"
             >
               <ThumbsDown className="h-5 w-5" />
               <span className="sr-only">Niet waar</span>

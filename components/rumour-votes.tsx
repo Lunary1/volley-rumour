@@ -247,16 +247,12 @@ export function RumourVoteBar({ rumourId, closedReason }: RumourVoteBarProps) {
 
       <div className="flex items-center justify-center gap-4 mb-4 py-3 border-y border-border">
         <Button
-          variant="ghost"
+          variant="toggle"
           size="sm"
           onClick={() => vote("up")}
           disabled={disabled}
           aria-pressed={userVote === "up"}
-          className={`gap-2 ${
-            userVote === "up"
-              ? "text-blue-600 bg-blue-600/10 hover:bg-blue-600/20"
-              : "text-muted-foreground hover:text-blue-600"
-          }`}
+          className="gap-2"
         >
           <ThumbsUp className="h-5 w-5" />
           <span className="sr-only">Waar</span>
@@ -266,16 +262,12 @@ export function RumourVoteBar({ rumourId, closedReason }: RumourVoteBarProps) {
           {up + down > 0 ? `${up + down} stemmen` : "Wees eerst"}
         </div>
         <Button
-          variant="ghost"
+          variant="toggle"
           size="sm"
           onClick={() => vote("down")}
           disabled={disabled}
           aria-pressed={userVote === "down"}
-          className={`gap-2 ${
-            userVote === "down"
-              ? "text-red-600 bg-red-600/10 hover:bg-red-600/20"
-              : "text-muted-foreground hover:text-red-600"
-          }`}
+          className="gap-2"
         >
           <ThumbsDown className="h-5 w-5" />
           <span className="sr-only">Niet waar</span>

@@ -3,6 +3,7 @@ import { RumourCard } from "@/components/rumour-card";
 import { RumourVotesProvider } from "@/components/rumour-votes";
 import { getUserVotes } from "@/lib/votes";
 import { Button } from "@/components/ui/button";
+import { chipVariants } from "@/components/ui/chip";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
@@ -129,67 +130,47 @@ export default async function GeruchtenPage(props: {
             </p>
           </div>
           <Link href="/geruchten/nieuw">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button>
               <Plus className="mr-2 h-5 w-5" />
               Nieuw Gerucht
             </Button>
           </Link>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          <Link href="/geruchten">
-            <Button
-              variant={!status ? "default" : "outline"}
-              className={!status ? "bg-primary text-primary-foreground" : ""}
-            >
-              Alle{tabCount(allCount)}
-            </Button>
-          </Link>
-          <Link href="/geruchten?status=rumour">
-            <Button
-              variant={status === "rumour" ? "default" : "outline"}
-              className={
-                status === "rumour" ? "bg-primary text-primary-foreground" : ""
-              }
-            >
-              <Flame className="mr-2 h-4 w-4" />
-              Trending{tabCount(counts?.rumour)}
-            </Button>
-          </Link>
-          <Link href="/geruchten?status=confirmed">
-            <Button
-              variant={status === "confirmed" ? "default" : "outline"}
-              className={
-                status === "confirmed"
-                  ? "bg-primary text-primary-foreground"
-                  : ""
-              }
-            >
-              Bevestigd{tabCount(counts?.confirmed)}
-            </Button>
-          </Link>
-          <Link href="/geruchten?status=denied">
-            <Button
-              variant={status === "denied" ? "default" : "outline"}
-              className={
-                status === "denied" ? "bg-primary text-primary-foreground" : ""
-              }
-            >
-              Ontkracht{tabCount(counts?.denied)}
-            </Button>
-          </Link>
-          <Link href="/geruchten?status=expired">
-            <Button
-              variant={status === "expired" ? "default" : "outline"}
-              className={
-                status === "expired" ? "bg-primary text-primary-foreground" : ""
-              }
-            >
-              Niet bevestigd{tabCount(counts?.expired)}
-            </Button>
-          </Link>
-        </div>
+        {/* Status filter, as chips like the zoekertjes types (#208) */}
+        <nav aria-label="Status" className="mb-8 flex flex-wrap gap-2">
+          {[
+            { value: undefined, label: "Alle", count: allCount },
+            { value: "rumour", label: "Trending", count: counts?.rumour },
+            {
+              value: "confirmed",
+              label: "Bevestigd",
+              count: counts?.confirmed,
+            },
+            { value: "denied", label: "Ontkracht", count: counts?.denied },
+            {
+              value: "expired",
+              label: "Niet bevestigd",
+              count: counts?.expired,
+            },
+          ].map((tab) => {
+            const active = tab.value === status;
+            return (
+              <Link
+                key={tab.value ?? "all"}
+                href={geruchtenUrl(tab.value)}
+                aria-current={active ? "page" : undefined}
+                className={chipVariants({ active })}
+              >
+                {tab.value === "rumour" && (
+                  <Flame className="mr-1.5 h-4 w-4" aria-hidden />
+                )}
+                {tab.label}
+                {tabCount(tab.count)}
+              </Link>
+            );
+          })}
+        </nav>
 
         {/* Rumours Grid - 1 col mobile, 2–3 desktop */}
         {displayRumours.length > 0 ? (
@@ -242,7 +223,7 @@ export default async function GeruchtenPage(props: {
                   : "Wees de eerste om een gerucht te delen! Heb je gehoord over een mogelijke transfer?"}
               </p>
               <Link href="/geruchten/nieuw">
-                <Button className="bg-primary text-primary-foreground">
+                <Button>
                   <Plus className="mr-2 h-5 w-5" />
                   {status ? "Gerucht Delen" : "Deel je eerste gerucht"}
                 </Button>

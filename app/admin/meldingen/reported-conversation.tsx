@@ -39,7 +39,7 @@ export function ReportedConversation({ reportId }: { reportId: string }) {
           Gesprek lezen
         </Button>
         {error && (
-          <p role="alert" className="text-destructive">
+          <p role="alert" className="text-destructive-text">
             {error}
           </p>
         )}

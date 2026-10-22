@@ -20,6 +20,7 @@ import {
   TAKEDOWN_RELATIONS,
   type TakedownRelation,
 } from "@/lib/takedown";
+import { Honeypot } from "@/components/ui/honeypot";
 import { useIsClient } from "@/lib/use-is-client";
 
 const relations = Object.entries(TAKEDOWN_RELATIONS) as [
@@ -70,7 +71,7 @@ export function TakedownForm({ rumourId }: { rumourId: string }) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-xl">
-            <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden />
+            <CheckCircle2 className="h-5 w-5 text-success-text" aria-hidden />
             <h2>Je verzoek is verstuurd</h2>
           </CardTitle>
         </CardHeader>
@@ -192,20 +193,7 @@ export function TakedownForm({ rumourId }: { rumourId: string }) {
             </Label>
           </div>
 
-          {/* Honeypot: hidden from people and screen readers, filled by bots. */}
-          <div
-            aria-hidden
-            className="absolute -left-[9999px] h-px w-px overflow-hidden"
-          >
-            <label htmlFor={`${id}-website`}>Website</label>
-            <input
-              id={`${id}-website`}
-              name="website"
-              type="text"
-              tabIndex={-1}
-              autoComplete="off"
-            />
-          </div>
+          <Honeypot id={`${id}-website`} />
 
           <p className="text-xs text-muted-foreground">
             Alleen moderators zien je naam, e-mailadres en uitleg. We wissen ze
@@ -217,7 +205,7 @@ export function TakedownForm({ rumourId }: { rumourId: string }) {
           </p>
 
           {error && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-destructive-text">
               {error}
             </p>
           )}

@@ -269,7 +269,7 @@ function SignUpPageInner() {
                   <TermsCheckboxes />
                   <input type="hidden" name="next" value={next} />
                   {error && !errorField && (
-                    <p role="alert" className="text-sm text-destructive">
+                    <p role="alert" className="text-sm text-destructive-text">
                       {error}
                     </p>
                   )}
@@ -311,7 +311,7 @@ function FieldMessage({
 }) {
   if (error) {
     return (
-      <p id={id} role="alert" className="text-xs text-destructive">
+      <p id={id} role="alert" className="text-xs text-destructive-text">
         {error}
       </p>
     );

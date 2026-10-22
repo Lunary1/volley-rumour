@@ -4,7 +4,8 @@ import { expect, test } from "./fixtures";
 // Category badges on rumour and transfer cards are readable in both themes
 // (#174): the "Trainer Transfer" badge used light mode's --accent, a
 // near-white background colour, as its text colour. The seed has a rumour of
-// three categories and two transfer types.
+// three categories and two transfer types. Status badges too (#208): "Lopend"
+// and "Bevestigd" were just under AA in light mode.
 
 const AA = 4.5;
 
@@ -94,6 +95,30 @@ for (const theme of ["light", "dark"] as const) {
       expect(measured["Trainer Transfer"].text).not.toEqual(
         measured["Transfer"].text,
       );
+    });
+
+    test("rumour status badges meet AA contrast and keep their label", async ({
+      page,
+    }) => {
+      await page.goto("/geruchten");
+      await expect(page.locator("html")).toHaveClass(
+        new RegExp(`\\b${theme}\\b`),
+      );
+
+      for (const label of [
+        "Lopend",
+        "Bevestigd",
+        "Ontkracht",
+        "Niet bevestigd",
+      ]) {
+        const el = badge(page, label);
+        await expect(el).toBeVisible();
+        const { text, background } = await colours(el);
+        const ratio = contrast(text, background);
+        expect(ratio, `${label}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
+          AA,
+        );
+      }
     });
 
     test("transfer type badges meet AA contrast", async ({ page }) => {

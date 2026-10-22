@@ -55,7 +55,7 @@ export default async function AdminTransfersPage() {
       <AddTransfer today={today} />
 
       {error ? (
-        <p className="text-destructive">
+        <p className="text-destructive-text">
           De transfers konden niet geladen worden.
         </p>
       ) : transfers.length === 0 ? (

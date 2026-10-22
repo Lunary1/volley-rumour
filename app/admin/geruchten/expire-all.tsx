@@ -45,7 +45,7 @@ export function ExpireAll({ count }: { count: number }) {
         Alle lopende geruchten afsluiten
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-md sm:w-full">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Alle lopende geruchten afsluiten?</DialogTitle>
             <DialogDescription>

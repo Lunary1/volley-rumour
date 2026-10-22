@@ -88,7 +88,9 @@ export default async function AuditLogPage() {
       </div>
 
       {error ? (
-        <p className="text-destructive">Het logboek kon niet geladen worden.</p>
+        <p className="text-destructive-text">
+          Het logboek kon niet geladen worden.
+        </p>
       ) : entries.length === 0 ? (
         <p className="text-muted-foreground">Nog geen acties gelogd.</p>
       ) : (

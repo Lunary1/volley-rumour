@@ -13,7 +13,7 @@ export function AcceptTermsForm({ next }: { next: string }) {
       <input type="hidden" name="next" value={next} />
       <TermsCheckboxes />
       {state && !state.success && (
-        <p className="text-sm text-destructive">{state.error}</p>
+        <p className="text-sm text-destructive-text">{state.error}</p>
       )}
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Bezig..." : "Doorgaan"}

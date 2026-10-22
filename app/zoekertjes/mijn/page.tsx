@@ -11,8 +11,7 @@ import {
   getDivisionLabel,
   getProvinceLabel,
 } from "@/lib/classifieds-utils";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MyClassifiedActions } from "@/components/my-classified-actions";
 import { formatDate } from "@/lib/dates";
@@ -31,13 +30,11 @@ const STATUS_LABELS: Record<Status, string> = {
   removed: "Verwijderd door een moderator",
 };
 
-const STATUS_CLASSES: Record<Status, string> = {
-  online:
-    "border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-400",
-  found: "border-border bg-muted text-muted-foreground",
-  expired:
-    "border-amber-600/30 bg-amber-600/10 text-amber-700 dark:text-amber-400",
-  removed: "border-destructive/30 bg-destructive/10 text-destructive",
+const STATUS_VARIANTS: Record<Status, BadgeVariant> = {
+  online: "success",
+  found: "muted",
+  expired: "warning",
+  removed: "danger",
 };
 
 /** Every zoekertje of the user, with its status and what they can do (#72). */
@@ -138,10 +135,7 @@ export default async function MyClassifiedsPage() {
                       {status === "online" && ` · Online tot ${lastDay}`}
                     </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={cn("shrink-0", STATUS_CLASSES[status])}
-                  >
+                  <Badge variant={STATUS_VARIANTS[status]} className="shrink-0">
                     {STATUS_LABELS[status]}
                   </Badge>
                 </div>

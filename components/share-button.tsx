@@ -135,7 +135,7 @@ export function ShareButton({
               className="flex w-full items-center gap-2 px-3 py-2.5 text-sm hover:bg-accent rounded-b-md transition-colors"
             >
               {copied ? (
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-success-text" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}

@@ -50,7 +50,7 @@ export function TemplatePicker({
 export function PlaceholderHint({ text }: { text: string }) {
   if (!hasTemplatePlaceholder(text)) return null;
   return (
-    <p className="text-sm text-destructive">
+    <p className="text-sm text-destructive-text">
       Vervang de tekst tussen [ ] voor je verstuurt.
     </p>
   );

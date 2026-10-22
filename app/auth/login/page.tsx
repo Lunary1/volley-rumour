@@ -151,7 +151,7 @@ function LoginPage() {
                   </p>
 
                   {resetSent ? (
-                    <p className="text-sm text-green-600">
+                    <p className="text-sm text-success-text">
                       Als dit e-mailadres is geregistreerd, ontvang je een
                       e-mail met instructies.
                     </p>
@@ -172,7 +172,9 @@ function LoginPage() {
                         />
                       </div>
                       {resetError && (
-                        <p className="text-sm text-red-500">{resetError}</p>
+                        <p className="text-sm text-destructive-text">
+                          {resetError}
+                        </p>
                       )}
                       <Button
                         type="submit"
@@ -303,7 +305,9 @@ function LoginPage() {
                           {notice}
                         </p>
                       )}
-                      {error && <p className="text-sm text-red-500">{error}</p>}
+                      {error && (
+                        <p className="text-sm text-destructive-text">{error}</p>
+                      )}
                       <Button
                         type="submit"
                         className="w-full"

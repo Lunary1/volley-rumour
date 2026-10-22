@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createHash } from "node:crypto";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createAdminClient } from "@/lib/supabase/server";
 import { TAKEDOWN_STATUS_LABELS, type TakedownStatus } from "@/lib/takedown";
@@ -39,11 +39,10 @@ const statusExplanations: Record<TakedownStatus, string> = {
   rejected: "Het gerucht blijft staan.",
 };
 
-const statusColors: Record<TakedownStatus, string> = {
-  open: "bg-yellow-500/20 text-yellow-700 border-yellow-200 dark:text-yellow-300 dark:border-yellow-500/50",
-  removed:
-    "bg-green-500/20 text-green-700 border-green-200 dark:text-green-300 dark:border-green-500/50",
-  rejected: "bg-muted text-muted-foreground",
+const statusVariants: Record<TakedownStatus, BadgeVariant> = {
+  open: "warning",
+  removed: "success",
+  rejected: "muted",
 };
 
 export default async function TakedownStatusPage({
@@ -73,7 +72,7 @@ export default async function TakedownStatusPage({
         <CardHeader className="pb-2">
           <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-lg">
             <h2 className="font-mono">{request.reference}</h2>
-            <Badge variant="outline" className={statusColors[request.status]}>
+            <Badge variant={statusVariants[request.status]}>
               {TAKEDOWN_STATUS_LABELS[request.status]}
             </Badge>
           </CardTitle>

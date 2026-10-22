@@ -139,7 +139,7 @@ export default async function TakedownRequestPage({
           </CardHeader>
           <CardContent className="space-y-4">
             {gerucht && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-destructive-text">
                 Dit gerucht bestaat niet (meer). Zoek het hieronder op.
               </p>
             )}

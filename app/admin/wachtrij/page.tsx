@@ -69,7 +69,9 @@ export default async function ModerationQueuePage() {
       </div>
 
       {error ? (
-        <p className="text-destructive">De wachtrij kon niet geladen worden.</p>
+        <p className="text-destructive-text">
+          De wachtrij kon niet geladen worden.
+        </p>
       ) : rumours.length === 0 ? (
         <p className="text-muted-foreground">Geen geruchten om na te kijken.</p>
       ) : (

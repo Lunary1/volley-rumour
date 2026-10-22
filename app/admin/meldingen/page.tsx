@@ -216,7 +216,7 @@ export default async function ReportsPage() {
       </div>
 
       {failed ? (
-        <p className="text-destructive">
+        <p className="text-destructive-text">
           De meldingen konden niet geladen worden.
         </p>
       ) : (

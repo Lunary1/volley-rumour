@@ -30,6 +30,16 @@
   --accent-foreground: #111815;
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
+  /* Status colours (#208): a soft fill, and a text colour that meets AA on
+     it and on a card. Status badges always keep their label, so colour is
+     never the only signal. --destructive stays the fill of red buttons; red
+     text uses --destructive-text. */
+  --destructive-soft: #fbe8e6;
+  --destructive-text: #b3261e;
+  --success-soft: #e3f3e8;
+  --success-text: #116436;
+  --warning-soft: #fbefd5;
+  --warning-text: #855400;
   --border: #dfe4e1;
   --border-strong: #c4ccc8;
   --input: #dfe4e1;
@@ -81,6 +91,12 @@
   --accent-foreground: #edf1ef;
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.97 0 0);
+  --destructive-soft: #351a19;
+  --destructive-text: #ff8f85;
+  --success-soft: #15301f;
+  --success-text: #7fd89d;
+  --warning-soft: #2f2712;
+  --warning-text: #eec25e;
   --border: #28312d;
   --border-strong: #3a4540;
   --input: #28312d;
@@ -124,6 +140,12 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-text: var(--destructive-text);
+  --color-success-soft: var(--success-soft);
+  --color-success-text: var(--success-text);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-text: var(--warning-text);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-input: var(--input);
@@ -153,6 +175,8 @@
 /* Type sizes between Tailwind's steps, from the #207 design. Use these, or
    Tailwind's own scale; never an arbitrary size like text-[13px]. */
 @theme {
+  --text-tiny: 0.625rem; /* 10px: chat times, counters */
+  --text-tiny--line-height: 0.875rem;
   --text-label: 0.78125rem; /* 12.5px: labels, chips */
   --text-label--line-height: 1rem;
   --text-meta: 0.8125rem; /* 13px: times, provinces */
@@ -187,25 +211,5 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Homepage hero — light mode: warm sporty gradient */
-  .hero-sport {
-    background: linear-gradient(
-      160deg,
-      var(--background) 0%,
-      oklch(0.96 0.02 160) 40%,
-      oklch(0.94 0.03 160) 100%
-    );
-  }
-
-  /* Homepage hero — dark mode: deep green tint */
-  .dark .hero-sport {
-    background: linear-gradient(
-      160deg,
-      var(--background) 0%,
-      oklch(0.18 0.03 145) 40%,
-      oklch(0.16 0.04 145) 100%
-    );
   }
 }

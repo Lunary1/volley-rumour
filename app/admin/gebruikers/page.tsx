@@ -82,7 +82,7 @@ export default async function UsersPage(props: {
       </form>
 
       {error ? (
-        <p className="text-destructive">
+        <p className="text-destructive-text">
           De gebruikers konden niet geladen worden.
         </p>
       ) : users.length === 0 ? (
