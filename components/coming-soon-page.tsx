@@ -32,7 +32,7 @@ const FEATURES = [
 
 export async function ComingSoonPage() {
   const launchDate =
-    process.env.NEXT_PUBLIC_LAUNCH_DATE || "2026-03-15T18:00:00+01:00";
+    process.env.NEXT_PUBLIC_LAUNCH_DATE || "2027-02-15T18:00:00+01:00";
   const interestCount = await getInterestCount();
 
   return (
