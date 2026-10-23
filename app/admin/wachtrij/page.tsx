@@ -155,7 +155,7 @@ export default async function ModerationQueuePage() {
                       <dt className="text-muted-foreground">Verklaringen</dt>
                       <dd>
                         {rumour.declared_senior && rumour.declared_good_faith
-                          ? "Senior en te goeder trouw bevestigd"
+                          ? "Regels voor geruchten bevestigd"
                           : "Niet bevestigd (gerucht van voor de verklaringen)"}
                       </dd>
                     </dl>

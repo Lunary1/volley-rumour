@@ -56,6 +56,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-047 | 2026-10-21 | Accepted | Rumour vote counts are live: `rumours` joins the Realtime publication, one channel per page |
 | D-048 | 2026-10-21 | Accepted | Vercel functions run in Paris (`cdg1`), next to the database, not in the default Washington region |
 | D-049 | 2026-10-22 | Accepted | Pages read the logged-in user from the verified JWT (`getClaims()`), without a call to Supabase Auth; server actions and staff checks keep `getUser()` |
+| D-052 | 2026-10-23 | Accepted | A rumour needs one checkbox, "Ik volg de regels voor geruchten", instead of two declarations |
 
 ---
 
@@ -339,6 +340,7 @@ have waiting (#54, #67).
   links to the URL. Moderators see both in the queue.
 - **Two required declarations**: the rumour is about a senior player or
   trainer (D-003), and it is shared in good faith. Both are stored per rumour.
+  Since D-052 one checkbox covers both.
 - **At most 5 rumours waiting per contributor.** The database refuses a sixth
   until a moderator has handled one. The cap applies to staff too.
 - Rumours from before this change keep no source; they stay visible and can
@@ -1207,3 +1209,28 @@ with only a hover pause, which fails WCAG 2.2.2 on touch and keyboard.
 **Consequences.** The board's voters' share is cached for up to 60 s; the hot
 topics below it are live (D-047). The per-division index counts only
 zoekertjes, because `/geruchten` has no division filter yet (#242).
+
+## D-052 — One checkbox for the rumour rules
+
+**Context.** The rumour form asked for two declarations (#67, D-003, D-013):
+the rumour is about a senior player or trainer, and it is shared in good
+faith without insults or private matters. The owner found two checkboxes
+heavy and asked for one "akkoord met de voorwaarden" instead (#247).
+
+**Decision** (owner, 2026-10-23).
+- One required checkbox: "Ik volg de regels voor geruchten", where the link
+  opens the Geruchten section of the terms (`/voorwaarden#geruchten`) in a
+  new tab. The rules themselves are not in the sentence.
+- Ticking it sets both stored flags, `declared_senior` and
+  `declared_good_faith`; the database still refuses a rumour without them.
+- The agent advised keeping the rules in the sentence: a declaration of the
+  specific rules is stronger evidence against a defamation claim than a
+  reference to them, and it puts the minors rule in front of the poster at the
+  moment of posting. The owner chose the short version.
+- Not a generic "Ik ga akkoord met de voorwaarden": every user accepted the
+  terms at sign-up already (D-031).
+
+**Consequences.** The terms text is unchanged, so no new terms version; the
+Geruchten section only gained an anchor. Seniors only and pre-moderation
+still keep minors out. The legal review lists the change as a question for
+the lawyer.

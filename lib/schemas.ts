@@ -68,7 +68,7 @@ export const createRumourSchema = z
       .max(2000, "Beschrijving is te lang")
       .optional()
       .or(z.literal("")),
-    // Source and declarations (#67, D-003)
+    // Source and the rules declaration (#67, D-003, D-052)
     sourceType: z.enum(
       Object.keys(RUMOUR_SOURCE_TYPES) as [
         RumourSourceType,
@@ -85,16 +85,9 @@ export const createRumourSchema = z
         "Geef een geldige link op, die begint met http:// of https://",
       )
       .optional(),
-    declaredGoodFaith: z.literal(true, {
+    declaredRules: z.literal(true, {
       errorMap: () => ({
-        message:
-          "Bevestig dat je denkt dat het klopt en dat er geen beledigingen of privézaken in staan",
-      }),
-    }),
-    declaredSenior: z.literal(true, {
-      errorMap: () => ({
-        message:
-          "Bevestig dat het over een speler of trainer bij de seniors gaat",
+        message: "Bevestig dat je de regels voor geruchten volgt",
       }),
     }),
   })

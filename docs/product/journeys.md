@@ -268,9 +268,8 @@ to be right.
 - **Given** the form, **then** division options are senior only (D-003), and a
   source type is required ("eigen info / clubwebsite / pers / sociale media /
   andere") with an optional URL.
-- **Given** the form, **then** I must tick: "Het gaat over een speler of trainer bij
-  de seniors, niet bij de jeugd" and "Ik geloof dat dit klopt, en er staan geen
-  beledigingen of privézaken in" before I can submit.
+- **Given** the form, **then** I must tick "Ik volg de regels voor geruchten"
+  (a link to the Geruchten rules in the terms) before I can submit (D-052).
 - **Given** I submit valid input, **then** the rumour is stored as **pending**,
   is not publicly visible, and I see "Je gerucht wordt nagekeken door een
   moderator" (D-002).

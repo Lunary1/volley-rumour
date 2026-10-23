@@ -29,7 +29,7 @@ Vercel hosting, Resend email, optional Google login.
 
 | Old text said | The site does | Fixed |
 | --- | --- | --- |
-| Rumours can be shared "vrij" | Pre-moderation, source and declarations required, max 5 pending, seniors only | Terms › Geruchten |
+| Rumours can be shared "vrij" | Pre-moderation, source and a rules declaration required, max 5 pending, seniors only | Terms › Geruchten |
 | "Geverifieerde moderators" confirm transfers | Staff resolve rumours as bevestigd / ontkracht / niet bevestigd on an official source | Terms › Geruchten |
 | Upvote / downvote, reputation | "Klopt het?" vote on lopende rumours, not on your own, private; track record from moderator decisions only (D-005) | Terms › Stemmen |
 | Messages about rumours and classifieds | Conversations only about a zoekertje (D-022), blocking (D-018), moderators read reported conversations (D-015) | Terms › Berichten |
@@ -87,7 +87,7 @@ reading. Micro enterprises are exempt from art. 20–28 except art. 24(3).
 | Language | Done | Dutch; French is a nice-to-have (D-027). Open question 6 |
 | Paid features (featured ads) | n/a | Free at launch; terms say they'll change first if that changes |
 | Cookies (ePrivacy, art. 129 WEC) | Done | Only strictly necessary (login) and theme in browser storage; analytics cookie-less, no banner needed |
-| Personality rights / defamation of people named in rumours | Mitigated | Seniors only, source and good faith required, pre-moderation, takedown without account. Open question 2 |
+| Personality rights / defamation of people named in rumours | Mitigated | Seniors only, source required, one "Ik volg de regels voor geruchten" checkbox per rumour (D-052), pre-moderation, takedown without account. Open questions 2 and 9 |
 
 ## 6. Open questions for a lawyer
 
@@ -115,6 +115,11 @@ reading. Micro enterprises are exempt from art. 20–28 except art. 24(3).
    compatible with the right to erasure?
 8. **Audit log retention.** Is 2 years (D-011) proportionate for a log that
    names users and moderators?
+9. **The rules declaration (D-052).** Each rumour needs one checkbox, "Ik
+   volg de regels voor geruchten", linking to the rules (seniors only, good
+   faith, no insults or private matters). Until 2026-10-23 the poster declared
+   each rule separately. Is the reference enough as evidence of good faith
+   against a defamation claim, or should the rules be in the sentence?
 
 ## 7. Still to do outside the code
 

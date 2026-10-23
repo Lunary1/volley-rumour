@@ -120,8 +120,7 @@ test("the author edits a pending rumour, which stays pending", async ({
 
   await page.getByLabel("Nieuwe club").fill("Volley Verbeterd");
   // The declarations are asked again on every edit.
-  await page.getByLabel(/bij de seniors/).check();
-  await page.getByLabel(/er staan geen beledigingen/).check();
+  await page.getByLabel(/regels voor geruchten/).check();
   await page.getByRole("button", { name: "Wijzigingen opslaan" }).click();
 
   await expect(page).toHaveURL("/profile");
