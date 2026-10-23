@@ -26,11 +26,11 @@ test("the form asks for a source and both declarations", async ({ page }) => {
   await expect(page.getByLabel(/Link naar de bron/)).not.toHaveAttribute(
     "required",
   );
-  await expect(page.getByLabel(/seniorspeler of -trainer/)).toHaveAttribute(
+  await expect(page.getByLabel(/bij de seniors/)).toHaveAttribute(
     "required",
     "",
   );
-  await expect(page.getByLabel(/te goeder trouw/)).toHaveAttribute(
+  await expect(page.getByLabel(/er staan geen beledigingen/)).toHaveAttribute(
     "required",
     "",
   );
@@ -115,8 +115,8 @@ test("an author with 5 rumours waiting can't share another", async ({
   await page.getByLabel(/Huidige Club/).fill("VC Testdorp");
   await page.getByLabel(/Waar komt je gerucht vandaan/).click();
   await page.getByRole("option", { name: "Eigen waarneming" }).click();
-  await page.getByLabel(/seniorspeler of -trainer/).check();
-  await page.getByLabel(/te goeder trouw/).check();
+  await page.getByLabel(/bij de seniors/).check();
+  await page.getByLabel(/er staan geen beledigingen/).check();
   await share.evaluate((button: HTMLButtonElement) => {
     button.disabled = false;
   });

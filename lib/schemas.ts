@@ -87,13 +87,14 @@ export const createRumourSchema = z
       .optional(),
     declaredGoodFaith: z.literal(true, {
       errorMap: () => ({
-        message: "Bevestig dat je dit gerucht te goeder trouw deelt",
+        message:
+          "Bevestig dat je denkt dat het klopt en dat er geen beledigingen of privézaken in staan",
       }),
     }),
     declaredSenior: z.literal(true, {
       errorMap: () => ({
         message:
-          "Bevestig dat het gerucht over een seniorspeler of -trainer gaat",
+          "Bevestig dat het over een speler of trainer bij de seniors gaat",
       }),
     }),
   })
@@ -112,7 +113,7 @@ export const createRumourSchema = z
       if (!data.destinationClub || data.destinationClub.trim().length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Doelclub is verplicht voor transfers",
+          message: "Vul de nieuwe club in",
           path: ["destinationClub"],
         });
       }

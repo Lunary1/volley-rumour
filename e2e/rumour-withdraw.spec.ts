@@ -116,12 +116,12 @@ test("the author edits a pending rumour, which stays pending", async ({
   await expect(page).toHaveURL(`/geruchten/${id}/bewerken`);
   await expect(page.getByLabel("Voornaam")).toHaveValue("Eva");
   await expect(page.getByLabel("Achternaam")).toHaveValue(`Bewerkbaar${stamp}`);
-  await expect(page.getByLabel("Doelclub")).toHaveValue("Volley Voorbeeld");
+  await expect(page.getByLabel("Nieuwe club")).toHaveValue("Volley Voorbeeld");
 
-  await page.getByLabel("Doelclub").fill("Volley Verbeterd");
+  await page.getByLabel("Nieuwe club").fill("Volley Verbeterd");
   // The declarations are asked again on every edit.
-  await page.getByLabel(/seniorspeler of -trainer/).check();
-  await page.getByLabel(/te goeder trouw/).check();
+  await page.getByLabel(/bij de seniors/).check();
+  await page.getByLabel(/er staan geen beledigingen/).check();
   await page.getByRole("button", { name: "Wijzigingen opslaan" }).click();
 
   await expect(page).toHaveURL("/profile");

@@ -90,8 +90,8 @@ test("an admin suspends a user, who can read but not post, then lifts it", async
   await suspended.getByLabel(/Huidige Club/).fill("VC Testdorp");
   await suspended.getByLabel(/Waar komt je gerucht vandaan/).click();
   await suspended.getByRole("option", { name: "Eigen waarneming" }).click();
-  await suspended.getByLabel(/seniorspeler of -trainer/).check();
-  await suspended.getByLabel(/te goeder trouw/).check();
+  await suspended.getByLabel(/bij de seniors/).check();
+  await suspended.getByLabel(/er staan geen beledigingen/).check();
   await suspended.getByRole("button", { name: "Gerucht Delen" }).click();
   await expect(
     suspended.getByText("Je account is geschorst. Je kan de site nog lezen"),

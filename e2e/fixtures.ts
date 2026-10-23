@@ -183,8 +183,8 @@ export async function submitRumour(
     .getByRole("option", { name: source.type ?? "Eigen waarneming" })
     .click();
   if (source.url) await page.getByLabel(/Link naar de bron/).fill(source.url);
-  await page.getByLabel(/seniorspeler of -trainer/).check();
-  await page.getByLabel(/te goeder trouw/).check();
+  await page.getByLabel(/bij de seniors/).check();
+  await page.getByLabel(/er staan geen beledigingen/).check();
   await page.getByRole("button", { name: "Gerucht Delen" }).click();
 
   await expect(
