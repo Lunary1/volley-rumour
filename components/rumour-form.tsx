@@ -323,7 +323,7 @@ export function RumourForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="destinationClub">
-                    Doelclub <span className="text-destructive-text">*</span>
+                    Nieuwe club <span className="text-destructive-text">*</span>
                   </Label>
                   <p className="text-xs text-muted-foreground">
                     {isPlayerCategory(selectedCategory)
@@ -340,11 +340,11 @@ export function RumourForm({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="destinationDivision">
-                    Doelniveau{" "}
+                    Niveau{" "}
                     <span className="text-muted-foreground">(optioneel)</span>
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Het competitieniveau van de doelclub
+                    Het competitieniveau van de nieuwe club, indien bekend.
                   </p>
                   <Select
                     name="destinationDivision"
@@ -459,8 +459,8 @@ export function RumourForm({
                 className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
               />
               <span>
-                Dit gerucht gaat over een seniorspeler of -trainer{" "}
-                <span className="text-destructive-text">*</span>
+                Het gaat over een speler of trainer bij de seniors, niet bij de
+                jeugd <span className="text-destructive-text">*</span>
               </span>
             </label>
             <label className="flex items-start gap-3 text-sm">
@@ -471,9 +471,8 @@ export function RumourForm({
                 className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
               />
               <span>
-                Ik deel dit gerucht te goeder trouw: ik geloof dat het klopt en
-                het bevat geen beledigingen of privézaken{" "}
-                <span className="text-destructive-text">*</span>
+                Ik geloof dat dit klopt, en er staan geen beledigingen of
+                privézaken in <span className="text-destructive-text">*</span>
               </span>
             </label>
           </fieldset>
