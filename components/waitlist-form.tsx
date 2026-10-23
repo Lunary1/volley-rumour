@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { subscribeToWaitlist } from "@/app/actions/waitlist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { WaitlistShare } from "@/components/waitlist-share";
 import { Mail, CheckCircle2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -31,11 +32,14 @@ export function WaitlistForm() {
 
   if (status === "success") {
     return (
-      <div className="flex items-center gap-2 text-primary bg-primary/10 rounded-lg px-4 py-3">
-        <CheckCircle2 className="h-5 w-5 shrink-0" />
-        <p className="text-sm font-medium">
-          Bedankt! Je hoort van ons bij de lancering.
-        </p>
+      <div className="flex flex-col items-center gap-4 lg:items-start">
+        <div className="flex items-center gap-2 text-primary bg-primary/10 rounded-lg px-4 py-3">
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
+          <p className="text-sm font-medium">
+            Bedankt! Je hoort van ons bij de lancering.
+          </p>
+        </div>
+        <WaitlistShare />
       </div>
     );
   }

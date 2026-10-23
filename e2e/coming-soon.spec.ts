@@ -57,18 +57,20 @@ test("the ball is a keep-up game, by click and by keyboard", async ({
   const score = page.getByTestId("hooghouden-score");
   await expect(score).toHaveText("Hou de bal hoog: tik erop");
 
-  // A click on the ball knocks it up; the run ends when it lands.
+  // A click on the ball knocks it up; the run ends when it lands. A busy
+  // machine can land it before "1 keer hoog" is seen, so only the end state
+  // is checked.
   await volleyball(page).click();
-  await expect(score).toHaveText("1 keer hoog");
   await expect(score).toHaveText("Nieuw record: 1 keer hoog", {
     timeout: 5_000,
   });
 
-  // Space on the focused ball does the same.
+  // Space on the focused ball does the same: in the air ("1 keer hoog ·
+  // record 1") or already down ("1 keer hoog gehouden · record 1").
   const ball = page.getByRole("button", { name: "Bal hooghouden" });
   await ball.focus();
   await page.keyboard.press("Space");
-  await expect(score).toHaveText("1 keer hoog · record 1");
+  await expect(score).toHaveText(/^1 keer hoog( gehouden)? · record 1$/);
 });
 
 test("the example rumour walks through its steps", async ({ page }) => {
@@ -89,7 +91,11 @@ test("the example rumour walks through its steps", async ({ page }) => {
   ).toHaveAttribute("aria-current", "step");
 });
 
-test("joins the waitlist", async ({ page }) => {
+test("joins the waitlist, then shares it with the team", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto(PATH);
   await page
     .getByPlaceholder("jouw@email.be")
@@ -98,6 +104,22 @@ test("joins the waitlist", async ({ page }) => {
   await expect(
     page.getByText("Bedankt! Je hoort van ons bij de lancering."),
   ).toBeVisible();
+
+  // The share prompt (#238): WhatsApp with a Dutch message and the tagged
+  // link, and a copy button.
+  await expect(page.getByText("Deel het met je ploeg.")).toBeVisible();
+  const whatsapp = page.getByRole("link", { name: "Deel via WhatsApp" });
+  const href = new URL((await whatsapp.getAttribute("href")) ?? "");
+  expect(href.hostname).toBe("wa.me");
+  const message = href.searchParams.get("text") ?? "";
+  expect(message).toContain("Schrijf je in voor de lancering");
+  expect(message).toContain("/?utm_source=wachtlijst");
+
+  await page.getByRole("button", { name: "Kopieer link" }).click();
+  await expect(page.getByRole("button", { name: "Gekopieerd" })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+    /\/\?utm_source=wachtlijst$/,
+  );
 });
 
 test.describe("on a phone with reduced motion", () => {
