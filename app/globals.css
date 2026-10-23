@@ -52,6 +52,7 @@
   --ball-panel: #ffffff;
   --ball-accent: #0b6e4f;
   --ball-seam: #8f9a95;
+  --ball-shadow: #111815;
   /* For charts only; no badge uses them. */
   --chart-1: oklch(0.45 0.16 160);
   --chart-2: oklch(0.6 0.15 50);
@@ -111,6 +112,7 @@
   --ball-panel: #dfe6e2;
   --ball-accent: #43c08a;
   --ball-seam: #2c3632;
+  --ball-shadow: #000000;
   --chart-1: oklch(0.65 0.2 145);
   --chart-2: oklch(0.7 0.18 50);
   --chart-3: oklch(0.6 0.15 200);
@@ -202,6 +204,41 @@
 }
 @utility grid-cards-featured {
   grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+}
+
+/* Movement on the coming-soon page (#236). Each one stands still with
+   reduced motion. */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+/* A band of two identical halves sliding left forever; hovering pauses it. */
+@utility animate-marquee {
+  animation: marquee 70s linear infinite;
+  &:hover {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+/* Fades and rises in while scrolling into view; no JavaScript. Browsers
+   without scroll-driven animations just show it. */
+@utility reveal-on-scroll {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
 }
 
 @layer base {
