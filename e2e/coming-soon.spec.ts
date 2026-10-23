@@ -58,19 +58,19 @@ test("the ball is a keep-up game, by click and by keyboard", async ({
   await expect(score).toHaveText("Hou de bal hoog: tik erop");
 
   // A click on the ball knocks it up; the run ends when it lands. A busy
-  // machine can land it before "1 keer hoog" is seen, so only the end state
+  // machine can land it before "1 keer" is seen, so only the end state
   // is checked.
   await volleyball(page).click();
   await expect(score).toHaveText("Nieuw record: 1 keer hoog", {
     timeout: 5_000,
   });
 
-  // Space on the focused ball does the same: in the air ("1 keer hoog ·
-  // record 1") or already down ("1 keer hoog gehouden · record 1").
+  // Space on the focused ball does the same: in the air ("1 keer · record
+  // 1") or already down ("1 keer hoog gehouden · record 1").
   const ball = page.getByRole("button", { name: "Bal hooghouden" });
   await ball.focus();
   await page.keyboard.press("Space");
-  await expect(score).toHaveText(/^1 keer hoog( gehouden)? · record 1$/);
+  await expect(score).toHaveText(/^1 keer( hoog gehouden)? · record 1$/);
 });
 
 test("the example rumour walks through its steps", async ({ page }) => {
