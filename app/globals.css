@@ -47,6 +47,11 @@
   /* Featured zoekertjes: a tinted card instead of a glow. */
   --feature-bg: #f2f8f4;
   --feature-border: #cde3d6;
+  /* The coming-soon volleyball (#229): white and logo-green panels, grey
+     seams. Read by components/coming-soon/volleyball-scene.ts; hex only. */
+  --ball-panel: #ffffff;
+  --ball-accent: #0b6e4f;
+  --ball-seam: #8f9a95;
   /* For charts only; no badge uses them. */
   --chart-1: oklch(0.45 0.16 160);
   --chart-2: oklch(0.6 0.15 50);
@@ -103,6 +108,9 @@
   --ring: #43c08a;
   --feature-bg: #122019;
   --feature-border: #244232;
+  --ball-panel: #dfe6e2;
+  --ball-accent: #43c08a;
+  --ball-seam: #2c3632;
   --chart-1: oklch(0.65 0.2 145);
   --chart-2: oklch(0.7 0.18 50);
   --chart-3: oklch(0.6 0.15 200);
