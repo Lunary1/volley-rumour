@@ -149,7 +149,7 @@ export function ShareButton({
 }
 
 /** Simple inline WhatsApp SVG icon */
-function WhatsAppIcon({ className }: { className?: string }) {
+export function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
