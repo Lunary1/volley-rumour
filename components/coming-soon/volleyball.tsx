@@ -43,7 +43,7 @@ interface Score {
 
 function scoreLine({ run, record, last, newRecord }: Score): string {
   const best = record > 0 ? ` · record ${record}` : "";
-  if (run > 0) return `${run} keer hoog${best}`;
+  if (run > 0) return `${run} keer ${best}`;
   if (last === null) return "Hou de bal hoog: tik erop";
   if (newRecord) return `Nieuw record: ${record} keer hoog`;
   return `${last} keer hoog gehouden${best}`;
