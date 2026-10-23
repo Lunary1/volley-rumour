@@ -49,7 +49,7 @@ export function CountdownTimer({ launchDate }: { launchDate: string }) {
   }
 
   // Before hydration the same boxes show dashes, so nothing moves when the
-  // numbers arrive (#229).
+  // numbers arrive (#229). A changed number rolls in from above (#236).
   const units = [
     { label: "Dagen", value: timeLeft?.days },
     { label: "Uren", value: timeLeft?.hours },
@@ -66,9 +66,12 @@ export function CountdownTimer({ launchDate }: { launchDate: string }) {
       {units.map((unit) => (
         <div
           key={unit.label}
-          className="flex flex-col items-center justify-center rounded-xl bg-card border border-border p-3 sm:p-4 min-w-16 sm:min-w-20 shadow-sm"
+          className="flex flex-col items-center justify-center overflow-hidden rounded-xl bg-card border border-border p-3 sm:p-4 min-w-16 sm:min-w-20 shadow-sm"
         >
-          <span className="text-2xl sm:text-3xl font-bold tabular-nums text-foreground">
+          <span
+            key={unit.value ?? "--"}
+            className="text-2xl sm:text-3xl font-bold tabular-nums text-foreground animate-in slide-in-from-top-full duration-200 motion-reduce:animate-none"
+          >
             {isClient && unit.value !== undefined
               ? String(unit.value).padStart(2, "0")
               : "--"}

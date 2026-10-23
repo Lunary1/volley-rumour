@@ -1,11 +1,9 @@
 import {
-  BadgeCheck,
   CalendarDays,
   CheckCircle,
   Flame,
   MessageSquare,
   Search,
-  ShieldCheck,
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +12,8 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { Volleyball } from "@/components/coming-soon/volleyball";
+import { ZoekertjesBand } from "@/components/coming-soon/zoekertjes-band";
+import { RumourWalkthrough } from "@/components/coming-soon/rumour-walkthrough";
 import { getInterestCount } from "@/app/actions/waitlist";
 import { formatDate } from "@/lib/dates";
 
@@ -42,26 +42,6 @@ const FEATURES = [
   },
 ];
 
-// How a rumour goes from tip to verdict (D-002, D-005, D-020).
-const STEPS = [
-  {
-    icon: Flame,
-    title: "Iemand meldt een gerucht",
-    description: "Altijd met een bron: wie het zegt en waar het vandaan komt.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Een moderator kijkt het na",
-    description:
-      "Pas daarna komt het online, en een speler kan het laten verwijderen.",
-  },
-  {
-    icon: BadgeCheck,
-    title: "Bevestigd of ontkracht",
-    description: "Na de officiële bekendmaking zie je wie het vooraf goed had.",
-  },
-];
-
 export async function ComingSoonPage() {
   const date =
     process.env.NEXT_PUBLIC_LAUNCH_DATE || "2027-02-15T18:00:00+01:00";
@@ -69,10 +49,10 @@ export async function ComingSoonPage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero: text and waitlist beside a turning volleyball (#229) */}
+      {/* Hero: text and waitlist beside a volleyball to keep up (#229, #236) */}
       <section className="overflow-hidden border-b border-border">
         <div className="mx-auto grid max-w-7xl items-center gap-6 px-4 py-8 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-24">
-          <Volleyball className="mx-auto aspect-square w-full max-w-48 sm:max-w-64 lg:order-2 lg:max-w-none" />
+          <Volleyball className="mx-auto w-full max-w-56 sm:max-w-72 lg:order-2 lg:max-w-none" />
 
           <div className="flex flex-col items-center gap-7 text-center lg:items-start lg:text-left">
             <Badge variant="soft" size="pill">
@@ -110,7 +90,9 @@ export async function ComingSoonPage() {
         </div>
       </section>
 
-      {/* What's coming */}
+      <ZoekertjesBand />
+
+      {/* What's coming: each card rises in as it scrolls into view */}
       <section className="bg-muted/40 py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
@@ -119,7 +101,7 @@ export async function ComingSoonPage() {
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((feature) => (
-              <Card key={feature.title}>
+              <Card key={feature.title} className="reveal-on-scroll">
                 <CardContent className="space-y-3">
                   <div className="flex size-11 items-center justify-center rounded-lg bg-primary-soft">
                     <feature.icon className="size-5 text-primary-text" />
@@ -144,24 +126,7 @@ export async function ComingSoonPage() {
             title="Zo werkt Transfer Talk"
             description="Geen roddels zonder bron: elk gerucht wordt nagekeken."
           />
-          <ol className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="flex gap-4">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border-strong text-sm font-semibold tabular-nums">
-                  {i + 1}
-                </span>
-                <div className="space-y-1">
-                  <h3 className="flex items-center gap-2 font-semibold">
-                    <step.icon className="size-4 text-muted-foreground" />
-                    {step.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <RumourWalkthrough />
         </div>
       </section>
     </div>
