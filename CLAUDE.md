@@ -101,7 +101,7 @@ Supabase until then. Treat every merge as a release.
 ```
 feature/42-password-reset ──PR──┐
 fix/57-search-crash       ──PR──┼──► main ──► Production (volleyrumours.be)
-chore/61-eslint           ──PR──┘   protected · CI required · squash only
+chore/61-eslint           ──PR──┘   protected · checks required · squash only
         │
         └─ every PR gets a Vercel preview deployment
 ```
@@ -120,6 +120,10 @@ chore/61-eslint           ──PR──┘   protected · CI required · squash
    only touches Markdown, `docs/` or issue templates skips `checks` and
    `e2e` (#215), so it merges within a minute. Put doc updates for a code change
    in that change's PR, not in a PR of their own.
+   Only `checks` is a required check; `e2e` is advisory (owner, 2026-10-23,
+   #234). A red `e2e` still needs a look: if it failed for infrastructure
+   reasons and no tests ran (a registry rate limit, say), rerun it; a test that
+   fails because of the change gets fixed before merging.
 6. **Squash merge**, then delete the branch. The author merges their own PR
    once the gate passes, agents included (owner's call, 2026-10-13).
 
