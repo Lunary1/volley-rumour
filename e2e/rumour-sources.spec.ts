@@ -26,14 +26,14 @@ test("the form asks for a source and both declarations", async ({ page }) => {
   await expect(page.getByLabel(/Link naar de bron/)).not.toHaveAttribute(
     "required",
   );
-  await expect(page.getByLabel(/bij de seniors/)).toHaveAttribute(
+  // One checkbox for the rules, linking to them in the terms (D-052).
+  await expect(page.getByLabel(/regels voor geruchten/)).toHaveAttribute(
     "required",
     "",
   );
-  await expect(page.getByLabel(/er staan geen beledigingen/)).toHaveAttribute(
-    "required",
-    "",
-  );
+  const rules = page.getByRole("link", { name: "regels voor geruchten" });
+  await expect(rules).toHaveAttribute("href", "/voorwaarden#geruchten");
+  await expect(rules).toHaveAttribute("target", "_blank");
 });
 
 test("the source is on the queue card and, once approved, on Transfer Talk", async ({
@@ -58,7 +58,7 @@ test("the source is on the queue card and, once approved, on Transfer Talk", asy
     "href",
     url,
   );
-  await expect(item).toContainText("Senior en te goeder trouw bevestigd");
+  await expect(item).toContainText("Regels voor geruchten bevestigd");
   await item.getByRole("button", { name: "Goedkeuren" }).click();
   await expect(
     moderator.getByText(`Gerucht over ${playerName} goedgekeurd`),
@@ -115,8 +115,7 @@ test("an author with 5 rumours waiting can't share another", async ({
   await page.getByLabel(/Huidige Club/).fill("VC Testdorp");
   await page.getByLabel(/Waar komt je gerucht vandaan/).click();
   await page.getByRole("option", { name: "Eigen waarneming" }).click();
-  await page.getByLabel(/bij de seniors/).check();
-  await page.getByLabel(/er staan geen beledigingen/).check();
+  await page.getByLabel(/regels voor geruchten/).check();
   await share.evaluate((button: HTMLButtonElement) => {
     button.disabled = false;
   });

@@ -14,14 +14,16 @@ export const metadata = pageMetadata({
 // GDPR, the DSA and Belgian law is in docs/product/legal-review.md.
 
 function Section({
+  id,
   title,
   children,
 }: {
+  id?: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div id={id} className="scroll-mt-20">
       <h2 className="text-2xl font-semibold mb-4 text-foreground">{title}</h2>
       <div className="space-y-4 text-muted-foreground">{children}</div>
     </div>
@@ -136,7 +138,7 @@ export default function VoorwaardenPage() {
         </Section>
 
         {/* D-002, D-012, D-013, D-020 */}
-        <Section title="Geruchten">
+        <Section id="geruchten" title="Geruchten">
           <ul className="list-disc list-inside space-y-2 ml-2">
             <li>
               Geruchten gaan alleen over seniorspelers en -trainers. Over

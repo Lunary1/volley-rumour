@@ -448,34 +448,26 @@ export function RumourForm({
             </div>
           </div>
 
-          {/* ── Declarations (#67, D-003) ─────────────────────── */}
-          <fieldset className="space-y-3">
-            <legend className="sr-only">Verklaringen</legend>
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                name="declaredSenior"
-                required
-                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-              />
-              <span>
-                Het gaat over een speler of trainer bij de seniors, niet bij de
-                jeugd <span className="text-destructive-text">*</span>
-              </span>
-            </label>
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                name="declaredGoodFaith"
-                required
-                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-              />
-              <span>
-                Ik geloof dat dit klopt, en er staan geen beledigingen of
-                privézaken in <span className="text-destructive-text">*</span>
-              </span>
-            </label>
-          </fieldset>
+          {/* ── Rules declaration (#67, D-003, D-052) ─────────── */}
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              name="declaredRules"
+              required
+              className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+            />
+            <span>
+              Ik volg de{" "}
+              <Link
+                href="/voorwaarden#geruchten"
+                target="_blank"
+                className="text-primary underline underline-offset-4"
+              >
+                regels voor geruchten
+              </Link>{" "}
+              <span className="text-destructive-text">*</span>
+            </span>
+          </label>
 
           {/* ── Form actions ──────────────────────────────────── */}
           <div className="flex gap-3 pt-6 border-t border-border">

@@ -45,8 +45,7 @@ function parseRumourForm(formData: FormData) {
     sourceType: (formData.get("sourceType") as string) || undefined,
     sourceUrl: (formData.get("sourceUrl") as string)?.trim() || undefined,
     // Unticked checkboxes aren't sent at all.
-    declaredGoodFaith: formData.get("declaredGoodFaith") === "on",
-    declaredSenior: formData.get("declaredSenior") === "on",
+    declaredRules: formData.get("declaredRules") === "on",
   });
 
   if (!validationResult.success) {
@@ -72,8 +71,9 @@ function parseRumourForm(formData: FormData) {
       to_division: isTransfer ? (d.destinationDivision ?? null) : null,
       source_type: d.sourceType,
       source_url: d.sourceUrl ?? null,
-      declared_good_faith: d.declaredGoodFaith,
-      declared_senior: d.declaredSenior,
+      // One checkbox covers both rules, seniors only and good faith (D-052).
+      declared_good_faith: d.declaredRules,
+      declared_senior: d.declaredRules,
     },
   } as const;
 }
