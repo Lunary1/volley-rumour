@@ -1,5 +1,4 @@
 import {
-  BoxGeometry,
   CanvasTexture,
   Color,
   DirectionalLight,
@@ -9,12 +8,14 @@ import {
   MathUtils,
   Mesh,
   MeshBasicMaterial,
-  MeshStandardMaterial,
+  MeshPhysicalMaterial,
   PerspectiveCamera,
   PlaneGeometry,
   Raycaster,
+  RepeatWrapping,
   Scene,
   Sphere,
+  SphereGeometry,
   SRGBColorSpace,
   Vector2,
   Vector3,
@@ -30,13 +31,24 @@ import {
 // `hit()`, knocks it up; it falls under gravity, and the run ends when it
 // touches the floor. Then it rolls to a stop and floats back to the middle.
 //
-// The ball is a cube pushed out to a sphere. Each face carries three panels,
-// and the panels on neighbouring faces run crosswise, like a real volleyball.
+// The ball follows today's match balls (Mikasa V200W/V300W style, #236):
+// bands that twist from pole to pole and taper, thin dark seams, a pinstripe
+// in each coloured band, a dimpled surface and a light sheen. The pattern is
+// a function of the direction from the centre, painted once into a texture.
 // Its colours are the --ball-* tokens in app/globals.css, read again when the
 // theme changes.
 
-const TEXTURE_SIZE = 256;
+const TEXTURE_WIDTH = 1024;
+const TEXTURE_HEIGHT = 512;
 const SMALL_BALLS = 7;
+
+// The pattern: BANDS alternating coloured and plain, turned by TWIST radians
+// from the bottom pole to the top, widening and narrowing by TAPER.
+const BANDS = 6;
+const TWIST = 1.8;
+const TAPER = 0.1;
+const SEAM = 0.014; // seam width, in units of the radius
+const PINSTRIPE = [0.62, 0.7]; // where in a coloured band the pinstripe runs
 
 // The game, in world units (the ball's radius is 1) and seconds.
 const GRAVITY = 7.5;
@@ -66,41 +78,80 @@ function readPalette(): Palette {
   };
 }
 
-// Three panels across one face; `vertical` panels run along the texture's v.
-// The middle panel is the accent on half of the faces, so the colours
-// alternate around the ball.
-function drawFace(
-  canvas: HTMLCanvasElement,
-  palette: Palette,
-  vertical: boolean,
-  accentMiddle: boolean,
-) {
+function rgb(hex: string): [number, number, number] {
+  // getHex() gives sRGB, the colours as written in the CSS.
+  const n = new Color(hex).getHex();
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+// Paints the whole ball into an equirectangular texture, the layout
+// SphereGeometry's UVs use: x is the longitude, y the latitude.
+function drawBall(canvas: HTMLCanvasElement, palette: Palette) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const s = TEXTURE_SIZE;
-  const third = s / 3;
-  const colours = accentMiddle
-    ? [palette.panel, palette.accent, palette.panel]
-    : [palette.accent, palette.panel, palette.accent];
+  const w = canvas.width;
+  const h = canvas.height;
+  const image = ctx.createImageData(w, h);
+  const panel = rgb(palette.panel);
+  const accent = rgb(palette.accent);
+  const seam = rgb(palette.seam);
+  const bandArc = (Math.PI * 2) / BANDS;
 
-  colours.forEach((colour, i) => {
-    ctx.fillStyle = colour;
-    if (vertical) ctx.fillRect(i * third, 0, third + 1, s);
-    else ctx.fillRect(0, i * third, s, third + 1);
-  });
+  for (let py = 0; py < h; py++) {
+    const theta = ((py + 0.5) / h) * Math.PI;
+    const y = Math.cos(theta);
+    const ring = Math.sin(theta); // radius of this latitude circle
+    for (let px = 0; px < w; px++) {
+      const lon = ((px + 0.5) / w) * Math.PI * 2;
+      // Where this point falls across the bands, twisted and tapered.
+      const s = (lon + TWIST * y) / bandArc + TAPER * Math.sin(2 * lon + 3 * y);
+      const band = Math.floor(s);
+      const across = s - band; // 0 … 1 within the band
+      const edge = Math.min(across, 1 - across) * bandArc * ring;
+      const coloured = band % 2 === 0;
 
-  // Seams between the panels, and half a seam on each edge: the neighbouring
-  // face draws the other half.
-  ctx.fillStyle = palette.seam;
-  const seam = s * 0.022;
-  for (const at of [third, 2 * third]) {
-    if (vertical) ctx.fillRect(at - seam / 2, 0, seam, s);
-    else ctx.fillRect(0, at - seam / 2, s, seam);
+      let colour = coloured ? accent : panel;
+      if (edge < SEAM / 2) colour = seam;
+      else if (
+        coloured &&
+        across > PINSTRIPE[0] &&
+        across < PINSTRIPE[1] &&
+        ring > 0.25
+      ) {
+        colour = panel;
+      }
+      const i = (py * w + px) * 4;
+      image.data[i] = colour[0];
+      image.data[i + 1] = colour[1];
+      image.data[i + 2] = colour[2];
+      image.data[i + 3] = 255;
+    }
   }
-  ctx.fillRect(0, 0, s, seam / 2);
-  ctx.fillRect(0, s - seam / 2, s, seam / 2);
-  ctx.fillRect(0, 0, seam / 2, s);
-  ctx.fillRect(s - seam / 2, 0, seam / 2, s);
+  ctx.putImageData(image, 0, 0);
+}
+
+// One tile of dimples for the bump map: dark dots on grey, in offset rows.
+function drawDimples(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const s = canvas.width;
+  ctx.fillStyle = "#808080";
+  ctx.fillRect(0, 0, s, s);
+  const r = s / 4;
+  const centres = [
+    [0, 0],
+    [s, 0],
+    [0, s],
+    [s, s],
+    [s / 2, s / 2],
+  ];
+  for (const [cx, cy] of centres) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, "#5a5a5a");
+    g.addColorStop(1, "#808080");
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  }
 }
 
 // A soft round shadow: white fading to clear, tinted by the material.
@@ -114,30 +165,6 @@ function drawShadow(canvas: HTMLCanvasElement) {
   gradient.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-// BoxGeometry's face order is +x, -x, +y, -y, +z, -z. With its UV layout,
-// vertical panels on the x and y faces and horizontal ones on the z faces
-// make every pair of neighbouring faces run crosswise.
-const FACES = [
-  { vertical: true, accentMiddle: true },
-  { vertical: true, accentMiddle: true },
-  { vertical: true, accentMiddle: false },
-  { vertical: true, accentMiddle: false },
-  { vertical: false, accentMiddle: true },
-  { vertical: false, accentMiddle: true },
-];
-
-function ballGeometry(): BoxGeometry {
-  const geometry = new BoxGeometry(1, 1, 1, 28, 28, 28);
-  const position = geometry.attributes.position;
-  const v = new Vector3();
-  for (let i = 0; i < position.count; i++) {
-    v.fromBufferAttribute(position, i).normalize();
-    position.setXYZ(i, v.x, v.y, v.z);
-  }
-  geometry.computeVertexNormals();
-  return geometry;
 }
 
 export interface VolleyballScene {
@@ -192,21 +219,29 @@ export function startVolleyballScene(
   sun.position.set(-3, 4, 5);
   scene.add(sun);
 
-  // Textures and materials, shared by every ball.
-  const canvases = FACES.map(() => {
-    const c = document.createElement("canvas");
-    c.width = c.height = TEXTURE_SIZE;
-    return c;
+  // Textures and the material, shared by every ball.
+  const ballCanvas = document.createElement("canvas");
+  ballCanvas.width = TEXTURE_WIDTH;
+  ballCanvas.height = TEXTURE_HEIGHT;
+  const ballTexture = new CanvasTexture(ballCanvas);
+  ballTexture.colorSpace = SRGBColorSpace;
+  ballTexture.anisotropy = 4;
+  const dimpleCanvas = document.createElement("canvas");
+  dimpleCanvas.width = dimpleCanvas.height = 32;
+  drawDimples(dimpleCanvas);
+  const dimpleTexture = new CanvasTexture(dimpleCanvas);
+  dimpleTexture.wrapS = dimpleTexture.wrapT = RepeatWrapping;
+  dimpleTexture.repeat.set(64, 32);
+  const material = new MeshPhysicalMaterial({
+    map: ballTexture,
+    bumpMap: dimpleTexture,
+    bumpScale: 0.6,
+    roughness: 0.5,
+    metalness: 0,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.35,
   });
-  const textures = canvases.map((c) => {
-    const texture = new CanvasTexture(c);
-    texture.colorSpace = SRGBColorSpace;
-    texture.anisotropy = 4;
-    return texture;
-  });
-  const materials = textures.map(
-    (map) => new MeshStandardMaterial({ map, roughness: 0.55, metalness: 0 }),
-  );
+  const textures = [ballTexture, dimpleTexture];
   const fog = new Fog(0xffffff, 5, 15);
   scene.fog = fog;
 
@@ -229,21 +264,19 @@ export function startVolleyballScene(
 
   function paint() {
     const palette = readPalette();
-    FACES.forEach((face, i) => {
-      drawFace(canvases[i], palette, face.vertical, face.accentMiddle);
-      textures[i].needsUpdate = true;
-    });
+    drawBall(ballCanvas, palette);
+    ballTexture.needsUpdate = true;
     fog.color = new Color(palette.background);
     shadowMaterial.color = new Color(palette.shadow);
   }
   paint();
 
-  const geometry = ballGeometry();
+  const geometry = new SphereGeometry(1, 96, 64);
 
   // The big ball moves, leans (towards the pointer) and squashes inside
   // `body`, and turns inside it as `ball`.
   const body = new Group();
-  const ball = new Mesh(geometry, materials);
+  const ball = new Mesh(geometry, material);
   ball.rotation.set(0.5, 0.3, 0.2);
   body.add(ball);
   body.position.y = REST_Y;
@@ -253,7 +286,7 @@ export function startVolleyballScene(
   // rise from the bottom of the box to the top, growing in and shrinking out
   // at the edges, so none is ever cut off by the box.
   const small = Array.from({ length: SMALL_BALLS }, (_, i) => {
-    const mesh = new Mesh(geometry, materials);
+    const mesh = new Mesh(geometry, material);
     mesh.position.z = MathUtils.lerp(-5, -2, ((i * 29) % 7) / 6);
     mesh.rotation.set(i, i * 2, i * 3);
     scene.add(mesh);
@@ -514,7 +547,7 @@ export function startVolleyballScene(
       canvas.removeEventListener("pointerdown", onCanvasDown);
       canvas.removeEventListener("pointermove", onCanvasMove);
       geometry.dispose();
-      materials.forEach((m) => m.dispose());
+      material.dispose();
       textures.forEach((t) => t.dispose());
       shadowGeometry.dispose();
       shadowMaterial.dispose();
