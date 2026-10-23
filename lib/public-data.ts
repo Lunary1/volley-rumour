@@ -185,3 +185,100 @@ export const getPublicRumour = cache(async (id: string) => {
   }
   return data ?? null;
 });
+
+/** A row on the homepage's transfer board (#240). */
+export interface BoardRumour {
+  id: string;
+  player_name: string;
+  from_club_name: string | null;
+  to_club_name: string | null;
+  category: string;
+  status: string;
+  votes_true: number;
+  votes_false: number;
+  to_division: string | null;
+  from_division: string | null;
+  created_at: string;
+}
+
+/**
+ * The transfer board on the homepage (#240): the newest public rumours,
+ * whatever their status. The share who believe it may lag a vote by up to
+ * REVALIDATE; the hot topics below it show live counts.
+ */
+export const getTransferBoard = unstable_cache(
+  async (): Promise<BoardRumour[]> => {
+    const { data, error } = await createPublicClient()
+      .from("rumours")
+      .select(
+        "id, player_name, from_club_name, to_club_name, category, status, votes_true, votes_false, to_division, from_division, created_at",
+      )
+      .in("status", PUBLIC_RUMOUR_STATUSES)
+      .order("created_at", { ascending: false })
+      .limit(8);
+    if (error) throw error;
+    return (data ?? []) as BoardRumour[];
+  },
+  ["transfer-board"],
+  { revalidate: REVALIDATE, tags: [PUBLIC_DATA_TAGS.rumours] },
+);
+
+/** A zoekertje as the homepage lists it: no names or contact details. */
+export interface HomeClassified {
+  id: string;
+  title: string;
+  type: string;
+  division: string | null;
+  province: string | null;
+  created_at: string;
+}
+
+/**
+ * The homepage's zoekertjes (#240): the four newest online ads, and how many
+ * online ads each division has. RLS shows a visitor only online ads; the
+ * filters say so too, as on /zoekertjes.
+ */
+export const getHomeClassifieds = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const online = (columns: string) =>
+      supabase
+        .from("classifieds")
+        .select(columns)
+        .eq("is_active", true)
+        .is("removed_at", null)
+        .gt("expires_at", new Date().toISOString());
+    const [latest, divisions] = await Promise.all([
+      online("id, title, type, division, province, created_at")
+        .order("created_at", { ascending: false })
+        .limit(4),
+      online("division").not("division", "is", null),
+    ]);
+    const error = latest.error ?? divisions.error;
+    if (error) throw error;
+
+    const perDivision: Record<string, number> = {};
+    for (const { division } of (divisions.data ?? []) as unknown as {
+      division: string | null;
+    }[]) {
+      if (division) perDivision[division] = (perDivision[division] ?? 0) + 1;
+    }
+    return {
+      latest: (latest.data ?? []) as unknown as HomeClassified[],
+      perDivision,
+    };
+  },
+  ["home-classifieds"],
+  { revalidate: REVALIDATE },
+);
+
+/** getHomeClassifieds once per request for both sections, empty on failure. */
+export const getHomeClassifiedsOrEmpty = cache(() =>
+  getHomeClassifieds().catch((error) => {
+    console.error("Error loading homepage zoekertjes:", error);
+    return {
+      latest: [] as HomeClassified[],
+      perDivision: {} as Record<string, number>,
+    };
+  }),
+);

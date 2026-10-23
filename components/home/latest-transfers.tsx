@@ -1,27 +1,31 @@
-import { TrendingUp } from "lucide-react";
-import { TransferCard } from "@/components/transfer-card";
+import { ArrowRight, ExternalLink, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SectionHeader } from "@/components/ui/section-header";
+import {
+  Ledger,
+  LedgerList,
+  LedgerRow,
+  LedgerRowSkeleton,
+} from "@/components/ui/ledger";
 import { getHomepageDataOrEmpty } from "@/lib/public-data";
+import { formatDate } from "@/lib/dates";
+import { isRetirement } from "@/lib/transfers";
 
-// The six latest confirmed transfers; the heading is sent at once (#211).
+// The six latest confirmed transfers, as rows like the transfer board (#240).
+// A transfer has no page of its own, so a row isn't a link; the official
+// source is.
 
-export function LatestTransfersSection({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const ROWS = 6;
+
+function TransfersFrame({ children }: { children: React.ReactNode }) {
   return (
-    <section className="border-y border-border bg-muted/20 py-12 sm:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader
-          title="Laatste transfers"
-          description="Dit seizoen bevestigd"
-          href="/transfers"
-        />
-        {children}
-      </div>
-    </section>
+    <Ledger
+      title="Bevestigd"
+      description="Transfers met een officiële bron"
+      href="/transfers"
+      linkLabel="Alle transfers"
+    >
+      {children}
+    </Ledger>
   );
 }
 
@@ -38,23 +42,60 @@ export async function LatestTransfers() {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {latestTransfers.map((transfer) => (
-        <TransferCard key={transfer.id} transfer={transfer} />
-      ))}
-    </div>
+    <TransfersFrame>
+      <LedgerList>
+        {latestTransfers.map((transfer) => {
+          const retirement = isRetirement(transfer.category);
+          return (
+            <LedgerRow key={transfer.id}>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{transfer.player_name}</p>
+                <p className="flex min-w-0 items-center gap-1.5 text-meta text-muted-foreground">
+                  {transfer.from_club && (
+                    <>
+                      <span className="truncate">{transfer.from_club}</span>
+                      <ArrowRight className="size-3.5 shrink-0" aria-hidden />
+                      <span className="sr-only">naar</span>
+                    </>
+                  )}
+                  <span className="truncate font-medium text-foreground">
+                    {retirement ? "Stopt" : transfer.to_club}
+                  </span>
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-1 text-meta text-muted-foreground">
+                {transfer.confirmed_at && (
+                  <span>{formatDate(transfer.confirmed_at, "d MMM")}</span>
+                )}
+                {transfer.source_url && (
+                  <a
+                    href={transfer.source_url}
+                    target="_blank"
+                    rel="nofollow noopener noreferrer"
+                    className="flex items-center gap-1 text-primary-text underline underline-offset-2"
+                  >
+                    Bron
+                    <span className="sr-only"> (officieel)</span>
+                    <ExternalLink className="size-3" aria-hidden />
+                  </a>
+                )}
+              </div>
+            </LedgerRow>
+          );
+        })}
+      </LedgerList>
+    </TransfersFrame>
   );
 }
 
 export function LatestTransfersSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          className="h-40 animate-pulse rounded-xl border border-border bg-card"
-        />
-      ))}
-    </div>
+    <TransfersFrame>
+      <LedgerList>
+        {Array.from({ length: ROWS }, (_, i) => (
+          <LedgerRowSkeleton key={i} />
+        ))}
+      </LedgerList>
+    </TransfersFrame>
   );
 }
