@@ -138,15 +138,15 @@ test.describe("on a phone with reduced motion", () => {
     await page.waitForTimeout(400);
     expect((await canvasShot(page)).equals(first)).toBe(true);
 
-    // No game, no moving band, no card changing by itself.
+    // No game, no moving band (it never moves since #240), no card changing
+    // by itself.
     await expect(
       page.getByRole("button", { name: "Bal hooghouden" }),
     ).toHaveCount(0);
     await expect(page.getByTestId("hooghouden-score")).toBeEmpty();
     const band = page
       .getByRole("region", { name: "Voorbeelden van zoekertjes" })
-      .locator("div")
-      .first();
+      .getByRole("list");
     expect(
       await band.evaluate((el) => getComputedStyle(el).animationName),
     ).toBe("none");

@@ -5,7 +5,7 @@ import { test, expect, loginAs, seed, seedUsers } from "./fixtures";
 // follows with its own data, and its skeleton has the same size, so nothing
 // moves when the content arrives.
 
-const HERO = "Het centrum voor";
+const HERO = "Wie gaat waarheen?";
 
 /**
  * The homepage's HTML as the chunks arrive, fetched with the page's cookies,
@@ -79,7 +79,9 @@ for (const viewport of [
     await page.reload();
 
     await expect(page.getByText(seedUsers.bron.username)).toBeVisible();
-    await expect(page.getByText("Actieve geruchten")).toBeVisible();
+    await expect(
+      page.getByText("lopende geruchten", { exact: true }),
+    ).toBeVisible();
     await expect(
       page.getByText(seed.openRumour.playerName).first(),
     ).toBeVisible();

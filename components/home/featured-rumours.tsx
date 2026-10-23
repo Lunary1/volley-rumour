@@ -21,8 +21,8 @@ export function FeaturedRumoursSection({
     <section className="py-12 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
-          title="Hot topics — nu besproken"
-          description="Meest besproken transfers van dit moment"
+          title="Meest besproken"
+          description="Lopende geruchten met de meeste stemmen. Klopt het, of niet?"
           href="/geruchten"
         />
         {children}

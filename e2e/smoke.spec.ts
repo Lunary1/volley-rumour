@@ -8,7 +8,7 @@ test("homepage shows open rumours and confirmed transfers", async ({
 }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { level: 1, name: /transfer talk/i }),
+    page.getByRole("heading", { level: 1, name: "Wie gaat waarheen?" }),
   ).toBeVisible();
   await expect(
     page.getByText(seed.openRumour.playerName).first(),

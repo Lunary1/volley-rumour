@@ -6,11 +6,11 @@ import {
   TRAINER_DIPLOMA_LABELS,
 } from "@/lib/classifieds-utils";
 
-// A slow band of the kinds of zoekertje the site will carry (#236), built from
-// the real labels. Examples only: no person or club is named. The list is
-// drawn twice and slides left by one copy, so the loop has no seam; the
-// second copy is hidden from screen readers. Hover pauses it; with reduced
-// motion it stands still.
+// A band of the kinds of zoekertje the site will carry (#236), built from the
+// real labels. Examples only: no person or club is named. It stands still
+// (#240): a band that slides by itself needs a pause control (WCAG 2.2.2), and
+// a hover pause is no use on a phone. On a phone the visitor swipes it; from
+// lg it wraps.
 const EXAMPLES = [
   {
     type: "team_seeks_player",
@@ -49,35 +49,30 @@ const EXAMPLES = [
   },
 ] as const;
 
-function Examples({ hidden }: { hidden?: boolean }) {
-  return (
-    <ul aria-hidden={hidden || undefined} className="flex shrink-0 gap-3 pr-3">
-      {EXAMPLES.map((ad, i) => (
-        <li
-          key={i}
-          className="flex shrink-0 items-center gap-2.5 rounded-full border border-border bg-card py-1.5 pr-4 pl-1.5 text-meta whitespace-nowrap"
-        >
-          <ClassifiedTypeLabel type={ad.type} />
-          <span className="font-medium text-foreground">
-            {ad.detail.join(" · ")}
-          </span>
-          <span className="text-muted-foreground">{ad.province}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export function ZoekertjesBand() {
   return (
     <section
       aria-label="Voorbeelden van zoekertjes"
-      className="overflow-hidden border-b border-border py-4"
+      className="border-b border-border py-4"
     >
-      <div className="flex w-max animate-marquee">
-        <Examples />
-        <Examples hidden />
-      </div>
+      {/* Focusable, so a keyboard can scroll it too. */}
+      <ul
+        tabIndex={0}
+        className="mx-auto flex max-w-7xl snap-x gap-3 overflow-x-auto px-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:px-6 lg:flex-wrap lg:justify-center lg:overflow-visible lg:px-8"
+      >
+        {EXAMPLES.map((ad, i) => (
+          <li
+            key={i}
+            className="flex shrink-0 snap-start items-center gap-2.5 rounded-full border border-border bg-card py-1.5 pr-4 pl-1.5 text-meta whitespace-nowrap"
+          >
+            <ClassifiedTypeLabel type={ad.type} />
+            <span className="font-medium text-foreground">
+              {ad.detail.join(" · ")}
+            </span>
+            <span className="text-muted-foreground">{ad.province}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
