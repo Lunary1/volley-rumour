@@ -1180,3 +1180,30 @@ on another device, still looks logged in on pages until its token expires (1
 hour); the database refuses its writes anyway (RLS, the suspension trigger
 `VR005`), and a suspension shows at once because it is read from our own
 table. To undo: call `getUser()` in `getSessionUser()` and in the proxy.
+
+## D-051 — The homepage leads with a transfer board, and nothing slides by itself
+
+**Context.** The owner asked for a rebuilt launch homepage, researched against
+recent Awwwards sports winners, and asked whether the sliding band on the
+coming-soon page was needed (#240). The award sites are one-visit brand pieces
+(video heroes, gates, scroll hijacking, loops). VolleyRumours is reopened on a
+phone all through the transfer window. The band slid for more than 5 seconds
+with only a hover pause, which fails WCAG 2.2.2 on touch and keyboard.
+
+**Decision** (owner approved the design, 2026-10-23, PR #241).
+- The homepage opens with "Wie gaat waarheen?" and a transfer board: the 8
+  newest public rumours of every status (Lopend, Bevestigd, Ontkracht, Niet
+  bevestigd), each with clubs, division, time, status and the voters' share.
+  Showing resolved rumours too was the agent's call: it shows the moderation
+  working, and an Ontkracht row clears a name instead of leaving a rumour
+  hanging.
+- "Gerucht delen" stays the primary button and "Zoekertje plaatsen" the
+  second: the site is called VolleyRumours (owner).
+- Below the board: hot topics with votes, the newest zoekertjes, zoekertjes
+  per division, confirmed transfers and Betrouwbare bronnen.
+- Nothing on the homepage moves by itself. The coming-soon band stands still:
+  a phone swipes it, from lg it wraps.
+
+**Consequences.** The board's voters' share is cached for up to 60 s; the hot
+topics below it are live (D-047). The per-division index counts only
+zoekertjes, because `/geruchten` has no division filter yet (#242).
