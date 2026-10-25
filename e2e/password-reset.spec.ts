@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import type { Page } from "@playwright/test";
 import { test, expect, loginAs, resetUsers, seedUsers } from "./fixtures";
-import { getAuthLinkFromEmail } from "./mailpit";
+import { emailsTo, getAuthLinkFromEmail } from "./mailpit";
 
 // #58: the reset email used to land on a 404. Each run sets a new random
 // password, so the tests don't depend on the account's current one.
@@ -126,4 +126,11 @@ test("the profile page sends a link to set a password", async ({ page }) => {
   expect(await getAuthLinkFromEmail(seedUsers.tom.email, sentAt)).toContain(
     "type=recovery",
   );
+
+  // #251: the email uses our template from supabase/templates, not
+  // Supabase's English default.
+  const [email] = await emailsTo(seedUsers.tom.email, sentAt);
+  expect(email.Subject).toBe("Kies een nieuw wachtwoord voor VolleyRumours");
+  expect(email.HTML).toContain("Nieuw wachtwoord kiezen");
+  expect(email.Text).toContain("Werkt de knop niet?");
 });
