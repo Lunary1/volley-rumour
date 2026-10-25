@@ -86,6 +86,36 @@ waitlist and test accounts; the owner accepts that risk until then.
 - [ ] Look at the usage page (egress, Realtime peak, database size) and note
       the numbers here, to plan the next window.
 
+## Auth email templates
+
+The emails Supabase Auth sends (confirm sign-up, reset password, magic link,
+change email, invite, reauthentication) are built in `supabase/templates/`
+(#251): one layout in the site's light theme, Dutch copy, tables and inline
+styles so Gmail and Outlook show them as designed. `supabase/config.toml`
+points the local stack at them, so the e2e tests and Mailpit use the same
+emails as production.
+
+Production keeps its own copy in the dashboard, so after changing a template:
+
+1. `node supabase/templates/build.mjs` and commit the regenerated `.html`
+   files with the change.
+2. After merge, the owner opens **Authentication > Emails > Templates** in the
+   dashboard, and for each template pastes the subject (from `config.toml`)
+   and the contents of its `.html` file, then **Save changes**.
+3. Send yourself a password reset from the live site to check it.
+
+| Dashboard template | File | Subject |
+| --- | --- | --- |
+| Confirm sign up | `confirmation.html` | Bevestig je e-mailadres voor VolleyRumours |
+| Reset password | `recovery.html` | Kies een nieuw wachtwoord voor VolleyRumours |
+| Magic link or OTP | `magic_link.html` | Je inloglink voor VolleyRumours |
+| Change email address | `email_change.html` | Bevestig je nieuwe e-mailadres voor VolleyRumours |
+| Invite user | `invite.html` | Je bent uitgenodigd op VolleyRumours |
+| Reauthentication | `reauthentication.html` | Je bevestigingscode voor VolleyRumours |
+
+The logo loads from `https://volleyrumours.be/logo-text-header.png`, so keep
+that file in `public/`.
+
 ## Nightly retention jobs
 
 The privacy page promises how long we keep each kind of data. Four database
