@@ -79,63 +79,70 @@ if (args.to) {
   process.exit(0);
 }
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!url || !key) {
-  throw new Error(
-    "NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are needed to read the waitlist.",
-  );
-}
-const admin = createClient(url, key, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
-
-const { data, error } = await admin
-  .from("waitlist_subscribers")
-  .select("email")
-  .order("subscribed_at", { ascending: true });
-if (error) throw error;
-
-const sent = new Set(
-  existsSync(args.state) ? JSON.parse(readFileSync(args.state, "utf8")) : [],
-);
-const all = [...new Set(data.map((row) => row.email.trim().toLowerCase()))];
-const todo = all.filter((address) => !sent.has(address));
-const limit = Number(args.limit);
-const batch = todo.slice(0, limit);
-
-console.log(
-  `Waitlist on ${new URL(url).host}: ${all.length} addresses, ${all.length - todo.length} already sent, ${todo.length} to go.`,
-);
-
-if (!args.send) {
-  console.log(
-    `Nothing sent. Add --send to send the next ${batch.length} (--limit ${limit}).`,
-  );
-  process.exit(0);
-}
-
-const smtp = transport();
-let failed = 0;
-for (const [i, address] of batch.entries()) {
-  try {
-    await sendTo(smtp, address);
-    sent.add(address);
-    writeFileSync(args.state, JSON.stringify([...sent], null, 2));
-    console.log(`${i + 1}/${batch.length} sent`);
-  } catch (err) {
-    failed += 1;
-    console.error(`${i + 1}/${batch.length} failed: ${err.message}`);
+// Once Supabase has been read, the script ends on its own instead of with
+// process.exit(): on Windows, exiting while fetch's connection is still open
+// crashes Node ("Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)").
+async function sendToWaitlist() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are needed to read the waitlist.",
+    );
   }
-  // Resend allows a few emails a second; stay well under it.
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  const admin = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const { data, error } = await admin
+    .from("waitlist_subscribers")
+    .select("email")
+    .order("subscribed_at", { ascending: true });
+  if (error) throw error;
+
+  const sent = new Set(
+    existsSync(args.state) ? JSON.parse(readFileSync(args.state, "utf8")) : [],
+  );
+  const all = [...new Set(data.map((row) => row.email.trim().toLowerCase()))];
+  const todo = all.filter((address) => !sent.has(address));
+  const limit = Number(args.limit);
+  const batch = todo.slice(0, limit);
+
+  console.log(
+    `Waitlist on ${new URL(url).host}: ${all.length} addresses, ${all.length - todo.length} already sent, ${todo.length} to go.`,
+  );
+
+  if (!args.send) {
+    console.log(
+      `Nothing sent. Add --send to send the next ${batch.length} (--limit ${limit}).`,
+    );
+    return;
+  }
+
+  const smtp = transport();
+  let failed = 0;
+  for (const [i, address] of batch.entries()) {
+    try {
+      await sendTo(smtp, address);
+      sent.add(address);
+      writeFileSync(args.state, JSON.stringify([...sent], null, 2));
+      console.log(`${i + 1}/${batch.length} sent`);
+    } catch (err) {
+      failed += 1;
+      console.error(`${i + 1}/${batch.length} failed: ${err.message}`);
+    }
+    // Resend allows a few emails a second; stay well under it.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  }
+
+  const left = todo.length - (batch.length - failed);
+  console.log(
+    `Done: ${batch.length - failed} sent, ${failed} failed, ${left} still to go.` +
+      (left === 0
+        ? " Everyone has it: delete the waitlist now (docs/supabase.md)."
+        : " Run again with --send for the rest."),
+  );
+  if (failed > 0) process.exitCode = 1;
 }
 
-const left = todo.length - (batch.length - failed);
-console.log(
-  `Done: ${batch.length - failed} sent, ${failed} failed, ${left} still to go.` +
-    (left === 0
-      ? " Everyone has it: delete the waitlist now (docs/supabase.md)."
-      : " Run again with --send for the rest."),
-);
-process.exit(failed > 0 ? 1 : 0);
+await sendToWaitlist();
