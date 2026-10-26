@@ -19,7 +19,8 @@
     "db:reset": "supabase db reset",
     "db:diff": "supabase db diff",
     "db:new": "supabase migration new",
-    "db:test": "supabase test db"
+    "db:test": "supabase test db",
+    "launch-email": "node scripts/launch-email.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "1.2.0",
