@@ -71,7 +71,7 @@ export default async function EditClassifiedPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <Link
         href="/zoekertjes/mijn"
         className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"

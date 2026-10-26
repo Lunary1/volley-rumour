@@ -40,7 +40,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-031 | 2026-10-18 | Accepted | 16+ and terms are accepted per terms version; anyone without the current one is asked on /welkom |
 | D-032 | 2026-10-18 | Accepted | Notification emails go through Resend over SMTP, one per run of unread messages, never while the recipient is chatting |
 | D-033 | 2026-10-19 | Accepted | Removing a rumour also deletes the transfer made when it was confirmed |
-| D-034 | 2026-10-19 | Accepted | Production stays public while the site is in development; coming-soon goes back on before launch |
+| D-034 | 2026-10-19 | Superseded by D-053 | Production stays public while the site is in development; coming-soon goes back on before launch |
 | D-035 | 2026-10-19 | Accepted | Every approved rumour has its own shareable page, but rumour pages are never indexed by search engines |
 | D-036 | 2026-10-19 | Accepted | Pending rumours are reviewed within 24 h; takedowns, reports and contact messages within 72 h; standard Dutch replies in the admin area |
 | D-037 | 2026-10-19 | Accepted | Moderation outcomes stay on screen; only takedown requesters and staff get an email |
@@ -57,6 +57,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-048 | 2026-10-21 | Accepted | Vercel functions run in Paris (`cdg1`), next to the database, not in the default Washington region |
 | D-049 | 2026-10-22 | Accepted | Pages read the logged-in user from the verified JWT (`getClaims()`), without a call to Supabase Auth; server actions and staff checks keep `getUser()` |
 | D-052 | 2026-10-23 | Accepted | A rumour needs one checkbox, "Ik volg de regels voor geruchten", instead of two declarations |
+| D-053 | 2026-10-26 | Accepted | Production shows the coming-soon page from 2026-10-22 until launch; replaces D-034 |
 
 ---
 
@@ -832,6 +833,9 @@ goes back on when development is done, and stays on until launch (#95).
 (D-009), so nobody can create an account on production in the meantime.
 Anything merged is visible on volleyrumours.be straight away.
 
+**Superseded** by D-053 (2026-10-26): coming-soon mode went back on in
+production on 2026-10-22.
+
 ## D-035 — Rumour pages can be shared, not found through search engines
 
 **Context.** Rumours only opened in a pop-up, so a shared rumour linked to
@@ -1234,3 +1238,24 @@ heavy and asked for one "akkoord met de voorwaarden" instead (#247).
 Geruchten section only gained an anchor. Seniors only and pre-moderation
 still keep minors out. The legal review lists the change as a question for
 the lawyer.
+
+## D-053 — Production shows the coming-soon page until launch
+
+**Context.** D-034 kept production public during development, so the owner
+could follow progress live. On 2026-10-22 the owner added Production to
+`NEXT_PUBLIC_COMING_SOON` in Vercel, and since then volleyrumours.be shows the
+coming-soon page and redirects other routes to `/` (D-009). The countdown
+page with the waitlist is what visitors should see before launch.
+
+**Decision** (owner, 2026-10-26, confirming the change of 2026-10-22).
+Coming-soon mode stays on in production until launch (#95). It replaces
+D-034.
+
+**Consequences.**
+- Merged features are not visible on volleyrumours.be; only the coming-soon
+  page and the info pages are (D-009). Work is checked on a local production
+  build. A full-site preview with coming-soon off for Preview only is a
+  separate question for the owner.
+- Supabase sign-ups stay disabled until launch.
+- Checks on production are limited to what coming-soon shows: the homepage,
+  the info pages, the redirect status and response times.

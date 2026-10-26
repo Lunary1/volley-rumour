@@ -19,7 +19,7 @@ export async function SuspensionNotice() {
       role="status"
       className="border-b border-destructive/30 bg-destructive/10 text-foreground"
     >
-      <div className="container mx-auto flex gap-3 px-4 py-3 text-sm">
+      <div className="mx-auto flex max-w-7xl gap-3 px-4 py-3 text-sm sm:px-6 lg:px-8">
         <Ban
           className="mt-0.5 h-4 w-4 shrink-0 text-destructive-text"
           aria-hidden
