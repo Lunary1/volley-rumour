@@ -79,12 +79,41 @@ waitlist and test accounts; the owner accepts that risk until then.
 - [ ] Authentication → Rate limits: emails sent per hour from 30 to 100, for
       the first week.
 - [ ] Authentication → sign-ups on (part of #95).
+- [ ] Send the launch email, then delete the waitlist (below).
 
 **After the window:**
 - [ ] Auth email rate limit back to 30/hour.
 - [ ] Resend back to Free if the month's volume allows it.
 - [ ] Look at the usage page (egress, Realtime peak, database size) and note
       the numbers here, to plan the next window.
+
+## Launch email
+
+On launch day the waitlist gets one email, "VolleyRumours is live"
+(`emails/launch.mjs`, #253), and then the waitlist is deleted (D-028). It is
+sent by `scripts/launch-email.mjs`, which the owner runs from their own
+machine: agents never run it against production.
+
+1. **Production values.** Create `.env.production.local` (git-ignored) with
+   `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and the Resend
+   `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM`, as in
+   Vercel. Delete the file once the list is wiped.
+2. **Look at it.** `npm run launch-email -- --preview launch.html` and open the
+   file in a browser.
+3. **Test it.** Send one to yourself and open it in Gmail and on your phone:
+   `node --env-file=.env.production.local scripts/launch-email.mjs --to you@example.com`
+4. **Count.** `node --env-file=.env.production.local scripts/launch-email.mjs`
+   says how many addresses are on the waitlist; nothing is sent.
+5. **Send**, after the site is open and sign-ups are on:
+   `node --env-file=.env.production.local scripts/launch-email.mjs --send`.
+   It sends one email per address, at most 90 a run, so Resend's free 100 a
+   day keeps room for sign-up emails. On a bigger list, run it again the next
+   day, or upgrade Resend to Pro and add `--limit 1000`. The addresses already
+   sent are kept in `.launch-email-sent.json`, so a rerun never sends anyone
+   twice: keep that file until the end.
+6. **Wipe**, when the script says everyone has it. In the SQL editor:
+   `delete from public.waitlist_subscribers;` Then delete
+   `.launch-email-sent.json` and `.env.production.local`.
 
 ## Auth email templates
 

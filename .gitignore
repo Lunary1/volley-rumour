@@ -19,6 +19,9 @@ yarn-error.log*
 # env files
 .env*
 
+# who got the launch email (scripts/launch-email.mjs)
+.launch-email-sent.json
+
 # vercel
 .vercel
 
