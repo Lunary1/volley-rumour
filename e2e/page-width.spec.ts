@@ -1,11 +1,16 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 
-// The Transfer Talk pages share the header's content column (#243):
-// `/transfers` and `/betrouwbare-bronnen` used Tailwind's `container`, which
-// is narrower than the header between 1024 and 1280px and wider from 1536px.
+// The Transfer Talk pages and `/zoekertjes` share the header's content column
+// (#243, #255). They used Tailwind's `container`, which is narrower than the
+// header between 1024 and 1280px and wider from 1536px.
 
-const PAGES = ["/geruchten", "/transfers", "/betrouwbare-bronnen"];
+const PAGES = [
+  "/geruchten",
+  "/transfers",
+  "/betrouwbare-bronnen",
+  "/zoekertjes",
+];
 
 async function box(locator: Locator) {
   const b = await locator.boundingBox();
@@ -30,7 +35,7 @@ async function contentLeft(page: Page) {
 }
 
 for (const width of [1024, 1440, 1700]) {
-  test(`the Transfer Talk pages line up with the header at ${width}px`, async ({
+  test(`the listing pages line up with the header at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -42,9 +47,7 @@ for (const width of [1024, 1440, 1700]) {
   });
 }
 
-test("the Transfer Talk pages keep a 16px gutter on a phone", async ({
-  page,
-}) => {
+test("the listing pages keep a 16px gutter on a phone", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   for (const path of PAGES) {
     await page.goto(path);

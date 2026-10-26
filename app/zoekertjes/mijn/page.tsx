@@ -58,7 +58,7 @@ export default async function MyClassifiedsPage() {
   if (error) console.error("Error fetching my classifieds:", error);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <div className="mx-auto max-w-3xl px-4 py-8">
       <Link
         href="/profile"
         className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"

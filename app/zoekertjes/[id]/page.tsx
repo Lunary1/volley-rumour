@@ -130,7 +130,7 @@ export default async function ClassifiedDetailPage({
   const diploma = labelFor(TRAINER_DIPLOMA_LABELS, classified.trainer_diploma);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <div className="mx-auto max-w-3xl px-4 py-8">
       <Button variant="ghost" asChild className="mb-6 -ml-2">
         <Link href="/zoekertjes" className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />

@@ -159,7 +159,7 @@ export default async function ZoekertjesPage(props: {
   if (result.outOfRange) redirect(classifiedsUrl(filters));
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="text-4xl leading-tight font-bold tracking-tight text-foreground">
