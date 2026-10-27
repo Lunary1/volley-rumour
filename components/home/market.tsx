@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/ledger";
 import { ClassifiedTypeLabel } from "@/components/classified-type-label";
 import { RelativeTime } from "@/components/relative-time";
-import { getHomeClassifiedsOrEmpty } from "@/lib/public-data";
+import {
+  getHomeClassifiedsOrEmpty,
+  getLopendeRumoursPerDivision,
+} from "@/lib/public-data";
 import { RUMOUR_DIVISIONS } from "@/lib/rumours";
 import {
   DEFAULT_CLASSIFIED_FILTERS,
@@ -20,8 +23,9 @@ import { getDivisionLabel, getProvinceLabel } from "@/lib/classifieds-utils";
 import { cn } from "@/lib/utils";
 
 // The zoekertjes on the homepage (#240): the newest online ads, and every
-// division with how many ads it has, each a link to /zoekertjes filtered on
-// it. Only titles, types, divisions and provinces: no names.
+// division with how many ads and lopende rumours it has, each a link to the
+// list filtered on it (#242). Only titles, types, divisions and provinces: no
+// names.
 
 const NEWEST = 4;
 
@@ -103,18 +107,70 @@ function divisionsOf(suffix: string) {
 }
 
 export async function DivisionIndex() {
-  const { perDivision } = await getHomeClassifiedsOrEmpty();
-  return <DivisionGrid count={(key) => perDivision[key] ?? 0} />;
+  const [{ perDivision }, rumours] = await Promise.all([
+    getHomeClassifiedsOrEmpty(),
+    getLopendeRumoursPerDivision().catch((error) => {
+      console.error("Error counting rumours per division:", error);
+      return {} as Record<string, number>;
+    }),
+  ]);
+  return (
+    <DivisionGrid
+      counts={(key) => ({
+        ads: perDivision[key] ?? 0,
+        rumours: rumours[key] ?? 0,
+      })}
+    />
+  );
 }
 
 export function DivisionIndexSkeleton() {
-  return <DivisionGrid count={() => null} />;
+  return <DivisionGrid counts={() => null} />;
+}
+
+/**
+ * "3 zoekertjes", a link to that list. A screen reader hears the division
+ * first: "Nationale 1 Heren: 3 zoekertjes". Before the count arrives it keeps
+ * its place, so nothing moves.
+ */
+function CountLink({
+  href,
+  label,
+  n,
+  one,
+  many,
+}: {
+  href: string;
+  label: string;
+  n: number | null;
+  one: string;
+  many: string;
+}) {
+  if (n === null) {
+    return (
+      <span className="animate-pulse rounded bg-muted text-transparent">
+        0 {many}
+      </span>
+    );
+  }
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "rounded tabular-nums underline-offset-4 outline-none hover:text-primary-text hover:underline focus-visible:ring-3 focus-visible:ring-ring/50",
+        n ? "font-semibold text-foreground" : "text-muted-foreground",
+      )}
+    >
+      <span className="sr-only">{label}: </span>
+      {n} {n === 1 ? one : many}
+    </Link>
+  );
 }
 
 function DivisionGrid({
-  count,
+  counts,
 }: {
-  count: (division: string) => number | null;
+  counts: (division: string) => { ads: number; rumours: number } | null;
 }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
@@ -125,39 +181,35 @@ function DivisionGrid({
           </h4>
           <ul className="grid grid-cols-2 gap-2">
             {divisionsOf(group.suffix).map((division) => {
-              const n = count(division);
+              const n = counts(division);
               const label = getDivisionLabel(division);
               return (
-                <li key={division}>
-                  {/* It shows "Nationale 1" under the heading Heren; a
-                      screen reader hears "Nationale 1 Heren: 3 zoekertjes". */}
-                  <Link
-                    href={classifiedsUrl(DEFAULT_CLASSIFIED_FILTERS, {
-                      division,
-                    })}
-                    aria-label={
-                      n === null
-                        ? label
-                        : `${label}: ${n} ${n === 1 ? "zoekertje" : "zoekertjes"}`
-                    }
-                    className="flex h-12 items-center justify-between gap-2 rounded-md border border-border bg-card px-3 text-sm outline-none transition-colors hover:border-border-strong hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-                  >
-                    <span className="truncate font-medium">
-                      {label.replace(/ (heren|dames)$/i, "")}
-                    </span>
-                    <span
-                      className={cn(
-                        "shrink-0 text-meta tabular-nums",
-                        n ? "font-semibold" : "text-muted-foreground",
-                      )}
-                    >
-                      {n === null ? (
-                        <span className="block h-4 w-4 animate-pulse rounded bg-muted" />
-                      ) : (
-                        n
-                      )}
-                    </span>
-                  </Link>
+                <li
+                  key={division}
+                  className="rounded-md border border-border bg-card px-3 py-2"
+                >
+                  {/* "Nationale 1" under the heading Heren. */}
+                  <p className="truncate text-sm font-medium" aria-hidden>
+                    {label.replace(/ (heren|dames)$/i, "")}
+                  </p>
+                  <p className="mt-0.5 flex flex-col items-start text-meta lg:flex-row lg:gap-x-3">
+                    <CountLink
+                      href={classifiedsUrl(DEFAULT_CLASSIFIED_FILTERS, {
+                        division,
+                      })}
+                      label={label}
+                      n={n && n.ads}
+                      one="zoekertje"
+                      many="zoekertjes"
+                    />
+                    <CountLink
+                      href={`/geruchten?status=rumour&reeks=${division}`}
+                      label={label}
+                      n={n && n.rumours}
+                      one="gerucht"
+                      many="geruchten"
+                    />
+                  </p>
                 </li>
               );
             })}

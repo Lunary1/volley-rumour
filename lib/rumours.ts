@@ -211,6 +211,38 @@ export const RUMOUR_DIVISIONS = {
 
 export type RumourDivision = keyof typeof RUMOUR_DIVISIONS;
 
+/** A known division from a URL parameter, or null (#242). */
+export function parseRumourDivision(
+  value: string | string[] | undefined,
+): RumourDivision | null {
+  const division = Array.isArray(value) ? value[0] : value;
+  return division && Object.hasOwn(RUMOUR_DIVISIONS, division)
+    ? (division as RumourDivision)
+    : null;
+}
+
+const RETIREMENT_CATEGORIES = ["player_retirement", "trainer_retirement"];
+
+/**
+ * The division a rumour is about (#242): where the player or trainer goes, or
+ * for one who stops, where they played. As resolve_rumour picks it for the
+ * transfer. Null for rumours from before #67.
+ */
+export function rumourDivision(rumour: {
+  category: string;
+  to_division: string | null;
+  from_division: string | null;
+}): string | null {
+  return RETIREMENT_CATEGORIES.includes(rumour.category)
+    ? rumour.from_division
+    : rumour.to_division;
+}
+
+/** A PostgREST `or` filter for the rumours in a division, as rumourDivision. */
+export function rumourDivisionFilter(division: RumourDivision): string {
+  return `and(category.not.in.(${RETIREMENT_CATEGORIES}),to_division.eq.${division}),and(category.in.(${RETIREMENT_CATEGORIES}),from_division.eq.${division})`;
+}
+
 export const RUMOUR_GENDERS = {
   male: "Man",
   female: "Vrouw",

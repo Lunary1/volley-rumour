@@ -251,6 +251,11 @@ FROM (VALUES
   ('Hanne Halverwege', 'expired',   interval '130 days')
 ) AS r (player_name, status, age);
 
+-- A player who stops counts in the division they played in (#242).
+UPDATE public.rumours
+   SET category = 'player_retirement', to_club_name = NULL, from_division = 'promo2_heren'
+ WHERE player_name = 'Hanne Halverwege';
+
 -- Votes; the on_vote_change trigger fills the vote counts.
 INSERT INTO public.rumour_votes (rumour_id, user_id, vote_type) VALUES
   ('e0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002', true),

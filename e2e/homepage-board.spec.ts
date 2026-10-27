@@ -36,11 +36,12 @@ test("each division links to its zoekertjes, with how many there are", async ({
     }),
   ).toBeVisible();
 
-  // The seed's setter ad is in Nationale 2 Heren.
-  const division = page.getByRole("link", { name: /^Nationale 2 Heren/ });
-  await expect(division).toHaveAccessibleName(
-    /^Nationale 2 Heren: \d+ zoekertjes?$/,
-  );
+  // The seed's setter ad is in Nationale 2 Heren. Its rumour count beside it
+  // is in rumour-division-filter.spec.ts (#242).
+  const division = page.getByRole("link", {
+    name: /^Nationale 2 Heren: \d+ zoekertjes?$/,
+  });
+  await expect(division).not.toHaveAccessibleName(/: 0 /);
   await division.click();
   await expect(page).toHaveURL("/zoekertjes?reeks=nat2_heren");
   await expect(
