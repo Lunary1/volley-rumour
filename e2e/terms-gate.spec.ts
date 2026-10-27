@@ -136,6 +136,77 @@ test("a user who hasn't accepted is asked once, before anything else", async ({
   await context.close();
 });
 
+test("a new terms version is asked once of someone who accepted an older one", async ({
+  page,
+  browser,
+}) => {
+  // #256: an account that accepted the previous version (2026-10-19).
+  const stamp = Date.now();
+  const username = `terugkeerder_${stamp}`;
+  const email = `terugkeerder-${stamp}@example.test`;
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password: SEED_PASSWORD,
+    email_confirm: true,
+    user_metadata: { username, age_confirmed: true, terms_accepted: true },
+  });
+  expect(error).toBeNull();
+  const userId = data.user!.id;
+
+  try {
+    const { data: version } = await admin.rpc("current_terms_version");
+    expect(version).not.toBe("2026-10-19");
+    const aged = await admin
+      .from("terms_acceptances")
+      .update({ terms_version: "2026-10-19" })
+      .eq("user_id", userId);
+    expect(aged.error).toBeNull();
+
+    await page.goto("/auth/login");
+    await page.getByLabel("E-mailadres").fill(email);
+    await page.getByLabel("Wachtwoord", { exact: true }).fill(SEED_PASSWORD);
+    await page
+      .locator("form")
+      .getByRole("button", { name: "Inloggen", exact: true })
+      .click();
+    await page.waitForURL("/welkom?next=%2F");
+    await expect(
+      page.getByRole("main").getByText("De voorwaarden zijn aangepast"),
+    ).toBeVisible();
+
+    await page.getByLabel(AGE).check();
+    await page.getByLabel(TERMS).check();
+    await page.getByRole("button", { name: "Doorgaan" }).click();
+    await page.waitForURL("/");
+
+    // Both versions are kept, the new one with its own time.
+    const { data: acceptances } = await admin
+      .from("terms_acceptances")
+      .select("terms_version")
+      .eq("user_id", userId)
+      .order("terms_version");
+    expect(acceptances!.map((row) => row.terms_version)).toEqual([
+      "2026-10-19",
+      version,
+    ]);
+
+    // Once: a new login goes straight to the homepage.
+    const context = await browser.newContext();
+    const again = await context.newPage();
+    await again.goto("/auth/login");
+    await again.getByLabel("E-mailadres").fill(email);
+    await again.getByLabel("Wachtwoord", { exact: true }).fill(SEED_PASSWORD);
+    await again
+      .locator("form")
+      .getByRole("button", { name: "Inloggen", exact: true })
+      .click();
+    await again.waitForURL("/");
+    await context.close();
+  } finally {
+    await admin.auth.admin.deleteUser(userId);
+  }
+});
+
 test("the terms page shows the version the database asks for", async ({
   page,
 }) => {

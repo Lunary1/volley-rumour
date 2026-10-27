@@ -1235,7 +1235,9 @@ heavy and asked for one "akkoord met de voorwaarden" instead (#247).
   terms at sign-up already (D-031).
 
 **Consequences.** The terms text is unchanged, so no new terms version; the
-Geruchten section only gained an anchor. Seniors only and pre-moderation
+Geruchten section only gained an anchor. (Later, Q23: the owner had the
+section itself reworded in the form's everyday Dutch before launch, same
+meaning, as terms version 2026-10-27, #256.) Seniors only and pre-moderation
 still keep minors out. The legal review lists the change as a question for
 the lawyer.
 

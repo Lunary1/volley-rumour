@@ -10,8 +10,9 @@ export const metadata = pageMetadata({
   path: "/voorwaarden",
 });
 
-// Rewritten for #94 to match the site after M2. A self-review against the
-// GDPR, the DSA and Belgian law is in docs/product/legal-review.md.
+// Rewritten for #94 to match the site after M2; Geruchten in everyday Dutch
+// for #256. A self-review against the GDPR, the DSA and Belgian law is in
+// docs/product/legal-review.md.
 
 function Section({
   id,
@@ -47,7 +48,7 @@ export default function VoorwaardenPage() {
           {/* Same date as current_terms_version() in the database (#75):
               change both together, in a migration. */}
           <p className="mt-4 text-sm text-muted-foreground">
-            Versie van 19 oktober 2026
+            Versie van 27 oktober 2026
           </p>
         </div>
       </section>
@@ -137,35 +138,41 @@ export default function VoorwaardenPage() {
           </ul>
         </Section>
 
-        {/* D-002, D-012, D-013, D-020 */}
+        {/* D-002, D-012, D-013, D-020. The rumour form's one checkbox links
+            here (D-052), so this reads like the form (#256). */}
         <Section id="geruchten" title="Geruchten">
           <ul className="list-disc list-inside space-y-2 ml-2">
             <li>
-              Geruchten gaan alleen over seniorspelers en -trainers. Over
-              minderjarigen en jeugdspelers plaats je niets.
+              Een gerucht gaat over een speler of trainer bij de seniors. Over
+              de jeugd, of over iemand die jonger is dan 18, plaats je niets.
             </li>
             <li>
-              Je geeft aan waar je gerucht vandaan komt en je bevestigt dat je
-              het te goeder trouw deelt. Een link naar een bron mag erbij.
+              Je zegt waar je gerucht vandaan komt. Een link naar de bron mag
+              erbij.
             </li>
             <li>
-              Een moderator kijkt elk gerucht na voor het online komt. Een
-              afgewezen gerucht zie je op je profiel, met de reden. Je kan
-              maximaal {MAX_PENDING_RUMOURS} geruchten tegelijk laten nakijken.
+              Je deelt alleen wat je denkt dat klopt. Beledigingen en privézaken
+              horen er niet in.
             </li>
             <li>
-              Een moderator rondt een gerucht af als bevestigd (op basis van een
-              officiële bron), ontkracht of niet bevestigd. Een bevestigd
+              Een moderator leest elk gerucht voor het online komt. Wordt het
+              afgewezen, dan zie je op je profiel waarom. Je kan maximaal{" "}
+              {MAX_PENDING_RUMOURS} geruchten tegelijk laten nakijken.
+            </li>
+            <li>
+              Een moderator sluit elk gerucht af: bevestigd (als een officiële
+              bron het meldt), ontkracht of niet bevestigd. Een bevestigd
               gerucht wordt een transfer.
             </li>
             <li>
-              Bij je geruchten tonen we je track record: hoeveel van je
-              afgeronde geruchten bevestigd werden. Alleen de beslissingen van
-              moderators tellen, geen stemmen.
+              Bij je geruchten staat je track record: hoeveel van je afgesloten
+              geruchten bevestigd werden, bijvoorbeeld &quot;5 van 6
+              bevestigd&quot;. Alleen wat de moderators beslissen telt, niet de
+              stemmen.
             </li>
             <li>
-              Een gerucht blijft een gerucht. We garanderen niet dat het klopt,
-              ook niet als het online staat.
+              Een gerucht blijft een gerucht. Ook als het online staat, beloven
+              we niet dat het klopt.
             </li>
           </ul>
         </Section>
@@ -183,9 +190,9 @@ export default function VoorwaardenPage() {
         <Section title="Zoekertjes">
           <ul className="list-disc list-inside space-y-2 ml-2">
             <li>
-              Zoekertjes zijn voor seniorvolleybal: een speler of trainer die
-              een team zoekt, of een team dat een speler of trainer zoekt.
-              Verkoop van spullen, tickets of diensten hoort hier niet.
+              Zoekertjes zijn voor volleybal bij de seniors: een speler of
+              trainer die een team zoekt, of een team dat een speler of trainer
+              zoekt. Verkoop van spullen, tickets of diensten hoort hier niet.
             </li>
             <li>
               Je zoekertje klopt en blijft actueel. Is de plaats ingevuld,
