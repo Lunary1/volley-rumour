@@ -7,7 +7,7 @@ behaviour change.
 
 | Text | Where | Version |
 | --- | --- | --- |
-| Gebruiksvoorwaarden | `app/voorwaarden/page.tsx` | 19 oktober 2026 (`current_terms_version()` = `2026-10-19`) |
+| Gebruiksvoorwaarden | `app/voorwaarden/page.tsx` | 27 oktober 2026 (`current_terms_version()` = `2026-10-27`; Geruchten reworded in everyday Dutch, same meaning, #256) |
 | Privacybeleid | `app/privacy/page.tsx` | bijgewerkt 19 oktober 2026 |
 | Verwijderverzoek (form + status page) | `app/verwijderverzoek/` | — |
 | Moderation notes the user reads | `lib/moderation-templates.ts`, `docs/product/moderation.md` | D-036 |
@@ -83,7 +83,7 @@ reading. Micro enterprises are exempt from art. 20–28 except art. 24(3).
 | WER art. XII.6: name, geographic address, email, enterprise number | **Not shown** | Defensible only while the service is free (D-038). Mandatory once anything is paid. Open question 1 |
 | WER Book VI unfair terms (B2C) | Done | No exclusion for intent or gross fault; consumer rights kept |
 | Applicable law and court | Done | Belgian law, Belgian courts |
-| Changes to the terms | Done | New version asked once on `/welkom` (#75); this PR bumps it to `2026-10-19` |
+| Changes to the terms | Done | New version asked once on `/welkom` (#75); #94 bumped it to `2026-10-19`, #256 to `2026-10-27` |
 | Language | Done | Dutch; French is a nice-to-have (D-027). Open question 6 |
 | Paid features (featured ads) | n/a | Free at launch; terms say they'll change first if that changes |
 | Cookies (ePrivacy, art. 129 WEC) | Done | Only strictly necessary (login) and theme in browser storage; analytics cookie-less, no banner needed |

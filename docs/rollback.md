@@ -133,6 +133,7 @@ against the code at the parent commit of each PR, on 2026-10-20.
 | `20261020143436_explicit_table_grants` | #197 | Safe | Changes default privileges only: existing tables keep their grants, and old code creates no tables |
 | `20261021084143_schedule_retention_jobs` | #202 | Safe | Nightly pg_cron jobs call existing functions; the app doesn't use them |
 | `20261021121405_rumours_realtime` | #200 | Safe | Adds rumours to the Realtime publication; old code's per-card channels start receiving vote counts |
+| `20261027091502_bump_terms_version_geruchten` | #256 | Degraded | Old code shows the previous Geruchten wording but records acceptance of 2026-10-27; same meaning |
 
 The seven that break are all from the stocktake clean-up, weeks of
 deployments back. Nobody will roll back that far: undoing them would mean
@@ -202,6 +203,15 @@ DROP FUNCTION public.claim_takedown_decision_emails();
 DROP FUNCTION public.staff_notification_emails();
 ALTER TABLE public.takedown_requests
   DROP COLUMN email_token_hash, DROP COLUMN decision_emailed_at;
+```
+
+**#256 `bump_terms_version_geruchten`.** Only when the code is rolled back past
+#256. Users who accepted 2026-10-27 are asked once more on `/welkom`:
+
+```sql
+CREATE OR REPLACE FUNCTION public.current_terms_version()
+RETURNS text LANGUAGE sql IMMUTABLE SET search_path = ''
+AS $ SELECT '2026-10-19' $;
 ```
 
 **#183 `bump_terms_version`.** Only when the code is rolled back past #183.
