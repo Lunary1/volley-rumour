@@ -191,22 +191,22 @@ export const DELETED_CREATOR_LABEL = "Verwijderd account";
 
 /** Senior divisions only (D-003). Keep in sync with the migrations. */
 export const RUMOUR_DIVISIONS = {
-  liga_heren: "LIGA HEREN",
-  liga_dames: "LIGA DAMES",
+  liga_heren: "Liga Heren",
+  liga_dames: "Liga Dames",
   nat1_heren: "Nationale 1 Heren",
   nat2_heren: "Nationale 2 Heren",
   nat3_heren: "Nationale 3 Heren",
   nat1_dames: "Nationale 1 Dames",
   nat2_dames: "Nationale 2 Dames",
   nat3_dames: "Nationale 3 Dames",
-  promo1_heren: "PROMO 1 Heren",
-  promo2_heren: "PROMO 2 Heren",
-  promo3_heren: "PROMO 3 Heren",
-  promo4_heren: "PROMO 4 Heren",
-  promo1_dames: "PROMO 1 Dames",
-  promo2_dames: "PROMO 2 Dames",
-  promo3_dames: "PROMO 3 Dames",
-  promo4_dames: "PROMO 4 Dames",
+  promo1_heren: "Promo 1 Heren",
+  promo2_heren: "Promo 2 Heren",
+  promo3_heren: "Promo 3 Heren",
+  promo4_heren: "Promo 4 Heren",
+  promo1_dames: "Promo 1 Dames",
+  promo2_dames: "Promo 2 Dames",
+  promo3_dames: "Promo 3 Dames",
+  promo4_dames: "Promo 4 Dames",
 } as const;
 
 export type RumourDivision = keyof typeof RUMOUR_DIVISIONS;

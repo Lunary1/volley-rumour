@@ -99,9 +99,9 @@ test("a team asks for a trainer with a minimum diploma", async ({ page }) => {
   await expect(page.getByLabel(/Niveau/)).toBeDisabled();
   await choose(page, /Dames\/Heren/, "Heren");
   await page.getByLabel(/Niveau/).click();
-  await expect(page.getByRole("option", { name: "LIGA HEREN" })).toBeVisible();
-  await expect(page.getByRole("option", { name: "LIGA DAMES" })).toHaveCount(0);
-  await page.getByRole("option", { name: "PROMO 4 Heren" }).click();
+  await expect(page.getByRole("option", { name: "Liga Heren" })).toBeVisible();
+  await expect(page.getByRole("option", { name: "Liga Dames" })).toHaveCount(0);
+  await page.getByRole("option", { name: "Promo 4 Heren" }).click();
 
   await expect(
     page.getByLabel("Minimaal diploma (optioneel)"),
@@ -115,7 +115,7 @@ test("a team asks for a trainer with a minimum diploma", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText("Minimaal diploma: Trainer B")).toBeVisible();
   await expect(page.getByText("Heren", { exact: true })).toBeVisible();
-  await expect(page.getByText("PROMO 4 Heren")).toBeVisible();
+  await expect(page.getByText("Promo 4 Heren")).toBeVisible();
 });
 
 test("the server checks the input and answers in Dutch", async ({ page }) => {

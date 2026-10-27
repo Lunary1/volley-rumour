@@ -5,7 +5,7 @@ import { test, expect, seed } from "./fixtures";
 // or where one who stops played. The homepage's Per reeks links to it.
 
 const open = seed.openRumour.playerName; // lopend, to Nationale 1 Heren
-const stops = seed.trustedSource.expiredRumour; // stops in PROMO 2 Heren
+const stops = seed.trustedSource.expiredRumour; // stops in Promo 2 Heren
 const noDivision = seed.rumourWithoutCreator.playerName; // from before #67
 
 function card(page: Page, playerName: string) {
