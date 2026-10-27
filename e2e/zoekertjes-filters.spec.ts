@@ -26,13 +26,13 @@ test("division and position filters are kept in the URL", async ({ page }) => {
   const division = page.getByRole("combobox", { name: "Reeks" });
   const position = page.getByRole("combobox", { name: "Positie" });
   await expect(
-    division.locator("option", { hasText: "PROMO 4 Heren" }),
+    division.locator("option", { hasText: "Promo 4 Heren" }),
   ).toHaveCount(1);
   await expect(
     position.locator("option", { hasText: "Receptie/hoek" }),
   ).toHaveCount(1);
 
-  await division.selectOption({ label: "PROMO 1 Dames" });
+  await division.selectOption({ label: "Promo 1 Dames" });
   await expect(page).toHaveURL(/[?&]reeks=promo1_dames/);
   await position.selectOption({ label: "Libero" });
   await expect(page).toHaveURL(/[?&]positie=libero/);
@@ -42,7 +42,7 @@ test("division and position filters are kept in the URL", async ({ page }) => {
   await page.goto(page.url());
   await expect(division).toHaveValue("promo1_dames");
   await expect(position).toHaveValue("libero");
-  // Jana's libero ad, in PROMO 1 Dames.
+  // Jana's libero ad, in Promo 1 Dames.
   await expect(page.getByText("Jana Voorbeeld")).toBeVisible();
   await expect(adLink(page, seed.activeAd.id)).toHaveCount(0);
   await expect(page.getByText("1 zoekertje •")).toBeVisible();
