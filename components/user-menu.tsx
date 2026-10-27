@@ -113,9 +113,12 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
     );
   }
 
+  // Avatar and name on one line, the avatar under the icons of the links
+  // above it on mobile. A long name is cut off with an ellipsis; on desktop it
+  // is capped too, so the menu never pushes into the centred nav (#258).
   const userCardClass = isMobile
-    ? ""
-    : "flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50";
+    ? "flex min-w-0 items-center gap-2 px-2.5"
+    : "flex min-w-0 items-center gap-2 px-3 py-2 rounded-lg bg-muted/50";
 
   // On desktop the buttons show only their icon, with the label as a tooltip
   // and for screen readers, so the menu fits beside a centred nav (#228).
@@ -180,10 +183,14 @@ export function UserMenu({ user, isMobile = false }: UserMenuProps) {
         </Button>
       </Link>
 
-      <div className={userCardClass}>
+      <div className={userCardClass} title={user.username}>
         <CurrentUserAvatar imageUrl={user.avatar_url} name={user.username} />
-        <div className={isMobile ? "" : "hidden sm:block"}>
-          <p className="text-sm font-medium text-foreground">{user.username}</p>
+        <div
+          className={isMobile ? "min-w-0" : "hidden min-w-0 max-w-32 sm:block"}
+        >
+          <p className="truncate text-sm font-medium text-foreground">
+            {user.username}
+          </p>
         </div>
       </div>
       <form action={logout} suppressHydrationWarning>
