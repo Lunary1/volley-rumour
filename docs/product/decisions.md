@@ -1214,6 +1214,12 @@ with only a hover pause, which fails WCAG 2.2.2 on touch and keyboard.
 topics below it are live (D-047). The per-division index counts only
 zoekertjes, because `/geruchten` has no division filter yet (#242).
 
+*Update 2026-10-27 (#242):* `/geruchten?reeks=` filters on division (the
+destination; for one who stops, the division they played in, as
+`resolve_rumour` picks it for the transfer). Each division on the homepage
+now shows its zoekertjes and its lopende rumours, each a link to that list.
+Rumours from before #67 have no division and appear only unfiltered.
+
 ## D-052 — One checkbox for the rumour rules
 
 **Context.** The rumour form asked for two declarations (#67, D-003, D-013):

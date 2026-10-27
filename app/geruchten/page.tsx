@@ -5,13 +5,17 @@ import { getUserVotes } from "@/lib/votes";
 import { Button } from "@/components/ui/button";
 import { chipVariants } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Flame, Plus } from "lucide-react";
+import { ChevronDown, Flame, Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   PUBLIC_RUMOUR_STATUSES,
+  RUMOUR_DIVISIONS,
   isPublicRumourStatus,
+  parseRumourDivision,
+  rumourDivisionFilter,
   voteCounts,
+  type RumourDivision,
 } from "@/lib/rumours";
 import {
   RUMOURS_PER_PAGE,
@@ -21,6 +25,7 @@ import {
 } from "@/lib/public-data";
 import { PageNav } from "@/components/page-nav";
 import { pageMetadata } from "@/lib/seo";
+import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
   title: "Transfer Talk",
@@ -35,8 +40,8 @@ export const dynamic = "force-dynamic";
 
 // Authors and staff can read pending and rejected rumours through RLS, but
 // Transfer Talk only ever lists approved ones (#65). One page at a time, newest
-// first (#96).
-async function getRumoursPage(status: string | undefined, page: number) {
+// first (#96), optionally in one division (#242).
+async function getRumoursPage({ status, division, page }: Filters) {
   const supabase = await createClient();
   let query = supabase
     .from("rumours")
@@ -54,6 +59,9 @@ async function getRumoursPage(status: string | undefined, page: number) {
   if (status) {
     query = query.eq("status", status);
   }
+  if (division) {
+    query = query.or(rumourDivisionFilter(division));
+  }
 
   const from = (page - 1) * RUMOURS_PER_PAGE;
   const { data, count, error } = await query.range(
@@ -66,10 +74,24 @@ async function getRumoursPage(status: string | undefined, page: number) {
   return { rumours: data ?? [], total: count ?? 0 };
 }
 
-/** The /geruchten URL for a status tab and page, leaving out the defaults. */
-function geruchtenUrl(status: string | undefined, page = 1): string {
+interface Filters {
+  status: string | undefined;
+  division: RumourDivision | null;
+  page: number;
+}
+
+/**
+ * The /geruchten URL for these filters, leaving out the defaults. Changing a
+ * filter goes back to page 1 unless `page` is given.
+ */
+function geruchtenUrl(
+  filters: Filters,
+  changes: Partial<Filters> = {},
+): string {
+  const { status, division, page } = { ...filters, page: 1, ...changes };
   const params = new URLSearchParams();
   if (status) params.set("status", status);
+  if (division) params.set("reeks", division);
   if (page > 1) params.set("pagina", String(page));
   const query = params.toString();
   return query ? `/geruchten?${query}` : "/geruchten";
@@ -85,7 +107,81 @@ const emptyTitles: Record<string, string> = {
 
 interface SearchParams {
   status?: string;
+  reeks?: string;
   pagina?: string;
+}
+
+const DIVISION_GROUPS = [
+  { title: "Heren", suffix: "_heren" },
+  { title: "Dames", suffix: "_dames" },
+] as const;
+
+/**
+ * The division filter (#242): a disclosure of links, so it works before
+ * hydration like the status chips. Keyed on the division, so it closes once
+ * one is picked.
+ */
+function DivisionFilter({ filters }: { filters: Filters }) {
+  const label = filters.division
+    ? RUMOUR_DIVISIONS[filters.division]
+    : "Alle reeksen";
+  return (
+    <details key={filters.division ?? "all"} className="group">
+      <summary
+        className={cn(
+          chipVariants({ active: !!filters.division }),
+          "w-fit cursor-pointer",
+        )}
+      >
+        Reeks: {label}
+        <ChevronDown
+          className="ml-1.5 h-4 w-4 transition-transform group-open:rotate-180"
+          aria-hidden
+        />
+      </summary>
+      <nav
+        aria-label="Reeks"
+        className="mt-3 grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2"
+      >
+        <Link
+          href={geruchtenUrl(filters, { division: null })}
+          aria-current={filters.division ? undefined : "page"}
+          className={cn(
+            chipVariants({ active: !filters.division }),
+            "w-fit sm:col-span-2",
+          )}
+        >
+          Alle reeksen
+        </Link>
+        {DIVISION_GROUPS.map((group) => (
+          <div key={group.title}>
+            <h2 className="mb-2 text-label font-semibold tracking-wide text-muted-foreground uppercase">
+              {group.title}
+            </h2>
+            <ul className="flex flex-wrap gap-2">
+              {(Object.keys(RUMOUR_DIVISIONS) as RumourDivision[])
+                .filter((key) => key.endsWith(group.suffix))
+                .map((division) => (
+                  <li key={division}>
+                    <Link
+                      href={geruchtenUrl(filters, { division })}
+                      aria-current={
+                        division === filters.division ? "page" : undefined
+                      }
+                      className={chipVariants({
+                        active: division === filters.division,
+                      })}
+                    >
+                      {RUMOUR_DIVISIONS[division]}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </details>
+  );
 }
 
 export default async function GeruchtenPage(props: {
@@ -96,17 +192,22 @@ export default async function GeruchtenPage(props: {
     searchParams?.status && isPublicRumourStatus(searchParams.status)
       ? searchParams.status
       : undefined;
-  const page = parsePage(searchParams?.pagina);
+  const filters: Filters = {
+    status,
+    division: parseRumourDivision(searchParams?.reeks),
+    page: parsePage(searchParams?.pagina),
+  };
+  const { division, page } = filters;
 
   const [result, counts] = await Promise.all([
-    getRumoursPage(status, page),
+    getRumoursPage(filters),
     // The tabs leave out their counts when these fail to load.
-    getRumourStatusCounts().catch((error) => {
+    getRumourStatusCounts(division).catch((error) => {
       console.error("Error counting rumours:", error);
       return null;
     }),
   ]);
-  if (!result) redirect(geruchtenUrl(status));
+  if (!result) redirect(geruchtenUrl(filters));
 
   const displayRumours = result.rumours;
   const totalPages = pageCount(result.total, RUMOURS_PER_PAGE);
@@ -138,39 +239,42 @@ export default async function GeruchtenPage(props: {
         </div>
 
         {/* Status filter, as chips like the zoekertjes types (#208) */}
-        <nav aria-label="Status" className="mb-8 flex flex-wrap gap-2">
-          {[
-            { value: undefined, label: "Alle", count: allCount },
-            { value: "rumour", label: "Trending", count: counts?.rumour },
-            {
-              value: "confirmed",
-              label: "Bevestigd",
-              count: counts?.confirmed,
-            },
-            { value: "denied", label: "Ontkracht", count: counts?.denied },
-            {
-              value: "expired",
-              label: "Niet bevestigd",
-              count: counts?.expired,
-            },
-          ].map((tab) => {
-            const active = tab.value === status;
-            return (
-              <Link
-                key={tab.value ?? "all"}
-                href={geruchtenUrl(tab.value)}
-                aria-current={active ? "page" : undefined}
-                className={chipVariants({ active })}
-              >
-                {tab.value === "rumour" && (
-                  <Flame className="mr-1.5 h-4 w-4" aria-hidden />
-                )}
-                {tab.label}
-                {tabCount(tab.count)}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="mb-8 space-y-3">
+          <nav aria-label="Status" className="flex flex-wrap gap-2">
+            {[
+              { value: undefined, label: "Alle", count: allCount },
+              { value: "rumour", label: "Trending", count: counts?.rumour },
+              {
+                value: "confirmed",
+                label: "Bevestigd",
+                count: counts?.confirmed,
+              },
+              { value: "denied", label: "Ontkracht", count: counts?.denied },
+              {
+                value: "expired",
+                label: "Niet bevestigd",
+                count: counts?.expired,
+              },
+            ].map((tab) => {
+              const active = tab.value === status;
+              return (
+                <Link
+                  key={tab.value ?? "all"}
+                  href={geruchtenUrl(filters, { status: tab.value })}
+                  aria-current={active ? "page" : undefined}
+                  className={chipVariants({ active })}
+                >
+                  {tab.value === "rumour" && (
+                    <Flame className="mr-1.5 h-4 w-4" aria-hidden />
+                  )}
+                  {tab.label}
+                  {tabCount(tab.count)}
+                </Link>
+              );
+            })}
+          </nav>
+          <DivisionFilter filters={filters} />
+        </div>
 
         {/* Rumours Grid - 1 col mobile, 2–3 desktop */}
         {displayRumours.length > 0 ? (
@@ -207,23 +311,33 @@ export default async function GeruchtenPage(props: {
             <PageNav
               currentPage={page}
               totalPages={totalPages}
-              pageUrl={(p) => geruchtenUrl(status, p)}
+              pageUrl={(p) => geruchtenUrl(filters, { page: p })}
             />
           </>
         ) : (
           <EmptyState
             icon={Flame}
-            title={status ? emptyTitles[status] : "Nog geen geruchten"}
-            description={
+            title={
               status
-                ? "Er zijn nog geen geruchten in deze categorie. Kom later terug!"
-                : "Wees de eerste om een gerucht te delen! Heb je gehoord over een mogelijke transfer?"
+                ? emptyTitles[status]
+                : division
+                  ? "Geen geruchten in deze reeks"
+                  : "Nog geen geruchten"
+            }
+            description={
+              division
+                ? `Er zijn nog geen ${status ? "zulke " : ""}geruchten in ${RUMOUR_DIVISIONS[division]}. Kom later terug!`
+                : status
+                  ? "Er zijn nog geen geruchten in deze categorie. Kom later terug!"
+                  : "Wees de eerste om een gerucht te delen! Heb je gehoord over een mogelijke transfer?"
             }
           >
             <Button asChild>
               <Link href="/geruchten/nieuw">
                 <Plus className="size-5" />
-                {status ? "Gerucht Delen" : "Deel je eerste gerucht"}
+                {status || division
+                  ? "Gerucht Delen"
+                  : "Deel je eerste gerucht"}
               </Link>
             </Button>
           </EmptyState>

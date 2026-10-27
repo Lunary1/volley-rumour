@@ -1,7 +1,12 @@
 import { cache } from "react";
 import { unstable_cache, updateTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/server";
-import { PUBLIC_RUMOUR_STATUSES } from "@/lib/rumours";
+import {
+  PUBLIC_RUMOUR_STATUSES,
+  rumourDivision,
+  rumourDivisionFilter,
+  type RumourDivision,
+} from "@/lib/rumours";
 import { TRANSFER_TABS, type TransferTab } from "@/lib/transfers";
 import {
   TRANSFER_CARD_COLUMNS,
@@ -46,16 +51,21 @@ export type RumourStatusCounts = Record<
   number
 >;
 
-/** Approved rumours per public status, for the Transfer Talk tabs. */
+/**
+ * Approved rumours per public status, for the Transfer Talk tabs; only those
+ * in `division` when one is chosen (#242).
+ */
 export const getRumourStatusCounts = unstable_cache(
-  async (): Promise<RumourStatusCounts> => {
+  async (division: RumourDivision | null): Promise<RumourStatusCounts> => {
     const supabase = createPublicClient();
     const counts = await Promise.all(
       PUBLIC_RUMOUR_STATUSES.map(async (status) => {
-        const { count, error } = await supabase
+        let query = supabase
           .from("rumours")
           .select("id", { count: "exact", head: true })
           .eq("status", status);
+        if (division) query = query.or(rumourDivisionFilter(division));
+        const { count, error } = await query;
         if (error) throw error;
         return [status, count ?? 0] as const;
       }),
@@ -281,4 +291,28 @@ export const getHomeClassifiedsOrEmpty = cache(() =>
       perDivision: {} as Record<string, number>,
     };
   }),
+);
+
+/**
+ * How many lopende rumours each division has, for the homepage's Per reeks
+ * (#242). Rumours from before #67 have no division and count nowhere.
+ */
+export const getLopendeRumoursPerDivision = unstable_cache(
+  async (): Promise<Record<string, number>> => {
+    const { data, error } = await createPublicClient()
+      .from("rumours")
+      .select("category, to_division, from_division")
+      .eq("status", "rumour")
+      .or("to_division.not.is.null,from_division.not.is.null");
+    if (error) throw error;
+
+    const perDivision: Record<string, number> = {};
+    for (const rumour of data ?? []) {
+      const division = rumourDivision(rumour);
+      if (division) perDivision[division] = (perDivision[division] ?? 0) + 1;
+    }
+    return perDivision;
+  },
+  ["lopende-rumours-per-division"],
+  { revalidate: REVALIDATE, tags: [PUBLIC_DATA_TAGS.rumours] },
 );

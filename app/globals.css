@@ -233,6 +233,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* A <summary> styled as a chip draws its own chevron (#242). */
+  summary {
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
 }
 
 @layer components {
