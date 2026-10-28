@@ -1,5 +1,5 @@
--- Waitlist: sign-ups go through the server with a rate limit; the API may
--- only insert a valid email until the direct insert is removed (GHSA-9v4r).
+-- Waitlist: sign-ups only go through the server, with a rate limit; the API
+-- can't read or write the list (GHSA-9v4r, #271).
 -- Run with `npm run db:test`.
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
@@ -25,24 +25,26 @@ SELECT ok(
   AND NOT has_table_privilege('authenticated', 'public.waitlist_subscribers', 'DELETE'),
   'nobody reads, changes or deletes the waitlist through the API');
 SELECT ok(
-  NOT has_column_privilege('anon', 'public.waitlist_subscribers', 'source', 'INSERT')
-  AND NOT has_column_privilege('anon', 'public.waitlist_subscribers', 'subscribed_at', 'INSERT')
-  AND NOT has_column_privilege('anon', 'public.waitlist_subscribers', 'ip_hash', 'INSERT')
-  AND NOT has_column_privilege('authenticated', 'public.waitlist_subscribers', 'ip_hash', 'INSERT'),
-  'the API cannot set the source, date or IP hash');
+  NOT has_any_column_privilege('anon', 'public.waitlist_subscribers', 'INSERT')
+  AND NOT has_any_column_privilege('authenticated', 'public.waitlist_subscribers', 'INSERT'),
+  'nobody inserts into the waitlist through the API, not even an email');
 
--- ------------------------------------------- the direct insert, until removed
+-- ----------------------------------------------------- no direct insert
 SET LOCAL ROLE anon;
-SELECT lives_ok(
-  $$INSERT INTO public.waitlist_subscribers (email) VALUES ('oud-formulier@example.test')$$,
-  'the code on main still inserts a valid email directly (D-043)');
+SELECT throws_ok(
+  $$INSERT INTO public.waitlist_subscribers (email) VALUES ('direct@example.test')$$,
+  '42501', NULL, 'a visitor cannot insert an address directly');
+RESET ROLE;
+SET LOCAL ROLE authenticated;
+SELECT throws_ok(
+  $$INSERT INTO public.waitlist_subscribers (email) VALUES ('direct@example.test')$$,
+  '42501', NULL, 'a signed-in user cannot insert an address directly');
+RESET ROLE;
+
+-- The table itself refuses anything that is not an address.
 SELECT throws_ok(
   $$INSERT INTO public.waitlist_subscribers (email) VALUES ('geen e-mailadres')$$,
-  '23514', NULL, 'a direct insert of something that is not an address is refused');
-SELECT throws_ok(
-  $$INSERT INTO public.waitlist_subscribers (email, source) VALUES ('bron@example.test', 'vervalst')$$,
-  '42501', NULL, 'a direct insert cannot choose the source');
-RESET ROLE;
+  '23514', NULL, 'the waitlist holds only email addresses');
 
 -- --------------------------------------------------------------- subscribe
 SET LOCAL ROLE service_role;
