@@ -1,4 +1,11 @@
+import { createHmac, randomInt } from "node:crypto";
 import type { Page } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
+import {
+  E2E_IP_HASH_SECRET,
+  SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_URL,
+} from "./local-supabase.mjs";
 import { expect, loginAs, pageFor, seed, seedUsers, test } from "./fixtures";
 
 // The contact form stores messages; staff read them at /admin/contact and
@@ -116,4 +123,38 @@ test("only staff read contact messages", async ({ page, browser }) => {
   await expect(
     item.getByRole("link", { name: seedUsers.jana.username }),
   ).toBeVisible();
+});
+
+test("the rate-limit hash of the IP uses IP_HASH_SECRET", async ({
+  browser,
+}) => {
+  // Its own address per run, so reruns on one day stay under the limit.
+  const ip = `10.${randomInt(256)}.${randomInt(256)}.${randomInt(256)}`;
+  const context = await browser.newContext({
+    extraHTTPHeaders: { "x-forwarded-for": ip },
+  });
+  const page = await context.newPage();
+  const email = `iphash-${Date.now()}@example.test`;
+  await page.goto("/contact");
+  await sendMessage(page, {
+    name: "Test Bezoeker",
+    email,
+    message: `Een vraag over de site (${email}).`,
+  });
+  await context.close();
+
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  const { data, error } = await admin
+    .from("contact_messages")
+    .select("ip_hash")
+    .eq("sender_email", email)
+    .single();
+  expect(error).toBeNull();
+  const day = new Date().toISOString().slice(0, 10);
+  const hash = (secret: string) =>
+    createHmac("sha256", `${secret}:${day}`).update(ip).digest("hex");
+  expect(data?.ip_hash).toBe(hash(E2E_IP_HASH_SECRET));
+  expect(data?.ip_hash).not.toBe(hash(SUPABASE_SERVICE_ROLE_KEY));
 });
