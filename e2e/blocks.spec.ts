@@ -71,8 +71,16 @@ test("a block refuses messages until it is lifted from the profile", async ({
   await janaPage.reload();
   const sent = `Weer welkom ${randomUUID()}`;
   await janaPage.getByPlaceholder("Typ je bericht...").fill(sent);
+  // The chat shows the message before the server has it; reloading earlier
+  // would cancel the request (#280).
+  const saved = janaPage.waitForResponse(
+    (response) =>
+      !!response.request().headers()["next-action"] &&
+      (response.request().postData() ?? "").includes(sent),
+  );
   await janaPage.getByRole("button", { name: "Verstuur bericht" }).click();
   await expect(janaPage.getByText(sent)).toBeVisible();
+  await saved;
   await janaPage.reload();
   await expect(janaPage.getByText(sent)).toBeVisible();
 
