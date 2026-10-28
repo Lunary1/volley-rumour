@@ -66,6 +66,9 @@ a normal migration.
   since Supabase's change of 2026-10-30). Grant explicitly to each role that
   needs it, `service_role` included when the admin client touches the table;
   without a grant the API answers `42501 permission denied`.
+  `supabase/tests/database/api_grants.test.sql` pins every table and column
+  grant of `anon` and `authenticated` (#267): add a new grant to its lists in
+  the same PR. Grant nothing a policy doesn't use.
 - `profiles` has column-level SELECT: `role` is hidden from the API (#111), so
   never `select("*")` on it. A new column is unreadable until a migration adds
   it to the grant.
