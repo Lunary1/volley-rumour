@@ -17,7 +17,12 @@ import {
   AVATAR_SIZE_MESSAGE,
   avatarUrl,
 } from "@/lib/avatar";
-import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/schemas";
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MIN_MESSAGE,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+} from "@/lib/schemas";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,12 +138,14 @@ export function ProfileView({
 
     const result = await updateProfile(formData);
 
-    if (result.error) {
-      setError(result.error);
-    } else {
+    if (result.success) {
+      // Stored in lowercase, like at sign-up.
       setSuccess("Profiel bijgewerkt!");
-      setProfile((p) => ({ ...p, username }));
+      setUsername(result.username);
+      setProfile((p) => ({ ...p, username: result.username }));
       setEditModalOpen(false);
+    } else {
+      setError(result.error ?? null);
     }
 
     setSubmitting(false);
@@ -755,7 +762,8 @@ export function ProfileView({
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                minLength={2}
+                minLength={USERNAME_MIN_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
                 disabled={submitting}
                 className="mt-2 border-border bg-background"
               />

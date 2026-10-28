@@ -3,7 +3,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { SUSPENDED_ERROR_CODE, SUSPENDED_MESSAGE } from "@/lib/sanctions";
-import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/schemas";
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MIN_MESSAGE,
+  signUpSchema,
+} from "@/lib/schemas";
 import sharp from "sharp";
 import {
   AVATAR_ACCEPTED_TYPES,
@@ -31,18 +35,20 @@ export async function updateProfile(formData: FormData) {
     return { error: "Je moet ingelogd zijn" };
   }
 
-  const username = formData.get("username") as string;
-
-  if (!username || username.length < 2) {
-    return { error: "Gebruikersnaam moet minimaal 2 tekens zijn" };
-  }
+  // The same rules as at sign-up; the database caps it at 30 (GHSA-fjw6).
+  const parsed = signUpSchema.shape.username.safeParse(
+    formData.get("username") ?? "",
+  );
+  if (!parsed.success) return { error: parsed.error.errors[0].message };
 
   const { error } = await supabase
     .from("profiles")
-    .update({ username: username.trim() })
+    .update({ username: parsed.data })
     .eq("id", user.id);
 
   if (error) {
+    if (error.code === "23505")
+      return { error: "Deze gebruikersnaam bestaat al. Kies een andere." };
     // Suspended users can't edit their profile (#80).
     if (error.code === SUSPENDED_ERROR_CODE)
       return { error: SUSPENDED_MESSAGE };
@@ -50,7 +56,7 @@ export async function updateProfile(formData: FormData) {
   }
 
   revalidatePath("/profile");
-  return { success: true };
+  return { success: true, username: parsed.data };
 }
 
 export async function updatePassword(

@@ -61,7 +61,7 @@ export const createRumourSchema = z
       .min(1, "Huidige club is verplicht")
       .max(200, "Clubnaam is te lang"),
     currentDivision: divisionSchema.optional(),
-    destinationClub: z.string().optional(),
+    destinationClub: z.string().max(200, "Clubnaam is te lang").optional(),
     destinationDivision: divisionSchema.optional(),
     description: z
       .string()
@@ -213,4 +213,13 @@ export const sendMessageSchema = z.object({
   content: trimmedString
     .min(1, "Bericht mag niet leeg zijn")
     .max(5000, "Bericht is te lang"),
+  // The database allows an object of at most 500 characters (GHSA-fjw6).
+  contactShared: z
+    .object({
+      email: z.string().trim().email("Ongeldig e-mailadres").max(254),
+      phone: z.string().trim().max(30, "Telefoonnummer is te lang"),
+    })
+    .partial()
+    .strict()
+    .optional(),
 });

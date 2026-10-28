@@ -190,6 +190,7 @@ export async function sendMessage(
   const validationResult = sendMessageSchema.safeParse({
     conversationId,
     content,
+    contactShared,
   });
 
   if (!validationResult.success) {
@@ -217,7 +218,7 @@ export async function sendMessage(
       conversation_id: conversationId,
       sender_id: user.id,
       content: validationResult.data.content,
-      contact_shared: contactShared || null,
+      contact_shared: validationResult.data.contactShared ?? null,
     })
     .select()
     .single();
