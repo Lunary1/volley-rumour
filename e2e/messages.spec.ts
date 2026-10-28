@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { Page } from "@playwright/test";
 import { test, expect, loginAs, seed, seedUsers } from "./fixtures";
 
 // Messaging after the load-on-mount rewrite (#62): the list and the first
@@ -84,3 +85,48 @@ for (const [device, viewport] of [
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 }
+
+// #268: the actions put ids into PostgREST filter strings, so anything that
+// isn't a UUID is refused before a query. A client can send any arguments, so
+// the test rewrites the ones the page sends and reads the action's answer.
+async function rewriteActionArgument(page: Page, index: number, value: string) {
+  let answer: (body: string) => void;
+  const body = new Promise<string>((resolve) => (answer = resolve));
+  await page.route("**/*", async (route) => {
+    const request = route.request();
+    if (request.method() !== "POST" || !request.headers()["next-action"]) {
+      return route.fallback();
+    }
+    const args = JSON.parse(request.postData() ?? "[]");
+    args[index] = value;
+    const response = await route.fetch({ postData: JSON.stringify(args) });
+    answer(await response.text());
+    await route.fulfill({ response });
+  });
+  return { body };
+}
+
+test("a conversation id that isn't a UUID is refused (#268)", async ({
+  page,
+}) => {
+  await loginAs(page, "jana");
+  const { body } = await rewriteActionArgument(
+    page,
+    0,
+    `${seed.conversation.id},id.neq.x`,
+  );
+
+  await page.goto(conversationUrl);
+  await page.getByPlaceholder("Typ je bericht...").fill("Hallo");
+  await page.getByRole("button", { name: "Verstuur bericht" }).click();
+  expect(await body).toContain("Ongeldig conversatie ID");
+});
+
+test("a recipient id that isn't a UUID is refused (#268)", async ({ page }) => {
+  await loginAs(page, "tom");
+  await page.goto(`/zoekertjes/${seed.activeAd.id}`);
+  const { body } = await rewriteActionArgument(page, 1, "x),or(id.not.is.null");
+
+  await page.getByRole("button", { name: "Contact opnemen" }).click();
+  expect(await body).toContain("Ongeldige gebruiker");
+});
