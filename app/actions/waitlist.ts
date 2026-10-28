@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { dailyIpHash } from "@/lib/ip-hash";
 import { z } from "zod";
 
 const waitlistSchema = z.object({
@@ -12,6 +13,7 @@ const waitlistSchema = z.object({
  * - Validates email format
  * - Honeypot field check (bot trap)
  * - Silently succeeds on duplicate to avoid leaking info
+ * - At most 10 sign-ups per IP address a day (subscribe_to_waitlist)
  */
 export async function subscribeToWaitlist(formData: FormData) {
   // Honeypot: if this hidden field is filled, it's a bot
@@ -28,18 +30,24 @@ export async function subscribeToWaitlist(formData: FormData) {
     return { success: false as const, error: "Vul een geldig e-mailadres in." };
   }
 
-  const supabase = await createClient();
-
-  const { error } = await supabase
-    .from("waitlist_subscribers")
-    .insert({ email: parsed.data.email });
+  // Service role: the sign-up carries the server-side IP hash, so visitors
+  // can't call the function themselves. It applies the limit and succeeds
+  // silently for an address that is already on the list.
+  const admin = createAdminClient();
+  const { error } = await admin.rpc("subscribe_to_waitlist", {
+    p_email: parsed.data.email,
+    p_ip_hash: await dailyIpHash(),
+  });
 
   if (error) {
-    // Unique constraint violation — silently succeed
-    if (error.code === "23505") {
-      return { success: true as const };
+    if (error.code === "VR002") {
+      return {
+        success: false as const,
+        error:
+          "Er zijn vandaag al veel inschrijvingen vanaf dit adres. Probeer het morgen opnieuw.",
+      };
     }
-    console.error("Waitlist insert error:", error);
+    console.error("subscribe_to_waitlist failed:", error.code);
     return {
       success: false as const,
       error: "Er ging iets mis. Probeer het later opnieuw.",

@@ -120,7 +120,9 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Wachtlijst:</strong> Je e-mailadres, als je je
-                inschrijft om te horen wanneer de site opent.
+                inschrijft om te horen wanneer de site opent. Om te veel
+                inschrijvingen te beperken bewaren we er een versleutelde code
+                van je IP-adres bij die elke dag verandert.
               </li>
             </ul>
           </div>
