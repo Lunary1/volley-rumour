@@ -19,6 +19,8 @@ if (hostname !== "127.0.0.1" && hostname !== "localhost") {
   );
 }
 
+export const E2E_IP_HASH_SECRET = "e2e-ip-hash-secret";
+
 // A separate port, so a running `npm run dev` on :3000 is never reused.
 export const E2E_PORT = 3100;
 export const E2E_BASE_URL = `http://localhost:${E2E_PORT}`;
@@ -32,6 +34,8 @@ export const E2E_SERVER_ENV = {
   NEXT_PUBLIC_SUPABASE_URL: SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: SUPABASE_SERVICE_ROLE_KEY,
+  // Key of the daily IP hash (#269), checked by contact.spec.ts.
+  IP_HASH_SECRET: E2E_IP_HASH_SECRET,
   NEXT_PUBLIC_SITE_URL: E2E_BASE_URL,
   NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL: `${E2E_BASE_URL}/auth/callback`,
   NEXT_PUBLIC_COMING_SOON: "false",
