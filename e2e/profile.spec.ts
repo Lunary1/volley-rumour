@@ -78,6 +78,60 @@ test("profile says it failed to load instead of asking to log in", async ({
   }
 });
 
+test("a new username follows the sign-up rules", async ({ page }) => {
+  // The action used to accept any length and character (GHSA-fjw6). Its own
+  // throwaway account, so the seed usernames stay as they are.
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  const stamp = Date.now().toString(36);
+  const email = `naam-${stamp}@example.test`;
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password: SEED_PASSWORD,
+    email_confirm: true,
+    user_metadata: {
+      username: `naam_${stamp}`,
+      age_confirmed: true,
+      terms_accepted: true,
+    },
+  });
+  expect(error).toBeNull();
+  const userId = data.user!.id;
+  try {
+    await page.goto("/auth/login");
+    await page.getByLabel("E-mailadres").fill(email);
+    await page.getByLabel("Wachtwoord", { exact: true }).fill(SEED_PASSWORD);
+    await page
+      .locator("form")
+      .getByRole("button", { name: "Inloggen", exact: true })
+      .click();
+    await page.waitForURL("/");
+    await page.goto("/profile");
+
+    await page.getByRole("button", { name: "Bewerk profiel" }).click();
+    const field = page.getByLabel(/gebruikersnaam/i);
+    await expect(field).toHaveAttribute("maxlength", "30");
+    await field.fill("Mijn Naam!");
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    await expect(
+      page.getByText(
+        "Gebruik alleen letters, cijfers en _ in je gebruikersnaam",
+      ),
+    ).toBeVisible();
+
+    // A valid one is saved in lowercase, like at sign-up.
+    await field.fill(`Nieuw_${stamp}`);
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    await expect(page.getByText("Profiel bijgewerkt!")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: `nieuw_${stamp}` }),
+    ).toBeVisible();
+  } finally {
+    await admin.auth.admin.deleteUser(userId);
+  }
+});
+
 test.describe("on a phone", () => {
   test("my rumours keep the player name readable", async ({ page }) => {
     // The status and time used to squeeze the name to nothing (#219).
