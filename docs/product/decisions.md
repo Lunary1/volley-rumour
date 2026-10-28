@@ -683,7 +683,11 @@ as a nice-to-have and asked for the easiest common approach (2026-10-17).
 
 **Consequences.** Extracting the Dutch strings comes first and is useful on
 its own: it finds the English strings that leak into the UI (#90). Then
-French and English are added as translations: #143 and #144 in M3.
+French and English are added as translations: #143 and #144.
+
+**Update** (owner delegated, 2026-10-28). #143 and #144 move from M3 to the
+Post-launch milestone: extracting the strings touches every page and only
+pays off once a second language ships, so it waits until after launch (#95).
 
 
 ## D-028 — Waitlist emails are wiped after the launch email

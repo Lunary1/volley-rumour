@@ -34,6 +34,14 @@ export interface Conversation {
   last_message?: string;
 }
 
+// Ids go into PostgREST filter strings, so only UUIDs get that far (#268).
+const userIdSchema = z.string().uuid("Ongeldige gebruiker");
+const conversationIdSchema = z.string().uuid("Ongeldig gesprek");
+const conversationTargetSchema = z.object({
+  adId: z.string().uuid("Ongeldig zoekertje"),
+  recipientId: userIdSchema,
+});
+
 export interface Message {
   id: string;
   conversation_id: string;
@@ -52,6 +60,9 @@ export async function getExistingConversation(
   adId: string,
   recipientId: string,
 ) {
+  const target = conversationTargetSchema.safeParse({ adId, recipientId });
+  if (!target.success) return errorResponse(target.error.issues[0].message);
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -91,6 +102,9 @@ export async function createConversation(
   recipientId: string,
   initialMessage?: string,
 ) {
+  const target = conversationTargetSchema.safeParse({ adId, recipientId });
+  if (!target.success) return errorResponse(target.error.issues[0].message);
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -177,16 +191,6 @@ export async function sendMessage(
   content: string,
   contactShared?: { email?: string; phone?: string },
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return errorResponse("Je moet ingelogd zijn");
-  }
-
-  // Validate input
   const validationResult = sendMessageSchema.safeParse({
     conversationId,
     content,
@@ -198,6 +202,15 @@ export async function sendMessage(
       .map((e) => e.message)
       .join("; ");
     return errorResponse(errors);
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return errorResponse("Je moet ingelogd zijn");
   }
 
   // Verify user is part of this conversation
@@ -359,8 +372,6 @@ export async function getConversations({ archived = false } = {}) {
   return { success: true, data: enriched || [] };
 }
 
-const userIdSchema = z.string().uuid("Ongeldige gebruiker");
-
 /**
  * Block a user (#73): from then on neither of you can send the other a
  * message or start a conversation. Blocking someone already blocked is fine.
@@ -432,8 +443,6 @@ export async function unblockUser(userId: string): Promise<ActionResponse> {
   return successResponse(undefined);
 }
 
-const conversationIdSchema = z.string().uuid("Ongeldig gesprek");
-
 /**
  * Archive or unarchive a conversation for the current user only (#91). The
  * other participant keeps it in their inbox. RLS refuses conversations the
@@ -474,6 +483,9 @@ export async function setConversationArchived(
  * Mark messages in a conversation as read (called from client when viewing)
  */
 export async function markAsRead(conversationId: string) {
+  const parsed = conversationIdSchema.safeParse(conversationId);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
+
   const supabase = await createClient();
   const {
     data: { user },
