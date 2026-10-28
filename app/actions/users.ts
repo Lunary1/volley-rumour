@@ -65,7 +65,7 @@ const suspendSchema = z
   .object({
     userId: userIdSchema,
     duration: z.enum(["7", "30", "date", "indefinite"], {
-      errorMap: () => ({ message: "Kies hoe lang de schorsing duurt" }),
+      error: "Kies hoe lang de schorsing duurt",
     }),
     // For "date": the end as an ISO timestamp, picked in the admin's browser.
     until: z.string().datetime({ offset: true }).optional(),
@@ -94,7 +94,7 @@ export async function suspendUser(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = suspendSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
   const { userId, duration, reason } = parsed.data;
 
   let until: Date | null = null;
@@ -134,7 +134,7 @@ export async function liftSuspension(input: {
   const parsed = z
     .object({ userId: userIdSchema, note: noteSchema })
     .safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("lift_suspension", {
     p_user_id: parsed.data.userId,
@@ -159,7 +159,7 @@ export async function setVerifiedSource(input: {
   const parsed = z
     .object({ userId: userIdSchema, verified: z.boolean(), note: noteSchema })
     .safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("set_verified_source", {
     p_user_id: parsed.data.userId,
@@ -187,7 +187,7 @@ export async function setModerator(input: {
   const parsed = z
     .object({ userId: userIdSchema, moderator: z.boolean(), note: noteSchema })
     .safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("set_moderator", {
     p_user_id: parsed.data.userId,

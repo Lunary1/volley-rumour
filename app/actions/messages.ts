@@ -198,7 +198,7 @@ export async function sendMessage(
   });
 
   if (!validationResult.success) {
-    const errors = validationResult.error.errors
+    const errors = validationResult.error.issues
       .map((e) => e.message)
       .join("; ");
     return errorResponse(errors);

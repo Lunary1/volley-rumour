@@ -39,7 +39,7 @@ export async function updateProfile(formData: FormData) {
   const parsed = signUpSchema.shape.username.safeParse(
     formData.get("username") ?? "",
   );
-  if (!parsed.success) return { error: parsed.error.errors[0].message };
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const { error } = await supabase
     .from("profiles")

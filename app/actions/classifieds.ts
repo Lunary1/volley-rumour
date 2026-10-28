@@ -46,7 +46,7 @@ function parseClassifiedForm(formData: FormData, type: string | undefined) {
   });
 
   if (!validationResult.success) {
-    const errors = validationResult.error.errors
+    const errors = validationResult.error.issues
       .map((e) => e.message)
       .join("; ");
     return { ok: false, error: errors } as const;

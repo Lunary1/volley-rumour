@@ -36,7 +36,7 @@ const requestSchema = z.object({
       TakedownRelation,
       ...TakedownRelation[],
     ],
-    { errorMap: () => ({ message: "Kies wie het verzoek doet" }) },
+    { error: "Kies wie het verzoek doet" },
   ),
   name: z
     .string()
@@ -65,9 +65,7 @@ const requestSchema = z.object({
   // DSA art. 16(2)(d): the requester confirms the notice is made in good
   // faith (#94).
   goodFaith: z.literal(true, {
-    errorMap: () => ({
-      message: "Bevestig dat je verzoek juist en volledig is",
-    }),
+    error: "Bevestig dat je verzoek juist en volledig is",
   }),
   // Honeypot: hidden from people, filled in by bots.
   website: z.string().optional(),
@@ -83,7 +81,7 @@ export async function requestTakedown(
   input: TakedownRequestInput,
 ): Promise<ActionResponse<{ reference: string; statusPath: string }>> {
   const parsed = requestSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
   const { rumourId, relation, name, email, explanation, website } = parsed.data;
   if (website) return errorResponse("Je verzoek kon niet verstuurd worden.");
 
@@ -179,7 +177,7 @@ export async function removeRumourForTakedown(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = decisionSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("remove_rumour_for_takedown", {
     p_request_id: parsed.data.requestId,
@@ -200,7 +198,7 @@ export async function rejectTakedownRequest(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = decisionSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
   if (!parsed.data.note) {
     return errorResponse("Geef een toelichting voor de aanvrager");
   }

@@ -42,7 +42,7 @@ const rejectSchema = z
     rumourId: rumourIdSchema,
     reason: z.enum(
       Object.keys(REJECTION_REASONS) as [RejectionReason, ...RejectionReason[]],
-      { errorMap: () => ({ message: "Kies een reden" }) },
+      { error: "Kies een reden" },
     ),
     note: z
       .string()
@@ -85,7 +85,7 @@ export async function approveRumour(
   if (!staff.ok) return staff.response;
 
   const parsed = rumourIdSchema.safeParse(rumourId);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("approve_rumour", {
     p_rumour_id: parsed.data,
@@ -106,7 +106,7 @@ export async function rejectRumour(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = rejectSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("reject_rumour", {
     p_rumour_id: parsed.data.rumourId,
@@ -130,7 +130,7 @@ const resolveSchema = z.discriminatedUnion("outcome", [
     outcome: z.literal("confirmed"),
     rumourId: rumourIdSchema,
     category: z.enum(TRANSFER_CATEGORY_KEYS, {
-      errorMap: () => ({ message: "Kies het soort transfer" }),
+      error: "Kies het soort transfer",
     }),
     sourceUrl: sourceUrlSchema,
     note: noteSchema,
@@ -170,7 +170,7 @@ export async function resolveRumour(
   if (!staff.ok) return staff.response;
 
   const parsed = resolveSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
   const data = parsed.data;
 
   const { error } = await staff.supabase.rpc("resolve_rumour", {
@@ -212,7 +212,7 @@ export async function reopenRumour(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = reopenSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("reopen_rumour", {
     p_rumour_id: parsed.data.rumourId,
