@@ -41,14 +41,14 @@ export function isPlayerCategory(category: string): boolean {
 
 const divisionSchema = z.enum(
   Object.keys(RUMOUR_DIVISIONS) as [RumourDivision, ...RumourDivision[]],
-  { errorMap: () => ({ message: "Selecteer een geldig niveau" }) },
+  { error: "Selecteer een geldig niveau" },
 );
 
 // Rumour schema — conditional validation based on category
 export const createRumourSchema = z
   .object({
     category: z.enum(RUMOUR_CATEGORIES, {
-      errorMap: () => ({ message: "Selecteer een geldig type gerucht" }),
+      error: "Selecteer een geldig type gerucht",
     }),
     lastName: trimmedString
       .min(2, "Achternaam moet minstens 2 tekens zijn")
@@ -74,7 +74,7 @@ export const createRumourSchema = z
         RumourSourceType,
         ...RumourSourceType[],
       ],
-      { errorMap: () => ({ message: "Kies waar je gerucht vandaan komt" }) },
+      { error: "Kies waar je gerucht vandaan komt" },
     ),
     sourceUrl: z
       .string()
@@ -86,16 +86,14 @@ export const createRumourSchema = z
       )
       .optional(),
     declaredRules: z.literal(true, {
-      errorMap: () => ({
-        message: "Bevestig dat je de regels voor geruchten volgt",
-      }),
+      error: "Bevestig dat je de regels voor geruchten volgt",
     }),
   })
   .superRefine((data, ctx) => {
     // Gender is required for player categories
     if (isPlayerCategory(data.category) && !data.gender) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Geslacht is verplicht voor spelers",
         path: ["gender"],
       });
@@ -105,7 +103,7 @@ export const createRumourSchema = z
     if (isTransferCategory(data.category)) {
       if (!data.destinationClub || data.destinationClub.trim().length === 0) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Vul de nieuwe club in",
           path: ["destinationClub"],
         });
@@ -115,7 +113,7 @@ export const createRumourSchema = z
 
 const enumOf = <T extends string>(labels: Record<T, string>, message: string) =>
   z.enum(Object.keys(labels) as [T, ...T[]], {
-    errorMap: () => ({ message }),
+    error: message,
   });
 
 // Zoekertje schema (#71). Which fields apply depends on the type.
@@ -145,8 +143,7 @@ export const createClassifiedSchema = z
   })
   .superRefine((data, ctx) => {
     const require = (ok: boolean, message: string, path: string) => {
-      if (!ok)
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message, path: [path] });
+      if (!ok) ctx.addIssue({ code: "custom", message, path: [path] });
     };
 
     if (isPersonAd(data.type)) {

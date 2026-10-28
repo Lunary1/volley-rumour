@@ -30,7 +30,7 @@ import {
 const messageSchema = z.object({
   category: z.enum(
     Object.keys(CONTACT_CATEGORIES) as [ContactCategory, ...ContactCategory[]],
-    { errorMap: () => ({ message: "Kies een onderwerp" }) },
+    { error: "Kies een onderwerp" },
   ),
   name: z
     .string()
@@ -66,7 +66,7 @@ export async function submitContactMessage(
   input: ContactMessageInput,
 ): Promise<ActionResponse<null>> {
   const parsed = messageSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
   const { category, name, email, message, website } = parsed.data;
   if (website) return errorResponse("Je bericht kon niet verstuurd worden.");
 
@@ -126,7 +126,7 @@ export async function handleContactMessage(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = handleSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("handle_contact_message", {
     p_message_id: parsed.data.messageId,

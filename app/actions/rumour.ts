@@ -51,7 +51,7 @@ function parseRumourForm(formData: FormData) {
   if (!validationResult.success) {
     return {
       ok: false,
-      error: validationResult.error.errors.map((e) => e.message).join("; "),
+      error: validationResult.error.issues.map((e) => e.message).join("; "),
     } as const;
   }
 

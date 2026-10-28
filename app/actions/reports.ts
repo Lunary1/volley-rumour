@@ -29,7 +29,7 @@ const reportSchema = z
   .object({
     targetType: z.enum(["rumour", "classified", "conversation"]),
     targetId: z.string().uuid("Ongeldige melding"),
-    reason: z.string({ required_error: "Kies een reden" }),
+    reason: z.string({ error: "Kies een reden" }),
     explanation: z
       .string()
       .trim()
@@ -73,7 +73,7 @@ export async function reportContent(
   if (!user) return errorResponse("Je moet ingelogd zijn om te melden");
 
   const parsed = reportSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
   const { targetType, targetId, reason, explanation, block } = parsed.data;
 
   const { error } = await supabase.rpc("submit_report", {
@@ -187,7 +187,7 @@ export async function removeReportedContent(input: {
   const parsed = z
     .object({ reportId: reportIdSchema, note: noteSchema })
     .safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("remove_reported_content", {
     p_report_id: parsed.data.reportId,
@@ -216,7 +216,7 @@ export async function closeReport(input: {
       note: noteSchema,
     })
     .safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
   if (parsed.data.outcome === "action_taken" && !parsed.data.note) {
     return errorResponse("Beschrijf welke maatregel je nam");
   }
@@ -252,7 +252,7 @@ export async function readReportedConversation(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = reportIdSchema.safeParse(input.reportId);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { data, error } = await staff.supabase.rpc(
     "get_reported_conversation",

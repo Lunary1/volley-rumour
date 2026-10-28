@@ -36,7 +36,7 @@ const transferSchema = z
       .min(2, "Geef de naam van de speler of trainer")
       .max(TRANSFER_NAME_MAX_LENGTH, "De naam is te lang"),
     category: z.enum(TRANSFER_CATEGORY_KEYS, {
-      errorMap: () => ({ message: "Kies het soort transfer" }),
+      error: "Kies het soort transfer",
     }),
     fromClub: clubSchema,
     toClub: clubSchema,
@@ -102,7 +102,7 @@ export async function createTransfer(
   if (!staff.ok) return staff.response;
 
   const parsed = transferSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc(
     "create_transfer",
@@ -122,9 +122,9 @@ export async function updateTransfer(
   if (!staff.ok) return staff.response;
 
   const id = transferIdSchema.safeParse(transferId);
-  if (!id.success) return errorResponse(id.error.errors[0].message);
+  if (!id.success) return errorResponse(id.error.issues[0].message);
   const parsed = transferSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("update_transfer", {
     p_transfer_id: id.data,
@@ -160,7 +160,7 @@ export async function deleteTransfer(input: {
   if (!staff.ok) return staff.response;
 
   const parsed = deleteSchema.safeParse(input);
-  if (!parsed.success) return errorResponse(parsed.error.errors[0].message);
+  if (!parsed.success) return errorResponse(parsed.error.issues[0].message);
 
   const { error } = await staff.supabase.rpc("delete_transfer", {
     p_transfer_id: parsed.data.transferId,
