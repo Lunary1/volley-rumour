@@ -5,16 +5,34 @@ import { Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsClient } from "@/lib/use-is-client";
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  // In the mobile menu the toggle is a row like the links above it, with the
+  // current theme as its label (#284). On desktop it shows only its icon.
+  isMobile?: boolean;
+}
+
+const themeLabels: Record<string, string> = {
+  light: "Thema: licht",
+  dark: "Thema: donker",
+  system: "Thema: systeem",
+};
+
+export function ThemeToggle({ isMobile = false }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
   const isClient = useIsClient();
+
+  const buttonProps = isMobile
+    ? ({ size: "sm", className: "w-full justify-start" } as const)
+    : ({ size: "icon", className: "h-9 w-9" } as const);
 
   if (!isClient) {
     // Prevent hydration mismatch — render placeholder with same dimensions
     return (
-      <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
+      <Button variant="ghost" {...buttonProps} disabled>
         <Sun className="h-4 w-4" />
-        <span className="sr-only">Thema wisselen</span>
+        <span className={isMobile ? "" : "sr-only"}>
+          {isMobile ? "Thema" : "Thema wisselen"}
+        </span>
       </Button>
     );
   }
@@ -28,8 +46,7 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon"
-      className="h-9 w-9"
+      {...buttonProps}
       onClick={cycleTheme}
       title={
         theme === "light"
@@ -42,7 +59,11 @@ export function ThemeToggle() {
       {theme === "light" && <Sun className="h-4 w-4" />}
       {theme === "dark" && <Moon className="h-4 w-4" />}
       {theme === "system" && <Monitor className="h-4 w-4" />}
-      <span className="sr-only">Thema wisselen</span>
+      {isMobile ? (
+        <span>{themeLabels[theme ?? "system"] ?? themeLabels.system}</span>
+      ) : (
+        <span className="sr-only">Thema wisselen</span>
+      )}
     </Button>
   );
 }
