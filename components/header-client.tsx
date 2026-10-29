@@ -265,8 +265,8 @@ export function HeaderClient({
                 </div>
               ))}
               {showUserMenu && <UserMenu user={user} isMobile={true} />}
-              <div className="px-4 pt-2">
-                <ThemeToggle />
+              <div className="px-4">
+                <ThemeToggle isMobile />
               </div>
             </nav>
           </div>
