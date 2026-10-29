@@ -92,14 +92,16 @@ test("a user reports a rumour and a moderator removes it", async ({
   // The author sees the removal and the note on their profile.
   const author = await pageFor(browser, "club");
   await author.goto("/profile");
+  // Inside <main>: while the page streams in, a second copy waits outside it.
+  const profile = author.getByRole("main");
   await expect(
-    author.getByText(
+    profile.getByText(
       "Een moderator heeft dit gerucht van de site gehaald. Dit gerucht viel een speler persoonlijk aan.",
     ),
   ).toBeVisible();
   // With the way to contest it (DSA art. 17, #94).
   await expect(
-    author
+    profile
       .getByText("Een moderator heeft dit gerucht van de site gehaald.")
       .getByRole("link", { name: "Laat het ons weten" }),
   ).toHaveAttribute("href", "/contact");
