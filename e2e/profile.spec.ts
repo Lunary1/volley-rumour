@@ -66,11 +66,13 @@ test("profile says it failed to load instead of asking to log in", async ({
     await page.waitForURL("/");
 
     await page.goto("/profile");
+    // Inside <main>: while the page streams in, a second copy waits outside it.
+    const main = page.getByRole("main");
     await expect(
-      page.getByText("Je profiel kon niet geladen worden."),
+      main.getByText("Je profiel kon niet geladen worden."),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Opnieuw proberen" }),
+      main.getByRole("link", { name: "Opnieuw proberen" }),
     ).toBeVisible();
     await expect(page.getByText("Je bent niet ingelogd")).toHaveCount(0);
   } finally {

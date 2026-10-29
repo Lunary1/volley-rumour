@@ -25,7 +25,9 @@ async function choose(page: Page, label: RegExp, option: string) {
 
 async function submitAndOpen(page: Page) {
   await page.getByRole("button", { name: "Zoekertje plaatsen" }).click();
-  await expect(page).toHaveURL(AD_URL);
+  // waitForURL, not toHaveURL: under full-suite load the action and the next
+  // page can take longer than the 5 s expect timeout.
+  await page.waitForURL(AD_URL);
   created.push(AD_URL.exec(page.url())![1]);
   await expect(page.getByText("Je zoekertje staat online")).toBeVisible();
 }
@@ -43,7 +45,7 @@ test("a logged-out visitor logs in and comes back to the form", async ({
     .getByRole("button", { name: "Inloggen", exact: true })
     .click();
 
-  await expect(page).toHaveURL("/zoekertjes/nieuw");
+  await page.waitForURL("/zoekertjes/nieuw");
   await expect(page.getByText("Nieuw Zoekertje Plaatsen")).toBeVisible();
 });
 
