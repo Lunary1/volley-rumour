@@ -49,9 +49,13 @@ export function CookieConsent() {
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 md:flex-row md:items-center md:justify-between md:gap-4 md:py-4 lg:px-8">
         <p className="text-sm text-muted-foreground md:max-w-3xl">
-          Cookies van Meta, om te zien welke advertenties werken? Weiger je, dan
-          laden we niets van Meta. Wijzigen kan altijd onderaan de pagina. Meer
-          in ons{" "}
+          <strong className="font-semibold text-foreground">
+            Wij gebruiken cookies
+          </strong>{" "}
+          We gebruiken cookies die nodig zijn om de site te laten werken. Met je
+          toestemming plaatsen we ook cookies van Meta om onze advertenties te
+          meten. Je kan je keuze altijd wijzigen via Cookie-instellingen. Lees
+          meer in ons{" "}
           <Link
             href="/privacy#cookies"
             className="underline hover:text-foreground"
