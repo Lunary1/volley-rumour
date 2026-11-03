@@ -18,6 +18,8 @@ const OPEN_PATHS = new Set([
   "/voorwaarden",
   "/over-ons",
   "/contact",
+  // The cookie banner shows on /welkom too and saves its choice here (#288).
+  "/cookie-keuze",
 ]);
 const OPEN_PREFIXES = ["/auth/", "/verwijderverzoek", "/_"];
 

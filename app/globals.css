@@ -251,3 +251,9 @@
     display: none;
   }
 }
+
+/* The server-rendered cookie banner, for a visitor who already chose
+   (#288): hidden before the first paint, removed at hydration. */
+html[data-cookie-choice] [data-cookie-banner="server"] {
+  display: none;
+}

@@ -47,11 +47,11 @@ Vercel hosting, Resend email, optional Google login.
 | Art. 13(1)(b) DPO | n/a | Not required at this scale |
 | Art. 13(1)(c) purposes and legal bases | Done | Privacy › Waarom we je gegevens mogen gebruiken |
 | Art. 13(1)(d) legitimate interests | Done | Moderation, abuse prevention (daily rotating IP hash), cookie-less analytics, notification emails (opt-out), rumours about players |
-| Art. 13(1)(e) recipients | Done | Privacy › Wie verwerkt je gegevens (Supabase, Vercel, Resend, Google) |
+| Art. 13(1)(e) recipients | Done | Privacy › Wie verwerkt je gegevens (Supabase, Vercel, Resend, Google), plus Meta as joint controller for the Pixel, only after consent (D-054) |
 | Art. 13(1)(f) transfers outside the EU | Done, **verify** | Vercel, Resend, Google: DPF or SCCs stated generally. Open question 4 |
 | Art. 13(2)(a) retention | Done | Privacy › Hoe lang (account, deletion, suspensions, 2-year log, 12 months takedowns/contact, waitlist) |
 | Art. 13(2)(b) rights incl. objection, restriction, portability | Done | Privacy › Jouw rechten |
-| Art. 13(2)(c) withdraw consent | Done | Waitlist and Google login |
+| Art. 13(2)(c) withdraw consent | Done | Waitlist, Google login, and Meta's cookies via "Cookie-instellingen" in the footer (D-054) |
 | Art. 13(2)(d) complaint to the supervisory authority | Done | Gegevensbeschermingsautoriteit linked |
 | Art. 13(2)(f) automated decisions | Done | "Elke moderatiebeslissing neemt een mens" |
 | Art. 14 people named in rumours (data not from them) | Done | Privacy › Geruchten over jou: what, why, seniors only, objection = verwijderverzoek. Open question 2 |
@@ -86,7 +86,7 @@ reading. Micro enterprises are exempt from art. 20–28 except art. 24(3).
 | Changes to the terms | Done | New version asked once on `/welkom` (#75); #94 bumped it to `2026-10-19`, #256 to `2026-10-27` |
 | Language | Done | Dutch; French is a nice-to-have (D-027). Open question 6 |
 | Paid features (featured ads) | n/a | Free at launch; terms say they'll change first if that changes |
-| Cookies (ePrivacy, art. 129 WEC) | Done | Only strictly necessary (login) and theme in browser storage; analytics cookie-less, no banner needed |
+| Cookies (ePrivacy, art. 129 WEC) | Done | Login and the cookie choice are strictly necessary; theme in browser storage; analytics cookie-less. Meta's cookies only after "Accepteren" in the banner, refusing equally easy, asked again after 6 months (D-054). Open question 10 |
 | Personality rights / defamation of people named in rumours | Mitigated | Seniors only, source required, one "Ik volg de regels voor geruchten" checkbox per rumour (D-052), pre-moderation, takedown without account. Open questions 2 and 9 |
 
 ## 6. Open questions for a lawyer
@@ -120,6 +120,11 @@ reading. Micro enterprises are exempt from art. 20–28 except art. 24(3).
    faith, no insults or private matters). Until 2026-10-23 the poster declared
    each rule separately. Is the reference enough as evidence of good faith
    against a defamation claim, or should the rules be in the sentence?
+10. **Meta Pixel (D-054).** Is the joint-controller wording on the privacy
+    page enough under GDPR art. 26, or do we need to publish the essence of
+    Meta's controller addendum? Is a 6-month consent lifetime acceptable to
+    the GBA, and is the banner (equal buttons, no pre-ticked boxes, nothing
+    loaded before a choice) compliant with its cookie guidance?
 
 ## 7. Still to do outside the code
 

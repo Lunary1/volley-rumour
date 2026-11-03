@@ -275,6 +275,7 @@ Put local values in `.env.local` (git-ignored). Never commit secrets.
 | `IP_HASH_SECRET` | Server only. Key of the daily IP hash behind the contact, takedown and waitlist rate limits (`lib/ip-hash.ts`, #269); any long random string. Falls back to the service role key when unset. Changing it resets that day's limits |
 | `NEXT_PUBLIC_COMING_SOON` | `"true"` shows the coming-soon homepage and redirects every other route except the info pages to `/` (`lib/coming-soon.ts`) |
 | `NEXT_PUBLIC_LAUNCH_DATE` | Countdown target |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Optional. The Meta Pixel (D-054, #288); set, the cookie banner shows and the Pixel loads after "Accepteren". Unset: no banner, no Pixel |
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL for share links |
 | `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` | OAuth redirect for local dev |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` | Notification emails (`lib/email.ts`): Resend's SMTP in production (`smtp.resend.com`, 465, user `resend`, an API key). Locally `127.0.0.1:54325` (the stack's Mailpit, see Mailpit at :54324). Without `SMTP_HOST` no email is sent |

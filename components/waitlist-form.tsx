@@ -5,6 +5,7 @@ import { subscribeToWaitlist } from "@/app/actions/waitlist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WaitlistShare } from "@/components/waitlist-share";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 import { Mail, CheckCircle2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -24,6 +25,7 @@ export function WaitlistForm() {
     if (result.success) {
       setStatus("success");
       formRef.current?.reset();
+      trackMetaEvent("Lead");
     } else {
       setStatus("error");
       setErrorMessage(result.error);

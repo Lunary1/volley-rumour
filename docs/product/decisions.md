@@ -58,6 +58,7 @@ intent. Status is one of **Accepted**, **Proposed** (needs owner sign-off) or
 | D-049 | 2026-10-22 | Accepted | Pages read the logged-in user from the verified JWT (`getClaims()`), without a call to Supabase Auth; server actions and staff checks keep `getUser()` |
 | D-052 | 2026-10-23 | Accepted | A rumour needs one checkbox, "Ik volg de regels voor geruchten", instead of two declarations |
 | D-053 | 2026-10-26 | Accepted | Production shows the coming-soon page from 2026-10-22 until launch; replaces D-034 |
+| D-054 | 2026-11-03 | Accepted | The Meta Pixel loads only after consent in a cookie banner, so ads optimise for sign-ups (#287) |
 
 ---
 
@@ -1271,3 +1272,54 @@ D-034.
 - Supabase sign-ups stay disabled until launch.
 - Checks on production are limited to what coming-soon shows: the homepage,
   the info pages, the redirect status and response times.
+
+## D-054 — The Meta Pixel, only after consent
+
+**Context.** The first Meta ad week (25 Oct – 1 Nov, €13.78) brought 144
+landing page views at €0.10; about 1 in 4 visitors joined the waitlist. With
+no Pixel, Meta can only optimise for visits and can't learn which visitors
+sign up. The site had no tracking cookies on purpose ("Geen tracking" on the
+privacy page). #287 weighed three options: keep it that way (A), the Pixel in
+the browser after consent with a cookie banner (B), or Meta's Conversions API
+from the server (C), which needs the same consent and more code.
+
+**Decision** (owner, 2026-11-03, #287). Option B, built in #288:
+- A cookie banner on every page until the visitor chooses. "Weigeren" and
+  "Accepteren" look the same and are one click each; nothing of Meta's loads
+  before "Accepteren". The choice is a first-party cookie
+  (`vr_cookie_consent`) for 6 months, then the banner asks again.
+- "Cookie-instellingen" in the footer reopens the banner. Refusing after
+  accepting revokes the Pixel and removes `_fbp`/`_fbc`.
+- Events: `PageView` (also on client-side navigation), `Lead` when the
+  waitlist form succeeds, `CompleteRegistration` when an account is created
+  (the email sign-up form; for Google, the OAuth callback flags an account
+  created in the last two minutes).
+- No advanced matching: no email address or other form data goes to Meta.
+- `NEXT_PUBLIC_META_PIXEL_ID` switches it on; without it there is no banner
+  and no Pixel.
+
+**Consequences.**
+- The privacy page names Meta as joint controller (GDPR art. 26) for what the
+  Pixel collects, with consent as the legal basis, the cookies and their
+  lifetime, the US transfer and how to withdraw. "Geen tracking" is gone.
+- Visitors who refuse are not counted by Meta, so Meta's numbers stay below
+  the real sign-ups; the waitlist count stays the reference.
+- Meta's optimisation wants about 50 events a week per ad set; at €3/day the
+  waitlist brings 20–30, so the gain grows with the budget at launch.
+- The waitlist → account conversion after launch is still counted
+  first-party, once, before the waitlist is wiped (D-028).
+- The full CSP (#275) must allow `connect.facebook.net` (script) and
+  `www.facebook.com` (connect and img), and the inline script in `<head>`
+  that hides the banner for a stored choice (a hash).
+- Ad blockers must never cost a feature: every call into Meta's code is
+  wrapped, nothing waits for it, and the waitlist, sign-up and navigation are
+  tested with Meta's script blocked and with an `fbq` that throws. With
+  cookies blocked, the choice holds for the visit. Safari keeps cookies set by
+  JavaScript only 7 days, so `/cookie-keuze` sets the choice again from the
+  server.
+- Performance: a banner rendered only after hydration became the LCP element
+  on phones (+0.5–0.75 s, measured on a local build at 4x CPU slowdown). The
+  server sends the banner to everyone; a one-line script in `<head>` hides
+  it for a stored choice before the first paint. After that the difference is
+  within noise, CLS stays 0. Meta's script loads when the browser is idle
+  after "Accepteren", so the click stays quick (INP).

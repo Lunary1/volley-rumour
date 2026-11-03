@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TermsCheckboxes } from "@/components/terms-checkboxes";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 import { useIsClient } from "@/lib/use-is-client";
 import { safeNextPath } from "@/lib/utils";
 import {
@@ -86,7 +87,11 @@ function SignUpPageInner() {
       if (!result.success) {
         setError(result.error);
         setErrorField(result.field ?? null);
-      } else if (result.data.confirmEmail) {
+        return;
+      }
+      // The account exists now, also before the email is confirmed (#288).
+      trackMetaEvent("CompleteRegistration");
+      if (result.data.confirmEmail) {
         setSuccess(true);
       } else {
         router.push(next);

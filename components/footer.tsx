@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { isComingSoon } from "@/lib/coming-soon";
+import { CookieSettingsButton } from "@/components/cookie-consent";
 
 export function Footer() {
   // Coming-soon mode: only link to pages that are still reachable.
@@ -144,6 +145,7 @@ export function Footer() {
             >
               Voorwaarden
             </Link>
+            <CookieSettingsButton />
           </div>
         </div>
       </div>

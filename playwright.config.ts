@@ -30,6 +30,23 @@ export default defineConfig({
     locale: "nl-BE",
     timezoneId: "Europe/Brussels",
     trace: "retain-on-failure",
+    // Every spec starts with Meta's cookies refused, so the cookie banner
+    // (#288) doesn't cover what tests click. meta-pixel.spec.ts clears it.
+    storageState: {
+      cookies: [
+        {
+          name: "vr_cookie_consent",
+          value: "denied",
+          domain: new URL(E2E_BASE_URL).hostname,
+          path: "/",
+          expires: -1,
+          httpOnly: false,
+          secure: false,
+          sameSite: "Lax",
+        },
+      ],
+      origins: [],
+    },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
