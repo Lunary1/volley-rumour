@@ -52,9 +52,7 @@ export function CookieConsent() {
           <strong className="font-semibold text-foreground">
             Wij gebruiken cookies
           </strong>{" "}
-          We gebruiken cookies die nodig zijn om de site te laten werken. Met je
-          toestemming plaatsen we ook cookies van Meta om onze advertenties te
-          meten. Je kan je keuze altijd wijzigen via Cookie-instellingen. Lees
+          We gebruiken cookies die nodig zijn om de site te laten werken. Je kan je keuze altijd wijzigen via Cookie-instellingen. Lees
           meer in ons{" "}
           <Link
             href="/privacy#cookies"
