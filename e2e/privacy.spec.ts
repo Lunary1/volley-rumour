@@ -1,7 +1,8 @@
 import { test, expect, loginAs } from "./fixtures";
 
 // The privacy page lists every processor, and the site loads nothing from
-// services it doesn't list (#77). Datadog is gone (D-023).
+// services it doesn't list (#77). Datadog is gone (D-023). Meta's Pixel
+// loads only after consent (#288), which these tests don't give.
 
 test("privacy page lists every processor and how long data is kept", async ({
   page,

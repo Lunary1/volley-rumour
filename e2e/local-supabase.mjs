@@ -48,6 +48,10 @@ export const E2E_SERVER_ENV = {
   E2E_ERROR_PROBE: "1",
   // Opens the test-only coming-soon page (app/e2e-binnenkort, #229).
   E2E_COMING_SOON_PROBE: "1",
+  // A made-up Pixel ID, so the cookie banner shows (#288). Specs start with
+  // Meta's cookies refused (playwright.config.ts); meta-pixel.spec.ts stubs
+  // Meta's script.
+  NEXT_PUBLIC_META_PIXEL_ID: "100000000000001",
   // Render in UTC like Vercel and CI, also on a developer's machine in
   // Belgium; the browser runs in Europe/Brussels (#142).
   TZ: "UTC",

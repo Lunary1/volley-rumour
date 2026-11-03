@@ -51,7 +51,7 @@ export default function PrivacyPage() {
             verzamelen, gebruiken en beschermen.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            Laatst bijgewerkt op 19 oktober 2026
+            Laatst bijgewerkt op 3 november 2026
           </p>
         </div>
       </section>
@@ -113,6 +113,19 @@ export default function PrivacyPage() {
                 <strong>Technische gegevens:</strong> Je IP-adres en
                 browsergegevens, die nodig zijn om de site te tonen, en anonieme
                 bezoekcijfers via Vercel Web Analytics en Speed Insights.
+              </li>
+              <li>
+                <strong>Advertentiemeting:</strong> Alleen als je de cookies van
+                Meta accepteert: welke pagina&apos;s je bekijkt en of je je op
+                de wachtlijst inschreef of een account aanmaakte, via de Meta
+                Pixel (zie{" "}
+                <a
+                  href="#cookies"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Cookies
+                </a>
+                ).
               </li>
               <li>
                 <strong>Communicatiegegevens:</strong> Berichten via het
@@ -203,6 +216,12 @@ export default function PrivacyPage() {
                 gebruiken, via Vercel Web Analytics en Speed Insights.
               </li>
               <li>
+                <strong>Advertenties meten:</strong> Met je toestemming zien
+                welke advertenties op Facebook en Instagram mensen naar de site
+                brengen en tot een inschrijving leiden, zodat Meta ze aan de
+                juiste mensen toont.
+              </li>
+              <li>
                 <strong>Communicatie:</strong> E-mails over je account, een
                 korte melding bij een nieuw bericht of een beslissing over je
                 gerucht (zonder de inhoud; uit te zetten op je profiel), en één
@@ -214,8 +233,8 @@ export default function PrivacyPage() {
               </li>
             </ul>
             <p>
-              We verkopen je gegevens niet en gebruiken geen advertentie- of
-              trackingdiensten.
+              We verkopen je gegevens niet. Een trackingdienst gebruiken we
+              alleen met je toestemming: de Meta Pixel, voor onze advertenties.
             </p>
           </div>
         </div>
@@ -243,9 +262,10 @@ export default function PrivacyPage() {
               meldingen afhandelen en bewaren wat we daarover beslisten.
             </li>
             <li>
-              <strong>Toestemming:</strong> de wachtlijst, en inloggen met
-              Google. Je toestemming intrekken kan altijd; voor de wachtlijst
-              via het contactformulier.
+              <strong>Toestemming:</strong> de wachtlijst, inloggen met Google,
+              en de cookies van Meta. Je toestemming intrekken kan altijd; voor
+              de wachtlijst via het contactformulier, voor de cookies via
+              &lsquo;Cookie-instellingen&rsquo; onderaan elke pagina.
             </li>
           </ul>
         </div>
@@ -268,7 +288,29 @@ export default function PrivacyPage() {
               ))}
             </ul>
             <p>
-              Onze database staat in de EU. Vercel, Resend en Google zijn
+              <strong>Meta (alleen met je toestemming):</strong> Accepteer je de
+              cookies van Meta, dan stuurt de Meta Pixel in je browser naar Meta
+              Platforms Ireland Ltd. welke pagina&apos;s je bekijkt, of je je op
+              de wachtlijst inschreef of een account aanmaakte, je IP-adres,
+              browsergegevens en de cookies van Meta. Nooit je e-mailadres, je
+              naam of wat je in een formulier typt. Voor het verzamelen en
+              doorsturen van die gegevens zijn wij en Meta samen
+              verantwoordelijk. Meta gebruikt ze daarna ook voor eigen
+              doeleinden, zoals advertenties tonen en verbeteren; dat staat in
+              het{" "}
+              <a
+                href="https://www.facebook.com/privacy/policy"
+                className="text-primary hover:underline font-medium"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                privacybeleid van Meta
+              </a>
+              . Voor je rechten over deze gegevens kan je bij ons en bij Meta
+              terecht.
+            </p>
+            <p>
+              Onze database staat in de EU. Vercel, Resend, Google en Meta zijn
               Amerikaanse bedrijven, dus sommige gegevens kunnen in de Verenigde
               Staten verwerkt worden. Dat gebeurt onder het
               EU-VS-gegevensprivacykader of de standaardcontractbepalingen van
@@ -359,27 +401,40 @@ export default function PrivacyPage() {
         </div>
 
         {/* Cookies */}
-        <div>
+        <div id="cookies" className="scroll-mt-20">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
             Cookies
           </h2>
           <div className="space-y-4 text-muted-foreground">
-            <p>We gebruiken alleen cookies die nodig zijn:</p>
+            <p>Deze cookies zijn nodig en staan er altijd:</p>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>
                 <strong>Inloggen:</strong> Cookies die bijhouden dat je ingelogd
                 bent.
               </li>
               <li>
+                <strong>Je cookiekeuze:</strong> Of je de cookies van Meta
+                accepteerde of weigerde, 6 maanden lang. Daarna vragen we het
+                opnieuw.
+              </li>
+              <li>
                 <strong>Thema:</strong> Je keuze voor licht of donker, bewaard
                 in je browser.
               </li>
-              <li>
-                <strong>Geen tracking:</strong> Vercel Web Analytics en Speed
-                Insights werken zonder cookies. We gebruiken geen advertentie-
-                of trackingcookies.
-              </li>
             </ul>
+            <p>
+              Alleen als je ze accepteert, plaatst de Meta Pixel de cookies van
+              Meta (<code>_fbp</code>, en <code>_fbc</code> als je via een
+              advertentie komt), die 90 dagen blijven. Weiger je, dan laden we
+              niets van Meta. Vercel Web Analytics en Speed Insights werken
+              zonder cookies.
+            </p>
+            <p>
+              Je keuze wijzigen of je toestemming intrekken kan altijd via
+              &lsquo;Cookie-instellingen&rsquo; onderaan elke pagina, even
+              makkelijk als je ze gaf. Trek je ze in, dan stopt de Pixel en
+              verwijderen we de cookies van Meta.
+            </p>
           </div>
         </div>
 

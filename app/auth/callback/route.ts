@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
 import { safeNextPath } from "@/lib/utils";
+import { CONSENT_COOKIE, REGISTRATION_COOKIE } from "@/lib/consent-cookie";
+
+// An account this young was created by this very sign-in.
+const NEW_ACCOUNT_WINDOW_MS = 2 * 60 * 1000;
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -74,7 +78,7 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
       console.error(
@@ -118,6 +122,22 @@ export async function GET(request: NextRequest) {
       // the server-side Supabase client on the next request.
       for (const { name, value, options } of cookiesToSet) {
         response.cookies.set(name, value, options);
+      }
+      // A Google sign-up that just created the account, by a visitor who
+      // accepted Meta's cookies: the next page sends CompleteRegistration
+      // (#288). Email sign-ups send it from the form, so not on confirmation.
+      const createdAt = data.user ? Date.parse(data.user.created_at) : 0;
+      if (
+        !isSignUpConfirmation &&
+        !isPasswordReset &&
+        Date.now() - createdAt < NEW_ACCOUNT_WINDOW_MS &&
+        request.cookies.get(CONSENT_COOKIE)?.value === "granted"
+      ) {
+        response.cookies.set(REGISTRATION_COOKIE, "1", {
+          maxAge: 600,
+          path: "/",
+          sameSite: "lax",
+        });
       }
       console.log(
         "[auth/callback] Success — setting",

@@ -10,6 +10,9 @@ import { Footer } from "@/components/footer";
 import { SuspensionNotice } from "@/components/suspension-notice";
 import { ToasterProvider } from "@/components/toaster-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { CookieConsent } from "@/components/cookie-consent";
+import { CONSENT_CHOSEN_SCRIPT } from "@/lib/consent-cookie";
+import { META_PIXEL_ID } from "@/lib/meta-pixel";
 import { SITE_URL } from "@/lib/site-url";
 import { BASE_OPEN_GRAPH } from "@/lib/seo";
 
@@ -56,6 +59,9 @@ export default function RootLayout({
   return (
     <html lang="nl" suppressHydrationWarning>
       <head>
+        {META_PIXEL_ID && (
+          <script dangerouslySetInnerHTML={{ __html: CONSENT_CHOSEN_SCRIPT }} />
+        )}
         <meta
           name="facebook-domain-verification"
           content="rfsxnkp2bfyfjsmsijd0juphva8ibt"
@@ -80,6 +86,7 @@ export default function RootLayout({
           {/* Every page, for field LCP and INP (Q17, #221). */}
           <SpeedInsights />
           <ToasterProvider />
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>

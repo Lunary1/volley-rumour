@@ -13,6 +13,8 @@ const OPEN_PATHS = new Set([
   "/robots.txt",
   "/sitemap.xml",
   "/opengraph-image",
+  // The cookie banner saves its choice here (#288).
+  "/cookie-keuze",
 ]);
 
 export function isComingSoon(): boolean {
